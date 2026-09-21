@@ -1,15 +1,19 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2 } from 'lucide-react';
 import { Transaction } from '../types';
 import { DataTable } from '@/components/ui/DataTable';
+import { CategoryBadge } from '@/features/categories/components/CategoryBadge';
+import { Button } from '@/components/ui/Button';
 
 interface TransactionTableProps {
   transactions?: Transaction[];
+  onEdit: (tx: Transaction) => void;
+  onDelete: (tx: Transaction) => void;
 }
 
-export function TransactionTable({ transactions = [] }: TransactionTableProps) {
+export function TransactionTable({ transactions = [], onEdit, onDelete }: TransactionTableProps) {
   const columns: ColumnDef<Transaction>[] = [
     {
       accessorKey: 'description',
@@ -26,6 +30,13 @@ export function TransactionTable({ transactions = [] }: TransactionTableProps) {
             {tx.description || 'Untitled Transaction'}
           </div>
         );
+      },
+    },
+    {
+      accessorKey: 'category',
+      header: 'Category',
+      cell: ({ row }) => {
+        return <CategoryBadge category={row.original.category} />;
       },
     },
     {
@@ -61,6 +72,32 @@ export function TransactionTable({ transactions = [] }: TransactionTableProps) {
             tx.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-900'
           }`}>
             {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toLocaleString()}
+          </div>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      cell: ({ row }) => {
+        const tx = row.original;
+        return (
+          <div className="flex items-center justify-end gap-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              aria-label="Edit transaction" 
+              onClick={() => onEdit(tx)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              aria-label="Delete transaction" 
+              onClick={() => onDelete(tx)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         );
       },

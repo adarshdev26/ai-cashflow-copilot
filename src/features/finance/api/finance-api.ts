@@ -1,17 +1,26 @@
-import { Transaction, CreateTransactionInput } from '../types';
+import { Transaction, CreateTransactionInput, UpdateTransactionInput } from '../types';
+import { apiFetch } from '@/lib/api-client';
 
 export async function getTransactions(): Promise<Transaction[]> {
-  const res = await fetch('/api/finance/transactions');
-  if (!res.ok) throw new Error('Failed to fetch transactions');
-  return res.json();
+  return apiFetch<Transaction[]>('/api/finance/transactions');
 }
 
 export async function createTransaction(data: CreateTransactionInput): Promise<Transaction> {
-  const res = await fetch('/api/finance/transactions', {
+  return apiFetch<Transaction>('/api/finance/transactions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to create transaction');
-  return res.json();
+}
+
+export async function updateTransaction(id: string, data: UpdateTransactionInput): Promise<Transaction> {
+  return apiFetch<Transaction>(`/api/finance/transactions/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteTransaction(id: string): Promise<{ id: string }> {
+  return apiFetch<{ id: string }>(`/api/finance/transactions/${id}`, {
+    method: 'DELETE',
+  });
 }

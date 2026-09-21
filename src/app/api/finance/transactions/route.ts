@@ -1,27 +1,11 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { requireUserId } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-// Helper to get userId from the JWT cookie
-async function getUserIdFromSession(): Promise<string | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
-    if (!token) return null;
-
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    return decoded.userId;
-  } catch {
-    return null;
-  }
-}
+import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 
 export async function GET() {
   try {
-    const userId = await getUserIdFromSession();
+    const userId = await requireUserId();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -30,6 +14,11 @@ export async function GET() {
       where: {
         workspace: {
           userId,
+        },
+      },
+      include: {
+        category: {
+          select: { id: true, name: true, color: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -44,16 +33,27 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const userId = await getUserIdFromSession();
+    const userId = await requireUserId();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
-    const { amount, type, description } = body;
+    
+    let validatedData;
+    try {
+      validatedData = validateTransactionData(body);
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
 
-    if (!amount || !type) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const { amount, type, description, categoryId } = validatedData;
+
+    if (categoryId) {
+      const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
+      if (!categoryExists) {
+        return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
+      }
     }
 
     // Find the user's workspace, or create a default one if none exists
@@ -72,10 +72,16 @@ export async function POST(req: Request) {
 
     const transaction = await prisma.transaction.create({
       data: {
-        amount: parseFloat(amount),
+        amount,
         type,
         description,
-        workspaceId: workspace.id, // Securely mapped using the user's real workspace ID
+        workspaceId: workspace.id,
+        categoryId,
+      },
+      include: {
+        category: {
+          select: { id: true, name: true, color: true },
+        },
       },
     });
 
