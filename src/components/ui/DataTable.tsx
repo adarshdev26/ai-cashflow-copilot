@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -14,12 +14,17 @@ import {
   PaginationState,
 } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
+
+const DEFAULT_SEARCH_DEBOUNCE_MS = 400;
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   searchKey?: string;
   searchPlaceholder?: string;
+  /** Delay before the typed search is applied. Use 0 to apply on every keystroke. */
+  searchDebounceMs?: number;
   pageSize?: number;
   manualPagination?: boolean;
   manualFiltering?: boolean;
@@ -39,6 +44,7 @@ export function DataTable<TData, TValue>({
   data,
   searchKey,
   searchPlaceholder = 'Search records...',
+  searchDebounceMs = DEFAULT_SEARCH_DEBOUNCE_MS,
   pageSize = 5,
   manualPagination = false,
   manualFiltering = false,
@@ -79,10 +85,37 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  // ---- Debounced search -------------------------------------------------
+  // The input is bound to local state so typing is always instant. The value
+  // is only pushed into the table (and so to the parent / API query) once the
+  // user pauses typing.
+  const committedFilter = table.getState().globalFilter ?? '';
+  const [searchInput, setSearchInput] = useState<string>(committedFilter);
+  const debouncedSearch = useDebounce(searchInput, searchDebounceMs);
+
+  // input -> table (runs only when the debounced value changes)
+  useEffect(() => {
+    if (debouncedSearch !== committedFilter) {
+      table.setGlobalFilter(debouncedSearch);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
+
+  // table -> input (filter changed from outside, e.g. a "reset filters" action).
+  // Skipped while a typed value is still waiting to be committed, so it can
+  // never overwrite what the user is typing.
+  useEffect(() => {
+    if (searchInput === debouncedSearch) {
+      setSearchInput(committedFilter);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [committedFilter]);
+
   const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => table.setGlobalFilter(e.target.value),
-    [table]
+    (e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value),
+    []
   );
+  // -----------------------------------------------------------------------
 
   const handlePreviousPage = useCallback(() => table.previousPage(), [table]);
   const handleNextPage = useCallback(() => table.nextPage(), [table]);
@@ -96,7 +129,7 @@ export function DataTable<TData, TValue>({
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
               type="text"
-              value={table.getState().globalFilter ?? ''}
+              value={searchInput}
               onChange={handleSearchChange}
               placeholder={searchPlaceholder}
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
