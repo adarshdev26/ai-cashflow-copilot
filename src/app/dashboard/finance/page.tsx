@@ -11,7 +11,7 @@ import {
   TransactionModal
 } from '@/features/finance';
 import { useListQueryState } from '@/hooks/list/useListQueryState';
-import { useCategories } from '@/features/categories/hooks/use-categories';
+import { useCategories } from '@/resources/hooks/use-categories';
 import { Select } from '@/components/ui/Select';
 import { Input } from '@/components/ui/Input';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';

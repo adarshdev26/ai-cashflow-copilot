@@ -1,4 +1,4 @@
-import { Category } from '@/features/categories/types';
+import { Category } from '@/resources/types';
 
 export type TransactionType = 'CREDIT' | 'DEBIT';
 

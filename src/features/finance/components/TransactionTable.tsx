@@ -5,7 +5,7 @@ import { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/
 import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2 } from 'lucide-react';
 import { Transaction } from '../types';
 import { DataTable } from '@/components/ui/DataTable';
-import { CategoryBadge } from '@/features/categories/components/CategoryBadge';
+import { CategoryBadge } from '@/resources/components/CategoryBadge';
 import { Button } from '@/components/ui/Button';
 
 interface TransactionTableProps {

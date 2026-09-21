@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { PrimaryButton, Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { CategorySelect } from '@/features/categories/components/CategorySelect';
+import { CategorySelect } from '@/resources/components/CategorySelect';
 import { Transaction } from '../types';
 
 interface TransactionModalProps {
