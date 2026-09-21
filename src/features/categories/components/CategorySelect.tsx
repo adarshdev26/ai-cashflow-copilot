@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { useCategories } from '../hooks/use-categories';
 import { Select } from '@/components/ui/Select';
 
@@ -13,12 +14,19 @@ interface CategorySelectProps {
 export function CategorySelect({ value, onChange, disabled, id }: CategorySelectProps) {
   const { data: categories, isLoading, error } = useCategories();
 
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onChange(e.target.value === '' ? null : e.target.value);
+    },
+    [onChange]
+  );
+
   return (
     <div>
       <Select
         id={id}
         value={value || ''}
-        onChange={(e) => onChange(e.target.value === '' ? null : e.target.value)}
+        onChange={handleChange}
         disabled={disabled || isLoading}
       >
         <option value="">No category</option>

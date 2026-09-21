@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PrimaryButton } from '@/components/ui/Button'
@@ -12,31 +12,34 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+  const handleLogin = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      setError('')
+      setLoading(true)
 
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
 
-      const data = await res.json()
+        const data = await res.json()
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong')
+        if (!res.ok) {
+          throw new Error(data.error || 'Something went wrong')
+        }
+
+        router.push('/dashboard')
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
       }
-
-      router.push('/dashboard')
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+    },
+    [router, email, password]
+  )
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
@@ -64,11 +67,7 @@ export default function LoginPage() {
               className="w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none"
             />
           </div>
-          <PrimaryButton
-            type="submit"
-            loading={loading}
-            className="w-full"
-          >
+          <PrimaryButton type="submit" loading={loading} className="w-full">
             Log In
           </PrimaryButton>
         </form>

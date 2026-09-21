@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -46,6 +46,14 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value),
+    []
+  );
+
+  const handlePreviousPage = useCallback(() => table.previousPage(), [table]);
+  const handleNextPage = useCallback(() => table.nextPage(), [table]);
+
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
       {/* Search Header Bar */}
@@ -56,7 +64,7 @@ export function DataTable<TData, TValue>({
             <input
               type="text"
               value={globalFilter ?? ''}
-              onChange={(e) => setGlobalFilter(e.target.value)}
+              onChange={handleSearchChange}
               placeholder={searchPlaceholder}
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
             />
@@ -117,7 +125,7 @@ export function DataTable<TData, TValue>({
       {table.getPageCount() > 1 && (
         <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
           <button
-            onClick={() => table.previousPage()}
+            onClick={handlePreviousPage}
             disabled={!table.getCanPreviousPage()}
             className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
@@ -129,7 +137,7 @@ export function DataTable<TData, TValue>({
             <span className="font-semibold text-slate-700">{table.getPageCount()}</span>
           </span>
           <button
-            onClick={() => table.nextPage()}
+            onClick={handleNextPage}
             disabled={!table.getCanNextPage()}
             className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >

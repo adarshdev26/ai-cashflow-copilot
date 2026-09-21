@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { cn } from '@/lib/cn';
 
 export interface ModalProps {
@@ -14,13 +14,13 @@ export interface ModalProps {
   closeOnBackdrop?: boolean;
 }
 
-export function Modal({ 
-  open, 
-  onClose, 
-  title, 
-  description, 
-  children, 
-  footer, 
+export function Modal({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+  footer,
   size = 'md',
   closeOnBackdrop = true
 }: ModalProps) {
@@ -60,7 +60,7 @@ export function Modal({
     return () => dialog.removeEventListener('cancel', handleCancel);
   }, [onClose]);
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
+  const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDialogElement>) => {
     if (!closeOnBackdrop) return;
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -75,7 +75,7 @@ export function Modal({
     if (!isInDialog) {
       onClose();
     }
-  };
+  }, [closeOnBackdrop, onClose]);
 
   const sizeClasses = {
     sm: 'max-w-sm',
@@ -100,7 +100,7 @@ export function Modal({
           <h3 id="modal-title" className="text-lg font-semibold text-slate-900">{title}</h3>
           {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
         </div>
-        
+
         <div>{children}</div>
 
         {footer && (

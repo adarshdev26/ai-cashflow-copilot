@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { PrimaryButton, Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -17,13 +17,13 @@ interface TransactionModalProps {
   transaction?: Transaction | null;
 }
 
-export function TransactionModal({ 
-  open, 
-  onClose, 
-  onSubmit, 
-  isSubmitting, 
+export function TransactionModal({
+  open,
+  onClose,
+  onSubmit,
+  isSubmitting,
   error,
-  transaction 
+  transaction
 }: TransactionModalProps) {
   const isEdit = !!transaction;
   const title = isEdit ? 'Edit transaction' : 'Add transaction';
@@ -34,17 +34,35 @@ export function TransactionModal({
   const [type, setType] = useState<'CREDIT' | 'DEBIT'>(transaction?.type || 'CREDIT');
   const [categoryId, setCategoryId] = useState<string | null>(transaction?.categoryId || null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount) return;
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!amount) return;
 
-    onSubmit({
-      amount: Number(amount),
-      type,
-      description: description || undefined,
-      categoryId,
-    });
-  };
+      onSubmit({
+        amount: Number(amount),
+        type,
+        description: description || undefined,
+        categoryId,
+      });
+    },
+    [amount, type, description, categoryId, onSubmit]
+  );
+
+  const handleDescriptionChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value),
+    []
+  );
+
+  const handleAmountChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setAmount(e.target.value),
+    []
+  );
+
+  const handleTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => setType(e.target.value as 'CREDIT' | 'DEBIT'),
+    []
+  );
 
   return (
     <Modal
@@ -75,7 +93,7 @@ export function TransactionModal({
           <Input
             type="text"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={handleDescriptionChange}
             placeholder="e.g., Client Freelance Payment"
             maxLength={255}
           />
@@ -89,7 +107,7 @@ export function TransactionModal({
             min="0.01"
             required
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={handleAmountChange}
             placeholder="0.00"
           />
         </div>
@@ -98,7 +116,7 @@ export function TransactionModal({
           <label className="block text-xs font-medium text-slate-700 mb-1">Type</label>
           <Select
             value={type}
-            onChange={(e) => setType(e.target.value as 'CREDIT' | 'DEBIT')}
+            onChange={handleTypeChange}
           >
             <option value="CREDIT">Credit (Income)</option>
             <option value="DEBIT">Debit (Expense)</option>
