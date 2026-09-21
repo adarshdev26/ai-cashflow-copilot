@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -14,7 +14,7 @@ import {
   PaginationState,
 } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useDebouncedSearch } from '@/hooks/useDebouncedSearch';
 
 const DEFAULT_SEARCH_DEBOUNCE_MS = 400;
 
@@ -85,37 +85,12 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  // ---- Debounced search -------------------------------------------------
-  // The input is bound to local state so typing is always instant. The value
-  // is only pushed into the table (and so to the parent / API query) once the
-  // user pauses typing.
-  const committedFilter = table.getState().globalFilter ?? '';
-  const [searchInput, setSearchInput] = useState<string>(committedFilter);
-  const debouncedSearch = useDebounce(searchInput, searchDebounceMs);
-
-  // input -> table (runs only when the debounced value changes)
-  useEffect(() => {
-    if (debouncedSearch !== committedFilter) {
-      table.setGlobalFilter(debouncedSearch);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch]);
-
-  // table -> input (filter changed from outside, e.g. a "reset filters" action).
-  // Skipped while a typed value is still waiting to be committed, so it can
-  // never overwrite what the user is typing.
-  useEffect(() => {
-    if (searchInput === debouncedSearch) {
-      setSearchInput(committedFilter);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [committedFilter]);
-
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value),
-    []
+  // Debounced search: input stays instant, table/API only update after a pause.
+  const search = useDebouncedSearch(
+    table.getState().globalFilter ?? '',
+    (value) => table.setGlobalFilter(value),
+    searchDebounceMs
   );
-  // -----------------------------------------------------------------------
 
   const handlePreviousPage = useCallback(() => table.previousPage(), [table]);
   const handleNextPage = useCallback(() => table.nextPage(), [table]);
@@ -129,8 +104,8 @@ export function DataTable<TData, TValue>({
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
               type="text"
-              value={searchInput}
-              onChange={handleSearchChange}
+              value={search.value}
+              onChange={search.onChange}
               placeholder={searchPlaceholder}
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
             />
