@@ -1,8 +1,23 @@
-import { Transaction, CreateTransactionInput, UpdateTransactionInput } from '../types';
+import {
+  Transaction,
+  CreateTransactionInput,
+  TransactionListParams,
+  TransactionListResponse,
+  UpdateTransactionInput,
+} from '../types';
 import { apiFetch } from '@/lib/api-client';
 
-export async function getTransactions(): Promise<Transaction[]> {
-  return apiFetch<Transaction[]>('/api/finance/transactions');
+export async function getTransactions(params: TransactionListParams = {}): Promise<TransactionListResponse> {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== '') {
+      searchParams.set(key, String(value));
+    }
+  });
+
+  const query = searchParams.toString();
+  return apiFetch<TransactionListResponse>(`/api/finance/transactions${query ? `?${query}` : ''}`);
 }
 
 export async function createTransaction(data: CreateTransactionInput): Promise<Transaction> {

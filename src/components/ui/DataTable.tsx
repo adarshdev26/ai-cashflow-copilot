@@ -10,6 +10,8 @@ import {
   flexRender,
   SortingState,
   ColumnDef,
+  OnChangeFn,
+  PaginationState,
 } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 
@@ -19,6 +21,17 @@ interface DataTableProps<TData, TValue> {
   searchKey?: string;
   searchPlaceholder?: string;
   pageSize?: number;
+  manualPagination?: boolean;
+  manualFiltering?: boolean;
+  manualSorting?: boolean;
+  pageCount?: number;
+  totalCount?: number;
+  pagination?: PaginationState;
+  sorting?: SortingState;
+  globalFilter?: string;
+  onPaginationChange?: OnChangeFn<PaginationState>;
+  onSortingChange?: OnChangeFn<SortingState>;
+  onGlobalFilterChange?: OnChangeFn<string>;
 }
 
 export function DataTable<TData, TValue>({
@@ -27,28 +40,48 @@ export function DataTable<TData, TValue>({
   searchKey,
   searchPlaceholder = 'Search records...',
   pageSize = 5,
+  manualPagination = false,
+  manualFiltering = false,
+  manualSorting = false,
+  pageCount,
+  totalCount,
+  pagination: controlledPagination,
+  sorting: controlledSorting,
+  globalFilter: controlledGlobalFilter,
+  onPaginationChange: controlledPaginationChange,
+  onSortingChange: controlledSortingChange,
+  onGlobalFilterChange: controlledGlobalFilterChange,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [localSorting, setLocalSorting] = useState<SortingState>([]);
+  const [localGlobalFilter, setLocalGlobalFilter] = useState('');
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, globalFilter },
-    onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
+    state: {
+      ...(controlledPagination ? { pagination: controlledPagination } : {}),
+      sorting: controlledSorting ?? localSorting,
+      globalFilter: controlledGlobalFilter ?? localGlobalFilter,
+    },
+    onPaginationChange: controlledPaginationChange,
+    onSortingChange: controlledSortingChange ?? setLocalSorting,
+    onGlobalFilterChange: controlledGlobalFilterChange ?? setLocalGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: manualPagination ? undefined : getPaginationRowModel(),
+    getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+    getFilteredRowModel: manualFiltering ? undefined : getFilteredRowModel(),
+    manualPagination,
+    manualSorting,
+    manualFiltering,
+    pageCount: manualPagination ? pageCount : undefined,
     initialState: {
       pagination: { pageSize },
     },
   });
 
   const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value),
-    []
+    (e: React.ChangeEvent<HTMLInputElement>) => table.setGlobalFilter(e.target.value),
+    [table]
   );
 
   const handlePreviousPage = useCallback(() => table.previousPage(), [table]);
@@ -63,14 +96,14 @@ export function DataTable<TData, TValue>({
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
               type="text"
-              value={globalFilter ?? ''}
+              value={table.getState().globalFilter ?? ''}
               onChange={handleSearchChange}
               placeholder={searchPlaceholder}
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
             />
           </div>
           <div className="text-xs text-slate-500">
-            Total: <span className="font-semibold text-slate-700">{table.getFilteredRowModel().rows.length}</span> entries
+            Total: <span className="font-semibold text-slate-700">{totalCount ?? table.getFilteredRowModel().rows.length}</span> entries
           </div>
         </div>
       )}

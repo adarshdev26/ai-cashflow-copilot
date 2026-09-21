@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useCallback } from 'react';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2 } from 'lucide-react';
 import { Transaction } from '../types';
 import { DataTable } from '@/components/ui/DataTable';
@@ -12,9 +12,29 @@ interface TransactionTableProps {
   transactions?: Transaction[];
   onEdit: (tx: Transaction) => void;
   onDelete: (tx: Transaction) => void;
+  pagination: PaginationState;
+  sorting: SortingState;
+  globalFilter: string;
+  pageCount: number;
+  totalCount: number;
+  onPaginationChange: OnChangeFn<PaginationState>;
+  onSortingChange: OnChangeFn<SortingState>;
+  onGlobalFilterChange: OnChangeFn<string>;
 }
 
-export function TransactionTable({ transactions = [], onEdit, onDelete }: TransactionTableProps) {
+export function TransactionTable({
+  transactions = [],
+  onEdit,
+  onDelete,
+  pagination,
+  sorting,
+  globalFilter,
+  pageCount,
+  totalCount,
+  onPaginationChange,
+  onSortingChange,
+  onGlobalFilterChange,
+}: TransactionTableProps) {
   const handleEdit = useCallback((tx: Transaction) => onEdit(tx), [onEdit]);
   const handleDelete = useCallback((tx: Transaction) => onDelete(tx), [onDelete]);
 
@@ -39,6 +59,7 @@ export function TransactionTable({ transactions = [], onEdit, onDelete }: Transa
       {
         accessorKey: 'category',
         header: 'Category',
+        enableSorting: false,
         cell: ({ row }) => {
           return <CategoryBadge category={row.original.category} />;
         },
@@ -80,6 +101,7 @@ export function TransactionTable({ transactions = [], onEdit, onDelete }: Transa
       },
       {
         id: 'actions',
+        enableSorting: false,
         cell: ({ row }) => {
           const tx = row.original;
           return (
@@ -114,7 +136,18 @@ export function TransactionTable({ transactions = [], onEdit, onDelete }: Transa
       data={transactions}
       searchKey="description"
       searchPlaceholder="Search transactions..."
-      pageSize={5}
+      pageSize={pagination.pageSize}
+      manualPagination
+      manualFiltering
+      manualSorting
+      pageCount={pageCount}
+      totalCount={totalCount}
+      pagination={pagination}
+      sorting={sorting}
+      globalFilter={globalFilter}
+      onPaginationChange={onPaginationChange}
+      onSortingChange={onSortingChange}
+      onGlobalFilterChange={onGlobalFilterChange}
     />
   );
 }

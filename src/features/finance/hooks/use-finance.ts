@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction } from '../api/finance-api';
-import { CreateTransactionInput, UpdateTransactionInput } from '../types';
+import { CreateTransactionInput, TransactionListParams, UpdateTransactionInput } from '../types';
 
-export function useTransactions() {
+export function useTransactions(params: TransactionListParams = {}) {
   return useQuery({
-    queryKey: ['transactions'],
-    queryFn: getTransactions,
+    queryKey: ['transactions', params],
+    queryFn: () => getTransactions(params),
   });
 }
 
