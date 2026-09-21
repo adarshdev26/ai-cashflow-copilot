@@ -62,17 +62,7 @@ export function Modal({
 
   const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDialogElement>) => {
     if (!closeOnBackdrop) return;
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    const rect = dialog.getBoundingClientRect();
-    const isInDialog = (
-      rect.top <= e.clientY &&
-      e.clientY <= rect.top + rect.height &&
-      rect.left <= e.clientX &&
-      e.clientX <= rect.left + rect.width
-    );
-    if (!isInDialog) {
+    if (e.target === e.currentTarget) {
       onClose();
     }
   }, [closeOnBackdrop, onClose]);
