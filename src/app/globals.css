@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@layer base {
+  dialog {
+    margin: auto;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
