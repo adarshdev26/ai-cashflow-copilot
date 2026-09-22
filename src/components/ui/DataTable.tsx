@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -10,15 +10,33 @@ import {
   flexRender,
   SortingState,
   ColumnDef,
+  OnChangeFn,
+  PaginationState,
 } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
+import { useDebouncedSearch } from '@/hooks/useDebouncedSearch';
+
+const DEFAULT_SEARCH_DEBOUNCE_MS = 400;
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   searchKey?: string;
   searchPlaceholder?: string;
+  /** Delay before the typed search is applied. Use 0 to apply on every keystroke. */
+  searchDebounceMs?: number;
   pageSize?: number;
+  manualPagination?: boolean;
+  manualFiltering?: boolean;
+  manualSorting?: boolean;
+  pageCount?: number;
+  totalCount?: number;
+  pagination?: PaginationState;
+  sorting?: SortingState;
+  globalFilter?: string;
+  onPaginationChange?: OnChangeFn<PaginationState>;
+  onSortingChange?: OnChangeFn<SortingState>;
+  onGlobalFilterChange?: OnChangeFn<string>;
 }
 
 export function DataTable<TData, TValue>({
@@ -26,25 +44,56 @@ export function DataTable<TData, TValue>({
   data,
   searchKey,
   searchPlaceholder = 'Search records...',
+  searchDebounceMs = DEFAULT_SEARCH_DEBOUNCE_MS,
   pageSize = 5,
+  manualPagination = false,
+  manualFiltering = false,
+  manualSorting = false,
+  pageCount,
+  totalCount,
+  pagination: controlledPagination,
+  sorting: controlledSorting,
+  globalFilter: controlledGlobalFilter,
+  onPaginationChange: controlledPaginationChange,
+  onSortingChange: controlledSortingChange,
+  onGlobalFilterChange: controlledGlobalFilterChange,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [localSorting, setLocalSorting] = useState<SortingState>([]);
+  const [localGlobalFilter, setLocalGlobalFilter] = useState('');
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, globalFilter },
-    onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
+    state: {
+      ...(controlledPagination ? { pagination: controlledPagination } : {}),
+      sorting: controlledSorting ?? localSorting,
+      globalFilter: controlledGlobalFilter ?? localGlobalFilter,
+    },
+    onPaginationChange: controlledPaginationChange,
+    onSortingChange: controlledSortingChange ?? setLocalSorting,
+    onGlobalFilterChange: controlledGlobalFilterChange ?? setLocalGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: manualPagination ? undefined : getPaginationRowModel(),
+    getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+    getFilteredRowModel: manualFiltering ? undefined : getFilteredRowModel(),
+    manualPagination,
+    manualSorting,
+    manualFiltering,
+    pageCount: manualPagination ? pageCount : undefined,
     initialState: {
       pagination: { pageSize },
     },
   });
+
+  // Debounced search: input stays instant, table/API only update after a pause.
+  const search = useDebouncedSearch(
+    table.getState().globalFilter ?? '',
+    (value) => table.setGlobalFilter(value),
+    searchDebounceMs
+  );
+
+  const handlePreviousPage = useCallback(() => table.previousPage(), [table]);
+  const handleNextPage = useCallback(() => table.nextPage(), [table]);
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -55,14 +104,14 @@ export function DataTable<TData, TValue>({
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
               type="text"
-              value={globalFilter ?? ''}
-              onChange={(e) => setGlobalFilter(e.target.value)}
+              value={search.value}
+              onChange={search.onChange}
               placeholder={searchPlaceholder}
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
             />
           </div>
           <div className="text-xs text-slate-500">
-            Total: <span className="font-semibold text-slate-700">{table.getFilteredRowModel().rows.length}</span> entries
+            Total: <span className="font-semibold text-slate-700">{totalCount ?? table.getFilteredRowModel().rows.length}</span> entries
           </div>
         </div>
       )}
@@ -117,7 +166,7 @@ export function DataTable<TData, TValue>({
       {table.getPageCount() > 1 && (
         <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
           <button
-            onClick={() => table.previousPage()}
+            onClick={handlePreviousPage}
             disabled={!table.getCanPreviousPage()}
             className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
@@ -129,7 +178,7 @@ export function DataTable<TData, TValue>({
             <span className="font-semibold text-slate-700">{table.getPageCount()}</span>
           </span>
           <button
-            onClick={() => table.nextPage()}
+            onClick={handleNextPage}
             disabled={!table.getCanNextPage()}
             className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >

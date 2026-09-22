@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { Modal } from './Modal';
+import { Button } from './Button';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -11,6 +13,8 @@ interface ConfirmDialogProps {
   variant?: 'danger' | 'primary';
   onConfirm: () => void;
   onClose: () => void;
+  loading?: boolean;
+  error?: string;
 }
 
 export function ConfirmDialog({
@@ -22,41 +26,32 @@ export function ConfirmDialog({
   variant = 'primary',
   onConfirm,
   onClose,
+  loading = false,
+  error,
 }: ConfirmDialogProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
-        </div>
-
-        <div className="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-          >
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title={title}
+      description={description}
+      closeOnBackdrop={!loading}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={loading}>
             {cancelText}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors ${
-              variant === 'danger'
-                ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-indigo-600 hover:bg-indigo-700'
-            }`}
-          >
+          </Button>
+          <Button variant={variant} onClick={onConfirm} loading={loading}>
             {confirmText}
-          </button>
+          </Button>
+        </>
+      }
+    >
+      {error && (
+        <div className="mt-2 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
+          {error}
         </div>
-      </div>
-    </div>
+      )}
+    </Modal>
   );
 }

@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useState} from 'react';
+import { useState, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut } from 'lucide-react';
-import {ConfirmDialog} from '@/components/ui/ConfirmDialog'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -19,7 +19,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       router.push('/login');
@@ -27,7 +27,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Failed to sign out:', error);
     }
-  };
+  }, [router]);
+
+  const openSignOutDialog = useCallback(() => setIsSignOutOpen(true), []);
+  const closeSignOutDialog = useCallback(() => setIsSignOutOpen(false), []);
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex">
@@ -39,7 +42,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </div>
           <span className="font-semibold text-lg tracking-tight text-slate-900">CashFlow Copilot</span>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-1">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
@@ -48,11 +51,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
                     ? 'bg-indigo-50 text-indigo-600'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <Icon className={`h-4 w-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
                 {item.name}
@@ -63,8 +65,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         <div className="p-4 border-t border-slate-100">
           <button
-        onClick={() => setIsSignOutOpen(true)}
-           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+            onClick={openSignOutDialog}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+          >
             <LogOut className="h-4 w-4" />
             Sign Out
           </button>
@@ -95,7 +98,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         confirmText="Sign Out"
         variant="danger"
         onConfirm={handleSignOut}
-        onClose={() => setIsSignOutOpen(false)}
+        onClose={closeSignOutDialog}
       />
     </div>
   );
