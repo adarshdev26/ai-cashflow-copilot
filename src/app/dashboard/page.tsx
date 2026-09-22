@@ -1,17 +1,9 @@
 'use client';
 
-<<<<<<< HEAD
-import { MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
-<<<<<<< HEAD
-import { DollarSign, Activity, FileText } from 'lucide-react';
-=======
-=======
 import dynamic from 'next/dynamic';
 import { ChartCard, MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
->>>>>>> 584a646 (added 3 charts in dashboard)
 import { Activity, FileText } from 'lucide-react';
 import { FinanceStats } from '@/features/finance';
->>>>>>> c847260 (removed duplicates)
 
 const CashflowChart = dynamic(
   () => import('@/features/dashboard/components/CashflowChart').then((m) => m.CashflowChart),
@@ -46,16 +38,12 @@ export default function DashboardOverviewPage() {
         <p className="text-sm text-slate-500">Monitor your financial health, daily habits, and active documentation.</p>
       </div>
 
-<<<<<<< HEAD
-      <div className="grid gap-5 md:grid-cols-3">
-=======
       <FinanceStats
         totalIncome={false}
         totalExpense={false}
       />
 
       <div className="grid gap-5 md:grid-cols-2">
->>>>>>> c847260 (removed duplicates)
         {isLoading || !data ? (
           Array.from({ length: 2 }).map((_, i) => <MetricCardSkeleton key={i} />)
         ) : (
