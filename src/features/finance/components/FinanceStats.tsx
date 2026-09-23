@@ -21,7 +21,7 @@ function MonthBreakdown({ income, expense }: Pick<PeriodTotals, 'income' | 'expe
         In <span className="font-medium text-emerald-600">{currency.format(income)}</span>
       </span>
       <span>
-        Out <span className="font-medium text-rose-600">{currency.format(expense)}</span>
+        Out <span className="font-medium text-red-600">{currency.format(expense)}</span>
       </span>
     </div>
   );
