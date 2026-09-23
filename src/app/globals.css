@@ -9,13 +9,27 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Active font — default to Inter. Overridden by [data-font] below. */
+  --font-active: var(--font-dm-sans);
+}
+
+html[data-font="inter"] {
+  --font-active: var(--font-inter);
+}
+
+html[data-font="dm-sans"] {
+  --font-active: var(--font-dm-sans);
+}
+
+html[data-font="bricolage"] {
+  --font-active: var(--font-bricolage);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-active);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,5 +42,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
