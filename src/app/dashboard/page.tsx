@@ -1,12 +1,32 @@
 'use client';
 
+<<<<<<< HEAD
 import { MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
 <<<<<<< HEAD
 import { DollarSign, Activity, FileText } from 'lucide-react';
 =======
+=======
+import dynamic from 'next/dynamic';
+import { ChartCard, MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
+>>>>>>> 584a646 (added 3 charts in dashboard)
 import { Activity, FileText } from 'lucide-react';
 import { FinanceStats } from '@/features/finance';
 >>>>>>> c847260 (removed duplicates)
+
+const CashflowChart = dynamic(
+  () => import('@/features/dashboard/components/CashflowChart').then((m) => m.CashflowChart),
+  { ssr: false, loading: () => <ChartCard title="Income vs Expense" description="Last 6 months" isLoading /> }
+);
+
+const CategoryDonutChart = dynamic(
+  () => import('@/features/dashboard/components/CategoryDonutChart').then((m) => m.CategoryDonutChart),
+  { ssr: false, loading: () => <ChartCard title="Spending by category" description="All time" isLoading /> }
+);
+
+const BalanceTrendChart = dynamic(
+  () => import('@/features/dashboard/components/BalanceTrendChart').then((m) => m.BalanceTrendChart),
+  { ssr: false, loading: () => <ChartCard title="Balance trend" description="Last 30 days" isLoading /> }
+);
 
 export default function DashboardOverviewPage() {
   const { data, isLoading, error } = useDashboardMetrics();
@@ -55,6 +75,15 @@ export default function DashboardOverviewPage() {
           </>
         )}
       </div>
+
+      <div className="grid gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <CashflowChart />
+        </div>
+        <CategoryDonutChart />
+      </div>
+
+      <BalanceTrendChart />
     </div>
   );
 }
