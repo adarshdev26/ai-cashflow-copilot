@@ -24,6 +24,7 @@ import {
   TransactionType,
   UpdateTransactionInput,
 } from '@/features/finance/types';
+import { CategoryStatsTooltip } from "@/resources/components/CategoryStats";
 
 type FormState = { mode: 'create' } | { mode: 'edit'; transaction: Transaction } | null;
 
@@ -165,6 +166,8 @@ export default function FinancePage() {
         thisMonthNet={false}
         lastMonthNet={false}
       />
+
+      <CategoryStatsTooltip />
 
       <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-4">
         <Select aria-label="Filter by transaction type" value={filters.type ?? ''} onChange={(event) => handleTypeChange(event.target.value as TransactionType | '')}>
