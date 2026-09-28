@@ -8,6 +8,12 @@ export class ApiError extends Error {
   }
 }
 
+export function withWorkspace(workspaceId: string, init?: RequestInit): RequestInit {
+  const headers = new Headers(init?.headers);
+  headers.set('X-Workspace-Id', workspaceId);
+  return { ...init, headers };
+}
+
 export async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   if (!headers.has('Content-Type')) {
