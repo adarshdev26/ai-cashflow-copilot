@@ -25,6 +25,7 @@ import {
   UpdateTransactionInput,
 } from '@/features/finance/types';
 import { CategoryStatsTooltip } from "@/resources/components/CategoryStats";
+import { useActiveWorkspaceId } from '@/features/workspaces';
 
 type FormState = { mode: 'create' } | { mode: 'edit'; transaction: Transaction } | null;
 
@@ -55,12 +56,13 @@ export default function FinancePage() {
     maxPageSize: 100,
   });
   const isInvalidDateRange = Boolean(filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo);
+  const workspaceId = useActiveWorkspaceId();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
 
-  const { data: transactionResponse, isLoading, error, isFetching } = useTransactions(params, { enabled: !isInvalidDateRange });
-  const { mutate: addTx, isPending: isAdding } = useCreateTransaction();
-  const { mutate: updateTx, isPending: isUpdating } = useUpdateTransaction();
-  const { mutate: deleteTx, isPending: isDeleting } = useDeleteTransaction();
+  const { data: transactionResponse, isLoading, error, isFetching } = useTransactions(workspaceId, params, { enabled: !isInvalidDateRange });
+  const { mutate: addTx, isPending: isAdding } = useCreateTransaction(workspaceId);
+  const { mutate: updateTx, isPending: isUpdating } = useUpdateTransaction(workspaceId);
+  const { mutate: deleteTx, isPending: isDeleting } = useDeleteTransaction(workspaceId);
 
   const [formState, setFormState] = useState<FormState>(null);
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);

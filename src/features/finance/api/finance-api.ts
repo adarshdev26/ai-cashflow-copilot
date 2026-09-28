@@ -5,9 +5,12 @@ import {
   TransactionListResponse,
   UpdateTransactionInput,
 } from '../types';
-import { apiFetch } from '@/lib/api-client';
+import { apiFetch, withWorkspace } from '@/lib/api-client';
 
-export async function getTransactions(params: TransactionListParams = {}): Promise<TransactionListResponse> {
+export async function getTransactions(
+  workspaceId: string,
+  params: TransactionListParams = {}
+): Promise<TransactionListResponse> {
   const searchParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
@@ -17,25 +20,41 @@ export async function getTransactions(params: TransactionListParams = {}): Promi
   });
 
   const query = searchParams.toString();
-  return apiFetch<TransactionListResponse>(`/api/finance/transactions${query ? `?${query}` : ''}`);
+  return apiFetch<TransactionListResponse>(
+    `/api/finance/transactions${query ? `?${query}` : ''}`,
+    withWorkspace(workspaceId)
+  );
 }
 
-export async function createTransaction(data: CreateTransactionInput): Promise<Transaction> {
+export async function createTransaction(
+  workspaceId: string,
+  data: CreateTransactionInput
+): Promise<Transaction> {
   return apiFetch<Transaction>('/api/finance/transactions', {
+    ...withWorkspace(workspaceId),
     method: 'POST',
     body: JSON.stringify(data),
   });
 }
 
-export async function updateTransaction(id: string, data: UpdateTransactionInput): Promise<Transaction> {
+export async function updateTransaction(
+  workspaceId: string,
+  id: string,
+  data: UpdateTransactionInput
+): Promise<Transaction> {
   return apiFetch<Transaction>(`/api/finance/transactions/${id}`, {
+    ...withWorkspace(workspaceId),
     method: 'PATCH',
     body: JSON.stringify(data),
   });
 }
 
-export async function deleteTransaction(id: string): Promise<{ id: string }> {
+export async function deleteTransaction(
+  workspaceId: string,
+  id: string
+): Promise<{ id: string }> {
   return apiFetch<{ id: string }>(`/api/finance/transactions/${id}`, {
+    ...withWorkspace(workspaceId),
     method: 'DELETE',
   });
 }

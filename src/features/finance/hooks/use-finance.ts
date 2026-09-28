@@ -2,47 +2,57 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction } from '../api/finance-api';
 import { CreateTransactionInput, TransactionListParams, UpdateTransactionInput } from '../types';
 
+export const financeKeys = {
+  list: (workspaceId: string, params: TransactionListParams) =>
+    ['transactions', workspaceId, params] as const,
+  all: (workspaceId: string) => ['transactions', workspaceId] as const,
+};
+
 export function useTransactions(
+  workspaceId: string,
   params: TransactionListParams = {},
   options: { enabled?: boolean } = {}
 ) {
   return useQuery({
-    queryKey: ['transactions', params],
-    queryFn: () => getTransactions(params),
+    queryKey: financeKeys.list(workspaceId, params),
+    queryFn: () => getTransactions(workspaceId, params),
+    // Only reuse previous data when the workspace hasn't changed (same workspaceId in key).
     placeholderData: keepPreviousData,
     enabled: options.enabled ?? true,
+    staleTime: 30 * 1000, // 30 seconds
   });
 }
 
-export function useCreateTransaction() {
+export function useCreateTransaction(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (newTx: CreateTransactionInput) => createTransaction(newTx),
+    mutationFn: (newTx: CreateTransactionInput) => createTransaction(workspaceId, newTx),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
     },
   });
 }
 
-export function useUpdateTransaction() {
+export function useUpdateTransaction(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateTransactionInput }) => updateTransaction(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateTransactionInput }) =>
+      updateTransaction(workspaceId, id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
     },
   });
 }
 
-export function useDeleteTransaction() {
+export function useDeleteTransaction(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => deleteTransaction(id),
+    mutationFn: (id: string) => deleteTransaction(workspaceId, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
     },
   });
 }

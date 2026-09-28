@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, History, Wallet } from 'lucide-react';
 import { StatCard, StatCardSkeleton, StatTone } from '@/components/ui/StatCard';
 import { useFinanceSummary, PeriodTotals } from '../hooks/use-finance-summary';
+import { useActiveWorkspaceId } from '@/features/workspaces';
 
 const currency = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -34,7 +35,8 @@ export function FinanceStats({
   thisMonthNet = true,
   lastMonthNet = true
 }) {
-  const { data, isLoading, isError } = useFinanceSummary();
+  const workspaceId = useActiveWorkspaceId();
+  const { data, isLoading, isError } = useFinanceSummary(workspaceId);
   const visibleSections = [totalIncome, totalExpense, netBalance, thisMonthNet, lastMonthNet].filter(Boolean).length;
   const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${
     visibleSections === 3 ? 'xl:grid-cols-3' : visibleSections === 4 ? 'xl:grid-cols-4' : visibleSections >= 5 ? 'xl:grid-cols-5' : ''
