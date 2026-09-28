@@ -10,31 +10,63 @@ const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 const categories = [
-  { name: "Food & Dining", color: "#f97316" },
-  { name: "Groceries", color: "#22c55e" },
-  { name: "Rent", color: "#6366f1" },
-  { name: "Utilities", color: "#0ea5e9" },
-  { name: "Transport", color: "#eab308" },
-  { name: "Shopping", color: "#ec4899" },
-  { name: "Entertainment", color: "#a855f7" },
-  { name: "Health", color: "#ef4444" },
-  { name: "Education", color: "#14b8a6" },
-  { name: "Travel", color: "#06b6d4" },
-  { name: "Salary", color: "#16a34a" },
-  { name: "Freelance", color: "#84cc16" },
-  { name: "Investments", color: "#8b5cf6" },
-  { name: "Other", color: "#64748b" },
+  { name: "Food & Dining", color: null },
+  { name: "Groceries", color: null },
+  { name: "Transport", color: null },
+  { name: "Shopping", color: null },
+  { name: "Entertainment", color: null },
+  { name: "Health", color: null },
+  { name: "Education", color: null },
+  { name: "Travel", color: null },
+  { name: "Other", color: null },
 ];
 
 async function main() {
   for (const c of categories) {
     await prisma.category.upsert({
-      where: { name: c.name },       // name is @unique
+      where: { name: c.name },
       update: { color: c.color },
       create: c,
     });
   }
   console.log(`Seeded ${categories.length} categories`);
+
+  const demoEmail = 'demo@example.com';
+  const user = await prisma.user.upsert({
+    where: { email: demoEmail },
+    update: {},
+    create: {
+      email: demoEmail,
+      password: 'notarealhash',
+      role: 'USER',
+    },
+  });
+
+  const workspaceName = 'Demo Workspace';
+  const { generateWorkspaceSlug } = await import('../src/lib/workspaces');
+  
+  const existingAccess = await prisma.workspaceAccess.findFirst({
+    where: { userId: user.id },
+  });
+
+  if (!existingAccess) {
+    await prisma.workspace.create({
+      data: {
+        name: workspaceName,
+        slug: generateWorkspaceSlug(workspaceName),
+        ownerId: user.id,
+        access: {
+          create: {
+            userId: user.id,
+            role: 'OWNER',
+          },
+        },
+      },
+    });
+    console.log('Created demo user and workspace');
+  } else {
+    console.log('Demo user and workspace already exist');
+  }
 }
 
 main()
