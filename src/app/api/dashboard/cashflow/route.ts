@@ -2,21 +2,30 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireUserId } from '@/lib/auth';
 
-const MONTHS = 6;
+const DEFAULT_MONTHS = 6;
+const MAX_MONTHS = 24;
 
 const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-export async function GET() {
+function parseMonths(value: string | null) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) return DEFAULT_MONTHS;
+  return Math.min(parsed, MAX_MONTHS);
+}
+
+export async function GET(req: Request) {
   try {
     const userId = await requireUserId();
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth() - (MONTHS - 1), 1);
+    const months = parseMonths(new URL(req.url).searchParams.get('months'));
 
-    // Only the last 6 months, only the 3 columns we need
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+
+    // Only the selected range, only the 3 columns we need
     const rows = await prisma.transaction.findMany({
       where: { workspace: { userId }, createdAt: { gte: start } },
       select: { type: true, amount: true, createdAt: true },
@@ -24,7 +33,7 @@ export async function GET() {
 
     // Pre-fill every month so empty months show as zero instead of disappearing
     const buckets = new Map<string, { key: string; label: string; income: number; expense: number }>();
-    for (let i = 0; i < MONTHS; i++) {
+    for (let i = 0; i < months; i++) {
       const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
       const key = monthKey(d);
       buckets.set(key, {

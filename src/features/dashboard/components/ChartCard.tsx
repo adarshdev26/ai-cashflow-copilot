@@ -7,6 +7,7 @@ interface ChartCardProps {
   isError?: boolean;
   isEmpty?: boolean;
   emptyMessage?: string;
+  action?: ReactNode;
   children?: ReactNode;
 }
 
@@ -17,13 +18,17 @@ export function ChartCard({
   isError = false,
   isEmpty = false,
   emptyMessage = 'No data yet.',
+  action,
   children,
 }: ChartCardProps) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-4">
-        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-        {description && <p className="text-xs text-slate-500">{description}</p>}
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+          {description && <p className="text-xs text-slate-500">{description}</p>}
+        </div>
+        {action}
       </div>
 
       {/* Fixed height: ResponsiveContainer needs a parent with a real height */}
