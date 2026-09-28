@@ -1,16 +1,23 @@
 'use client';
 
-import { MetricCard, useDashboardMetrics } from '@/features/dashboard';
+import { MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
 import { DollarSign, Activity, FileText } from 'lucide-react';
+
+const currency = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
 
 export default function DashboardOverviewPage() {
   const { data, isLoading, error } = useDashboardMetrics();
 
-  if (isLoading) {
-    return <div className="text-sm text-slate-500 animate-pulse">Loading workspace analytics...</div>;
-  }
+  // if (isLoading) {
+  //   return <div className="text-sm text-slate-500 animate-pulse">Loading workspace analytics...</div>;
+  // }
 
-  if (error || !data) {
+  if (error) {
     return <div className="text-sm text-red-600">Failed to load dashboard workspace metrics.</div>;
   }
 
@@ -22,24 +29,30 @@ export default function DashboardOverviewPage() {
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
-        <MetricCard 
-          title="Net Balance" 
-          value={`$${data.netBalance.toLocaleString()}`} 
-          description="Aggregated active transactions"
-          icon={DollarSign}
-        />
-        <MetricCard 
-          title="Active Habit Streak" 
-          value={`${data.activeHabitStreak} Days`} 
-          description="Consistent execution metric"
-          icon={Activity}
-        />
-        <MetricCard 
-          title="Workspace Notes" 
-          value={data.pendingNotesCount} 
-          description="Stored documents & sheets"
-          icon={FileText}
-        />
+        {isLoading || !data ? (
+          Array.from({ length: 3 }).map((_, i) => <MetricCardSkeleton key={i} />)
+        ) : (
+          <>
+            <MetricCard
+              title="Net Balance"
+              value={currency.format(data.netBalance)}
+              description="Aggregated active transactions"
+              icon={DollarSign}
+            />
+            <MetricCard
+              title="Active Habit Streak"
+              value={`${data.activeHabitStreak} Days`}
+              description="Consistent execution metric"
+              icon={Activity}
+            />
+            <MetricCard
+              title="Workspace Notes"
+              value={data.pendingNotesCount}
+              description="Stored documents & sheets"
+              icon={FileText}
+            />
+          </>
+        )}
       </div>
     </div>
   );
