@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { requireUserId } from '@/lib/auth';
 
 const DEFAULT_MONTHS = 6;
-const MAX_MONTHS = 24;
+const MAX_MONTHS = 60; // "all" is capped at 5 years so the chart stays readable
 
 const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-function parseMonths(value: string | null) {
+function parseMonths(value: string | null): number | 'all' {
+  if (value === 'all') return 'all';
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1) return DEFAULT_MONTHS;
   return Math.min(parsed, MAX_MONTHS);
@@ -20,18 +21,34 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const months = parseMonths(new URL(req.url).searchParams.get('months'));
-
+    const requested = parseMonths(new URL(req.url).searchParams.get('months'));
     const now = new Date();
+
+    let months: number;
+    if (requested === 'all') {
+      // Start from the user's first transaction
+      const first = await prisma.transaction.aggregate({
+        where: { workspace: { userId } },
+        _min: { createdAt: true },
+      });
+      const firstDate = first._min.createdAt;
+      months = firstDate
+        ? Math.min(
+            MAX_MONTHS,
+            Math.max(1, (now.getFullYear() - firstDate.getFullYear()) * 12 + now.getMonth() - firstDate.getMonth() + 1)
+          )
+        : DEFAULT_MONTHS;
+    } else {
+      months = requested;
+    }
+
     const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
-    // Only the selected range, only the 3 columns we need
     const rows = await prisma.transaction.findMany({
       where: { workspace: { userId }, createdAt: { gte: start } },
       select: { type: true, amount: true, createdAt: true },
     });
 
-    // Pre-fill every month so empty months show as zero instead of disappearing
     const buckets = new Map<string, { key: string; label: string; income: number; expense: number }>();
     for (let i = 0; i < months; i++) {
       const d = new Date(start.getFullYear(), start.getMonth() + i, 1);

@@ -1,13 +1,44 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useCategorySummary } from '@/resources/hooks/use-categories';
+import { DateRange } from '@/resources/types';
 import { ChartCard } from './ChartCard';
-import { formatCurrency } from './chart-utils';
+import { RangeSelect } from './RangeSelect';
+import { formatCurrency, toDateInput } from './chart-utils';
+
+type Period = 'month' | '30d' | '90d' | 'year' | 'all';
+
+const OPTIONS: { value: Period; label: string }[] = [
+  { value: 'month', label: 'This month' },
+  { value: '30d', label: 'Last 30 days' },
+  { value: '90d', label: 'Last 90 days' },
+  { value: 'year', label: 'This year' },
+  { value: 'all', label: 'All time' },
+];
+
+function buildRange(period: Period): DateRange {
+  const now = new Date();
+  const today = toDateInput(now);
+  switch (period) {
+    case 'month':
+      return { dateFrom: toDateInput(new Date(now.getFullYear(), now.getMonth(), 1)), dateTo: today };
+    case '30d':
+      return { dateFrom: toDateInput(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29)), dateTo: today };
+    case '90d':
+      return { dateFrom: toDateInput(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 89)), dateTo: today };
+    case 'year':
+      return { dateFrom: toDateInput(new Date(now.getFullYear(), 0, 1)), dateTo: today };
+    default:
+      return {};
+  }
+}
 
 export function CategoryDonutChart() {
-  const { data, isLoading, isError } = useCategorySummary({});
+  const [period, setPeriod] = useState<Period>('all');
+  const range = useMemo(() => buildRange(period), [period]);
+  const { data, isLoading, isError } = useCategorySummary(range);
 
   // Top 5 by expense, everything else grouped as "Other"
   const slices = useMemo(() => {
@@ -26,11 +57,12 @@ export function CategoryDonutChart() {
   return (
     <ChartCard
       title="Spending by category"
-      description="All time"
+      description="Expenses"
+      action={<RangeSelect label="Spending period" value={period} options={OPTIONS} onChange={setPeriod} />}
       isLoading={isLoading}
       isError={isError}
       isEmpty={slices.length === 0}
-      emptyMessage="No expenses yet."
+      emptyMessage="No expenses in this period."
     >
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>

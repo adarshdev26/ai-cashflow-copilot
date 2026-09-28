@@ -3,41 +3,33 @@
 import { useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useCashflow } from '../hooks/use-cashflow';
+import { MonthsRange } from '../types';
 import { ChartCard } from './ChartCard';
+import { RangeSelect } from './RangeSelect';
 import { formatCompact, formatCurrency } from './chart-utils';
 
-const MONTH_OPTIONS = [3, 6, 12, 24];
-const DEFAULT_MONTHS = 6;
+const OPTIONS: { value: MonthsRange; label: string }[] = [
+  { value: 3, label: 'Last 3 months' },
+  { value: 6, label: 'Last 6 months' },
+  { value: 12, label: 'Last 12 months' },
+  { value: 24, label: 'Last 24 months' },
+  { value: 'all', label: 'All time' },
+];
 
 export function CashflowChart() {
-  const [months, setMonths] = useState(DEFAULT_MONTHS);
+  const [months, setMonths] = useState<MonthsRange>(6);
   const { data, isLoading, isError, isFetching } = useCashflow(months);
   const isEmpty = !!data && data.every((p) => p.income === 0 && p.expense === 0);
-
-  const selector = (
-    <select
-      aria-label="Number of months to show"
-      value={months}
-      onChange={(event) => setMonths(Number(event.target.value))}
-      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-    >
-      {MONTH_OPTIONS.map((option) => (
-        <option key={option} value={option}>
-          Last {option} months
-        </option>
-      ))}
-    </select>
-  );
 
   return (
     <ChartCard
       title="Income vs Expense"
       description="Monthly totals"
-      action={selector}
+      action={<RangeSelect label="Cashflow range" value={months} options={OPTIONS} onChange={setMonths} />}
       isLoading={isLoading}
       isError={isError}
       isEmpty={isEmpty}
-      emptyMessage={`No transactions in the last ${months} months.`}
+      emptyMessage={months === 'all' ? 'No transactions yet.' : `No transactions in the last ${months} months.`}
     >
       <div className={`h-full transition-opacity ${isFetching ? 'opacity-60' : 'opacity-100'}`} aria-busy={isFetching}>
         <ResponsiveContainer width="100%" height="100%">

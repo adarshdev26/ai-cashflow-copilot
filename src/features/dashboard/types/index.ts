@@ -15,6 +15,9 @@ export interface BalanceTrendPoint {
   balance: number;
 }
 
+export type MonthsRange = number | 'all';
+export type DaysRange = number | 'all';
+
 export interface ActivityItem {
   id: string;
   title: string;

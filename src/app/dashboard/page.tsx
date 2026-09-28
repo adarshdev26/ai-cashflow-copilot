@@ -15,17 +15,17 @@ import { FinanceStats } from '@/features/finance';
 
 const CashflowChart = dynamic(
   () => import('@/features/dashboard/components/CashflowChart').then((m) => m.CashflowChart),
-  { ssr: false, loading: () => <ChartCard title="Income vs Expense" description="Last 6 months" isLoading /> }
+  { ssr: false, loading: () => <ChartCard title="Income vs Expense" isLoading /> }
 );
 
 const CategoryDonutChart = dynamic(
   () => import('@/features/dashboard/components/CategoryDonutChart').then((m) => m.CategoryDonutChart),
-  { ssr: false, loading: () => <ChartCard title="Spending by category" description="All time" isLoading /> }
+  { ssr: false, loading: () => <ChartCard title="Spending by category" isLoading /> }
 );
 
 const BalanceTrendChart = dynamic(
   () => import('@/features/dashboard/components/BalanceTrendChart').then((m) => m.BalanceTrendChart),
-  { ssr: false, loading: () => <ChartCard title="Balance trend" description="Last 30 days" isLoading /> }
+  { ssr: false, loading: () => <ChartCard title="Balance trend" isLoading /> }
 );
 
 export default function DashboardOverviewPage() {
