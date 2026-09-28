@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireUserId } from '@/lib/auth';
+import { requireWorkspaceAccess } from '@/lib/workspaces';
 
 const DEFAULT_MONTHS = 6;
 const MAX_MONTHS = 60; // "all" is capped at 5 years so the chart stays readable
@@ -16,19 +16,18 @@ function parseMonths(value: string | null): number | 'all' {
 
 export async function GET(req: Request) {
   try {
-    const userId = await requireUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const access = await requireWorkspaceAccess(req, 'VIEWER');
+    if (!access.ok) return access.response;
 
+    const { workspaceId } = access;
     const requested = parseMonths(new URL(req.url).searchParams.get('months'));
     const now = new Date();
 
     let months: number;
     if (requested === 'all') {
-      // Start from the user's first transaction
+      // Start from the workspace's first transaction
       const first = await prisma.transaction.aggregate({
-        where: { workspace: { userId } },
+        where: { workspaceId },
         _min: { createdAt: true },
       });
       const firstDate = first._min.createdAt;
@@ -45,7 +44,7 @@ export async function GET(req: Request) {
     const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
     const rows = await prisma.transaction.findMany({
-      where: { workspace: { userId }, createdAt: { gte: start } },
+      where: { workspaceId, createdAt: { gte: start } },
       select: { type: true, amount: true, createdAt: true },
     });
 

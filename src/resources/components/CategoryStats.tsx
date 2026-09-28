@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Info, PieChart } from 'lucide-react';
 import { useCategorySummary } from '../hooks/use-categories';
+import { useActiveWorkspaceId } from '@/features/workspaces';
 import { CategorySummary, DateRange } from '../types';
 
 const currency = new Intl.NumberFormat('en-IN', {
@@ -60,7 +61,8 @@ function CategoryTableSkeleton() {
 }
 
 function CategoryTable({ range }: { range?: DateRange }) {
-    const { data, isLoading, isError } = useCategorySummary(range ?? {});
+    const workspaceId = useActiveWorkspaceId();
+    const { data, isLoading, isError } = useCategorySummary(workspaceId, range ?? {});
 
     if (isLoading) return <CategoryTableSkeleton />;
 

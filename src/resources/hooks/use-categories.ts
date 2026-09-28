@@ -3,9 +3,9 @@ import { useMemo } from 'react';
 import { fetchCategories, fetchCategoriesSummary } from '../api/categories-api';
 import { Category, CategorySummary, DateRange } from '../types';
 
-export const CATEGORIES_QUERY_KEY = ['categories'];
-export const CATEGORIES_SUMMARY_QUERY_KEY = ['transactions', 'category-summary'];
+export const CATEGORIES_QUERY_KEY = ['categories'] as const;
 
+/** Category list is global — no workspaceId in key. */
 export function useCategories() {
   return useQuery({
     queryKey: CATEGORIES_QUERY_KEY,
@@ -31,21 +31,21 @@ export function useCategoryMap() {
 }
 
 /**
- * Per-category income/expense/net totals (GET /api/finance/categories/summary).
- * Key starts with 'transactions' so the existing
- * invalidateQueries({ queryKey: ['transactions'] }) in the create / update /
- * delete mutations refreshes these cards automatically. Pass a range for
- * "this month" etc.; omit it for all-time totals.
+ * Per-category income/expense/net totals (GET /api/categories/summary).
+ * workspaceId is in the key, so switching workspace immediately fetches fresh data.
+ * The key prefix 'transactions' means invalidateQueries({ queryKey: ['transactions', workspaceId] })
+ * from the finance mutations also invalidates these cards.
  */
-export function useCategorySummary(range: DateRange = {}) {
+export function useCategorySummary(workspaceId: string, range: DateRange = {}) {
   return useQuery({
-    queryKey: [...CATEGORIES_SUMMARY_QUERY_KEY, range],
-    queryFn: () => fetchCategoriesSummary(range),
+    queryKey: ['transactions', workspaceId, 'category-summary', range],
+    queryFn: () => fetchCategoriesSummary(workspaceId, range),
+    staleTime: 3 * 60 * 1000, // 3 minutes
   });
 }
 
-export function useCategorySummaryMap(range: DateRange = {}) {
-  const { data: summaries } = useCategorySummary(range);
+export function useCategorySummaryMap(workspaceId: string, range: DateRange = {}) {
+  const { data: summaries } = useCategorySummary(workspaceId, range);
 
   return useMemo(() => {
     const map: Record<string, CategorySummary> = {};

@@ -1,13 +1,9 @@
-import { DashboardMetrics } from "../types";
-export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  const res = await fetch('/api/dashboard/metrics', {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
+import { DashboardMetrics } from '../types';
+import { apiFetch, withWorkspace } from '@/lib/api-client';
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch dashboard metrics');
-  }
-
-  return res.json();
+export async function getDashboardMetrics(workspaceId: string): Promise<DashboardMetrics> {
+  return apiFetch<DashboardMetrics>(
+    '/api/dashboard/metrics',
+    withWorkspace(workspaceId)
+  );
 }

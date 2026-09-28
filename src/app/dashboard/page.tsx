@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { ChartCard, MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
 import { Activity, FileText } from 'lucide-react';
 import { FinanceStats } from '@/features/finance';
+import { useActiveWorkspaceId } from '@/features/workspaces';
 
 const CashflowChart = dynamic(
   () => import('@/features/dashboard/components/CashflowChart').then((m) => m.CashflowChart),
@@ -21,7 +22,8 @@ const BalanceTrendChart = dynamic(
 );
 
 export default function DashboardOverviewPage() {
-  const { data, isLoading, error } = useDashboardMetrics();
+  const workspaceId = useActiveWorkspaceId();
+  const { data, isLoading, error } = useDashboardMetrics(workspaceId);
 
   // if (isLoading) {
   //   return <div className="text-sm text-slate-500 animate-pulse">Loading workspace analytics...</div>;

@@ -7,6 +7,7 @@ import { DateRange } from '@/resources/types';
 import { ChartCard } from './ChartCard';
 import { RangeSelect } from './RangeSelect';
 import { formatCurrency, toDateInput } from './chart-utils';
+import { useActiveWorkspaceId } from '@/features/workspaces';
 
 type Period = 'month' | '30d' | '90d' | 'year' | 'all';
 
@@ -23,22 +24,23 @@ function buildRange(period: Period): DateRange {
   const today = toDateInput(now);
   switch (period) {
     case 'month':
-      return { dateFrom: toDateInput(new Date(now.getFullYear(), now.getMonth(), 1)), dateTo: today };
+      return { gte: toDateInput(new Date(now.getFullYear(), now.getMonth(), 1)), lt: today };
     case '30d':
-      return { dateFrom: toDateInput(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29)), dateTo: today };
+      return { gte: toDateInput(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29)), lt: today };
     case '90d':
-      return { dateFrom: toDateInput(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 89)), dateTo: today };
+      return { gte: toDateInput(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 89)), lt: today };
     case 'year':
-      return { dateFrom: toDateInput(new Date(now.getFullYear(), 0, 1)), dateTo: today };
+      return { gte: toDateInput(new Date(now.getFullYear(), 0, 1)), lt: today };
     default:
       return {};
   }
 }
 
 export function CategoryDonutChart() {
+  const workspaceId = useActiveWorkspaceId();
   const [period, setPeriod] = useState<Period>('all');
   const range = useMemo(() => buildRange(period), [period]);
-  const { data, isLoading, isError } = useCategorySummary(range);
+  const { data, isLoading, isError } = useCategorySummary(workspaceId, range);
 
   // Top 5 by expense, everything else grouped as "Other"
   const slices = useMemo(() => {
@@ -67,8 +69,8 @@ export function CategoryDonutChart() {
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie data={slices} dataKey="value" nameKey="name" innerRadius={56} outerRadius={88} paddingAngle={2}>
-            {slices.map((slice) => (
-              <Cell key={slice.name} fill={slice.color} />
+            {slices.map((slice, i) => (
+              <Cell key={i} fill={slice.color} />
             ))}
           </Pie>
           <Tooltip formatter={(value) => formatCurrency(Number(value))} />

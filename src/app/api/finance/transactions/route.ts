@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { requireUserId } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
+import { Prisma } from '@/generated/prisma';
 
 // Offset pagination matches the existing numbered table controls and keeps this query compatible with useQuery.
 const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type'] as const;
@@ -21,11 +22,10 @@ function parseDate(value: string | null, endOfDay = false) {
 
 export async function GET(req: Request) {
   try {
-    const userId = await requireUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const access = await requireWorkspaceAccess(req, 'VIEWER');
+    if (!access.ok) return access.response;
 
+    const { workspaceId } = access;
     const { searchParams } = new URL(req.url);
     const rawPage = Number(searchParams.get('page') ?? 1);
     const rawLimit = Number(searchParams.get('limit') ?? DEFAULT_LIMIT);
@@ -61,7 +61,7 @@ export async function GET(req: Request) {
 
     const limit = Math.min(rawLimit, MAX_LIMIT);
     const where = {
-      workspace: { userId },
+      workspaceId,
       ...(type ? { type: type as 'CREDIT' | 'DEBIT' } : {}),
       ...(categoryId ? { categoryId } : {}),
       ...(search ? { description: { contains: search, mode: 'insensitive' as const } } : {}),
@@ -72,15 +72,15 @@ export async function GET(req: Request) {
     const orderBy = { [sortBy]: sortDir } as Record<string, 'asc' | 'desc'>;
     const [transactions, totalCount] = await Promise.all([
       prisma.transaction.findMany({
-      where,
-      include: {
-        category: {
-          select: { id: true, name: true, color: true },
+        where,
+        include: {
+          category: {
+            select: { id: true, name: true, color: true },
+          },
         },
-      },
-      orderBy,
-      skip: (rawPage - 1) * limit,
-      take: limit,
+        orderBy,
+        skip: (rawPage - 1) * limit,
+        take: limit,
       }),
       prisma.transaction.count({ where }),
     ]);
@@ -111,13 +111,12 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const userId = await requireUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const access = await requireWorkspaceAccess(req, 'MEMBER');
+    if (!access.ok) return access.response;
 
+    const { workspaceId } = access;
     const body = await req.json();
-    
+
     let validatedData;
     try {
       validatedData = validateTransactionData(body);
@@ -134,26 +133,12 @@ export async function POST(req: Request) {
       }
     }
 
-    // Find the user's workspace, or create a default one if none exists
-    let workspace = await prisma.workspace.findFirst({
-      where: { userId },
-    });
-
-    if (!workspace) {
-      workspace = await prisma.workspace.create({
-        data: {
-          name: 'Personal Workspace',
-          userId,
-        },
-      });
-    }
-
     const transaction = await prisma.transaction.create({
       data: {
         amount,
         type,
         description,
-        workspaceId: workspace.id,
+        workspaceId,
         categoryId,
       },
       include: {
@@ -165,6 +150,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json(transaction, { status: 201 });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2003') {
+        return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
+      }
+    }
     console.error('Failed to create transaction:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

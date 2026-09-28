@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireUserId } from '@/lib/auth';
+import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { prisma } from '@/lib/prisma';
 
 type Totals = { income: number; expense: number; net: number; count: number };
@@ -13,11 +13,11 @@ function parseDate(value: string | null): Date | undefined | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-async function totalsFor(userId: string, range?: { gte: Date; lt: Date }): Promise<Totals> {
+async function totalsFor(workspaceId: string, range?: { gte: Date; lt: Date }): Promise<Totals> {
   const rows = await prisma.transaction.groupBy({
     by: ['type'],
     where: {
-      workspace: { userId },
+      workspaceId,
       ...(range ? { createdAt: range } : {}),
     },
     _sum: { amount: true },
@@ -40,10 +40,10 @@ async function totalsFor(userId: string, range?: { gte: Date; lt: Date }): Promi
 
 export async function GET(req: Request) {
   try {
-    const userId = await requireUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const access = await requireWorkspaceAccess(req, 'VIEWER');
+    if (!access.ok) return access.response;
+
+    const { workspaceId } = access;
 
     // Month boundaries are sent by the browser so "this month" follows the
     // user's timezone. Falls back to server time when they are not provided.
@@ -66,9 +66,9 @@ export async function GET(req: Request) {
     }
 
     const [allTime, thisMonth, lastMonth] = await Promise.all([
-      totalsFor(userId),
-      totalsFor(userId, { gte: thisMonthStart, lt: nextMonthStart }),
-      totalsFor(userId, { gte: lastMonthStart, lt: thisMonthStart }),
+      totalsFor(workspaceId),
+      totalsFor(workspaceId, { gte: thisMonthStart, lt: nextMonthStart }),
+      totalsFor(workspaceId, { gte: lastMonthStart, lt: thisMonthStart }),
     ]);
 
     return NextResponse.json({ allTime, thisMonth, lastMonth }, { status: 200 });

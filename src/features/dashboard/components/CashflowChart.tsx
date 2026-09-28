@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useCashflow } from '../hooks/use-cashflow';
+import { useActiveWorkspaceId } from '@/features/workspaces';
 import { MonthsRange } from '../types';
 import { ChartCard } from './ChartCard';
 import { RangeSelect } from './RangeSelect';
@@ -17,8 +18,9 @@ const OPTIONS: { value: MonthsRange; label: string }[] = [
 ];
 
 export function CashflowChart() {
+  const workspaceId = useActiveWorkspaceId();
   const [months, setMonths] = useState<MonthsRange>(6);
-  const { data, isLoading, isError, isFetching } = useCashflow(months);
+  const { data, isLoading, isError, isFetching } = useCashflow(workspaceId, months);
   const isEmpty = !!data && data.every((p) => p.income === 0 && p.expense === 0);
 
   return (

@@ -1,7 +1,9 @@
 import { CashflowPoint, MonthsRange } from '../types';
+import { apiFetch, withWorkspace } from '@/lib/api-client';
 
-export async function getCashflow(months: MonthsRange): Promise<CashflowPoint[]> {
-  const res = await fetch(`/api/dashboard/cashflow?months=${months}`);
-  if (!res.ok) throw new Error('Failed to fetch cashflow');
-  return res.json();
+export async function getCashflow(workspaceId: string, months: MonthsRange): Promise<CashflowPoint[]> {
+  return apiFetch<CashflowPoint[]>(
+    `/api/dashboard/cashflow?months=${months}`,
+    withWorkspace(workspaceId)
+  );
 }

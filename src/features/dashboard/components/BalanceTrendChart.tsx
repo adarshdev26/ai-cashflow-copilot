@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useBalanceTrend } from '../hooks/use-balance-trend';
+import { useActiveWorkspaceId } from '@/features/workspaces';
 import { DaysRange } from '../types';
 import { ChartCard } from './ChartCard';
 import { RangeSelect } from './RangeSelect';
@@ -18,8 +19,9 @@ const OPTIONS: { value: DaysRange; label: string }[] = [
 ];
 
 export function BalanceTrendChart() {
+  const workspaceId = useActiveWorkspaceId();
   const [days, setDays] = useState<DaysRange>(30);
-  const { data, isLoading, isError, isFetching } = useBalanceTrend(days);
+  const { data, isLoading, isError, isFetching } = useBalanceTrend(workspaceId, days);
   const isEmpty = !!data && data.every((p) => p.balance === 0);
   const showYear = days === 'all' || days > 180;
 

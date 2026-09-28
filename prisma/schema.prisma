@@ -17,29 +17,58 @@ enum Role {
   ADMIN
 }
 
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
 model User {
-  id         String      @id @default(uuid())
-  email      String      @unique
-  password   String
-  name       String?
-  createdAt  DateTime    @default(now())
-  workspaces Workspace[]
-  Habit      Habit[]
-  Note       Note[]
-  updatedAt  DateTime    @updatedAt
-  role       Role        @default(USER)
+  id              String            @id @default(uuid())
+  email           String            @unique
+  password        String
+  name            String?
+  createdAt       DateTime          @default(now())
+  ownedWorkspaces Workspace[]       @relation("WorkspaceOwner") // workspaces I own
+  workspaceAccess WorkspaceAccess[] // every workspace I can access (owned + shared)
+  Habit           Habit[]
+  Note            Note[]
+  updatedAt       DateTime          @updatedAt
+  role            Role              @default(USER)
 }
 
 model Workspace {
-  id           String        @id @default(uuid())
+  id           String            @id @default(uuid())
   name         String
-  userId       String
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug         String            @unique
+  ownerId      String
+  owner        User              @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  access       WorkspaceAccess[]
   transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  habits       Habit[]
+  notes        Note[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([ownerId])
 }
 
+model WorkspaceAccess {
+  id          String        @id @default(uuid())
+  workspaceId String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        WorkspaceRole @default(MEMBER)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+}
+
+// Global: shared by every workspace
 model Category {
   id           String        @id @default(uuid())
   name         String        @unique
@@ -61,8 +90,8 @@ model Transaction {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  @@index([workspaceId])
-  @@index([categoryId])
+  @@index([workspaceId, createdAt])
+  @@index([workspaceId, categoryId])
 }
 
 enum TransactionType {
@@ -71,13 +100,18 @@ enum TransactionType {
 }
 
 model Habit {
-  id        String     @id @default(uuid())
-  title     String
-  userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  logs      HabitLog[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id          String     @id @default(uuid())
+  title       String
+  userId      String // creator
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  logs        HabitLog[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([workspaceId])
+  @@index([userId])
 }
 
 model HabitLog {
@@ -86,14 +120,21 @@ model HabitLog {
   date      DateTime @default(now())
   habitId   String
   habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@index([habitId, date])
 }
 
 model Note {
-  id        String   @id @default(uuid())
-  title     String
-  content   String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(uuid())
+  title       String
+  content     String?
+  userId      String // creator
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([workspaceId, createdAt])
+  @@index([userId])
 }

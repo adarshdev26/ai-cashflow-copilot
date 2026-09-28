@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireUserId } from '@/lib/auth';
+import { requireWorkspaceAccess } from '@/lib/workspaces';
 
 const DEFAULT_DAYS = 30;
 const MAX_DAYS = 730; // "all" is capped at 2 years; the opening balance still counts older transactions
@@ -17,11 +17,10 @@ function parseDays(value: string | null): number | 'all' {
 
 export async function GET(req: Request) {
   try {
-    const userId = await requireUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const access = await requireWorkspaceAccess(req, 'VIEWER');
+    if (!access.ok) return access.response;
 
+    const { workspaceId } = access;
     const requested = parseDays(new URL(req.url).searchParams.get('days'));
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -29,7 +28,7 @@ export async function GET(req: Request) {
     let days: number;
     if (requested === 'all') {
       const first = await prisma.transaction.aggregate({
-        where: { workspace: { userId } },
+        where: { workspaceId },
         _min: { createdAt: true },
       });
       const firstDate = first._min.createdAt;
@@ -50,11 +49,11 @@ export async function GET(req: Request) {
       // Opening balance: everything before the window, summed by the database
       prisma.transaction.groupBy({
         by: ['type'],
-        where: { workspace: { userId }, createdAt: { lt: start } },
+        where: { workspaceId, createdAt: { lt: start } },
         _sum: { amount: true },
       }),
       prisma.transaction.findMany({
-        where: { workspace: { userId }, createdAt: { gte: start } },
+        where: { workspaceId, createdAt: { gte: start } },
         select: { type: true, amount: true, createdAt: true },
       }),
     ]);

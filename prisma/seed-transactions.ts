@@ -96,13 +96,24 @@ async function resolveUser(email?: string) {
 }
 
 async function resolveWorkspace(userId: string) {
-  const existing = await prisma.workspace.findFirst({
+  // Workspaces are found via WorkspaceAccess (the new model has no Workspace.userId).
+  const access = await prisma.workspaceAccess.findFirst({
     where: { userId },
     orderBy: { createdAt: "asc" },
+    include: { workspace: true },
   });
-  if (existing) return existing;
+  if (access) return access.workspace;
 
-  return prisma.workspace.create({ data: { name: DEFAULT_WORKSPACE_NAME, userId } });
+  // No workspace found — create a default one as OWNER.
+  const { generateWorkspaceSlug } = await import("../src/lib/workspaces");
+  return prisma.workspace.create({
+    data: {
+      name: DEFAULT_WORKSPACE_NAME,
+      slug: generateWorkspaceSlug(DEFAULT_WORKSPACE_NAME),
+      ownerId: userId,
+      access: { create: { userId, role: "OWNER" } },
+    },
+  });
 }
 
 async function loadCategoryIds() {
@@ -151,20 +162,20 @@ async function main() {
 
   // Monthly recurring items
   for (let m = 0; m < MONTHS_BACK; m++) {
-    add("CREDIT", "Salary", "Monthly salary", 65000, dateInMonth(m, 1));
-    add("DEBIT", "Rent", "House rent", 15000, dateInMonth(m, 5));
-    add("DEBIT", "Utilities", "Electricity bill", rand(900, 2500), dateInMonth(m, 10));
-    add("DEBIT", "Utilities", "Internet bill", 799, dateInMonth(m, 12));
+    add("CREDIT", "Other", "Monthly salary", 65000, dateInMonth(m, 1));
+    add("DEBIT", "Other", "House rent", 15000, dateInMonth(m, 5));
+    add("DEBIT", "Other", "Electricity bill", rand(900, 2500), dateInMonth(m, 10));
+    add("DEBIT", "Other", "Internet bill", 799, dateInMonth(m, 12));
   }
 
   // Irregular income
   for (let i = 0; i < RANDOM_FREELANCE; i++) {
-    add("CREDIT", "Freelance", "Freelance project payment", rand(5000, 30000), randomRecentDate());
+    add("CREDIT", "Other", "Freelance project payment", rand(5000, 30000), randomRecentDate());
   }
   for (let i = 0; i < RANDOM_INVESTMENTS; i++) {
     add(
       "CREDIT",
-      "Investments",
+      "Other",
       pick(["Mutual fund returns", "Stock dividend", "FD interest credit"]),
       rand(500, 6000),
       randomRecentDate()
