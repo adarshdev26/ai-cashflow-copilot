@@ -1,3 +1,13 @@
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 export async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   if (!headers.has('Content-Type')) {
@@ -14,7 +24,7 @@ export async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
     } catch {
       errorMsg = response.statusText || errorMsg;
     }
-    throw new Error(errorMsg);
+     throw new ApiError(errorMsg, response.status);
   }
 
   // Handle empty bodies (e.g. 204 No Content or just empty response)
