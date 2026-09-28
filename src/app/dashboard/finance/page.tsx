@@ -151,7 +151,11 @@ export default function FinancePage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       <FinanceHeader onOpenModal={openCreateModal} />
-      <FinanceStats />
+      <FinanceStats
+        netBalance={false}
+        thisMonthNet={false}
+        lastMonthNet={false}
+      />
 
       <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-4">
         <Select aria-label="Filter by transaction type" value={filters.type ?? ''} onChange={(event) => handleTypeChange(event.target.value as TransactionType | '')}>
