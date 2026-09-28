@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import bcrypt from 'bcryptjs'
+import { generateWorkspaceSlug } from '@/lib/workspaces'
 
 export async function POST(req: Request) {
   try {
@@ -28,13 +29,26 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user and a default workspace
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-      },
+    // Create user, default workspace and OWNER access together (all or nothing)
+    const user = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+        },
+      })
+
+      await tx.workspace.create({
+        data: {
+          name: 'Personal',
+          slug: generateWorkspaceSlug('Personal'),
+          ownerId: createdUser.id,
+          access: { create: { userId: createdUser.id, role: 'OWNER' } },
+        },
+      })
+
+      return createdUser
     })
 
     return NextResponse.json(

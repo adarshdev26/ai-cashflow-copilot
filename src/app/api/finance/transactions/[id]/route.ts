@@ -1,23 +1,19 @@
 import { NextResponse } from 'next/server';
-import { requireUserId } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const userId = await requireUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const access = await requireWorkspaceAccess(req, 'MEMBER');
+    if (!access.ok) return access.response;
 
+    const { workspaceId } = access;
     const { id } = await params;
-    
-    // Verify ownership
+
+    // Verify the transaction belongs to this workspace (returns 404 if not)
     const existing = await prisma.transaction.findFirst({
-      where: {
-        id,
-        workspace: { userId }
-      }
+      where: { id, workspaceId },
     });
 
     if (!existing) {
@@ -25,7 +21,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     const body = await req.json();
-    
+
     // Merge existing with body for validation
     const mergedData = {
       amount: body.amount !== undefined ? body.amount : existing.amount,
@@ -37,8 +33,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     let validatedData;
     try {
       validatedData = validateTransactionData(mergedData);
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 400 });
+    } catch (err: unknown) {
+      return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid data' }, { status: 400 });
     }
 
     const { amount, type, description, categoryId } = validatedData;
@@ -74,28 +70,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const userId = await requireUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const access = await requireWorkspaceAccess(req, 'MEMBER');
+    if (!access.ok) return access.response;
 
+    const { workspaceId } = access;
     const { id } = await params;
 
-    // Verify ownership
+    // Verify the transaction belongs to this workspace (returns 404 if not)
     const existing = await prisma.transaction.findFirst({
-      where: {
-        id,
-        workspace: { userId }
-      }
+      where: { id, workspaceId },
     });
 
     if (!existing) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
-    await prisma.transaction.delete({
-      where: { id }
-    });
+    await prisma.transaction.delete({ where: { id } });
 
     return NextResponse.json({ id }, { status: 200 });
   } catch (error) {

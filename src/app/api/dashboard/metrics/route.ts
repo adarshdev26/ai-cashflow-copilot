@@ -1,24 +1,23 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireUserId } from '@/lib/auth';
+import { requireWorkspaceAccess } from '@/lib/workspaces';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const userId = await requireUserId();
+    const access = await requireWorkspaceAccess(req, 'VIEWER');
+    if (!access.ok) return access.response;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const { workspaceId } = access;
 
-    // Fetch user habits for streak calculation
-    const habitCount = await prisma.habit.count({ where: { userId } });
+    // Fetch workspace habit count for streak calculation
+    const habitCount = await prisma.habit.count({ where: { workspaceId } });
 
     // Simple active habit streak calculation placeholder
     const activeHabitStreak = habitCount > 0 ? 5 : 0;
 
-    // Fetch notes count
+    // Fetch workspace notes count
     const pendingNotesCount = await prisma.note.count({
-      where: { userId },
+      where: { workspaceId },
     });
 
     return NextResponse.json(

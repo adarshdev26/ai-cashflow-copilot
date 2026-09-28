@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireUserId } from '@/lib/auth';
+import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { prisma } from '@/lib/prisma';
 
 type CategoryTotals = {
@@ -23,10 +23,10 @@ function parseDate(value: string | null): Date | undefined | null {
 
 export async function GET(req: Request) {
   try {
-    const userId = await requireUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const access = await requireWorkspaceAccess(req, 'VIEWER');
+    if (!access.ok) return access.response;
+
+    const { workspaceId } = access;
 
     // Optional range — omit both to get all-time totals per category.
     const { searchParams } = new URL(req.url);
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
       }),
       prisma.transaction.groupBy({
         by: ['categoryId', 'type'],
-        where: { workspace: { userId }, ...dateFilter },
+        where: { workspaceId, ...dateFilter },
         _sum: { amount: true },
         _count: { _all: true },
       }),
