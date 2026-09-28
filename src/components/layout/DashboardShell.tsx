@@ -7,6 +7,7 @@ import { LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut }
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useCurrentUser } from '@/features/auth';
+import { useWorkspace } from '@/features/workspaces';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -15,6 +16,34 @@ const navigation = [
   { name: 'Notes', href: '/dashboard/notes', icon: FileText },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
+
+function WorkspaceSelector() {
+  const { workspaces, active, setActiveWorkspaceId } = useWorkspace();
+
+  return (
+    <div className="flex items-center space-x-3">
+      {workspaces.length > 1 ? (
+        <select
+          className="text-sm font-semibold text-slate-700 bg-transparent border-none focus:ring-0 p-0 cursor-pointer"
+          value={active.workspaceId}
+          onChange={(e) => setActiveWorkspaceId(e.target.value)}
+          aria-label="Select workspace"
+        >
+          {workspaces.map((w) => (
+            <option key={w.workspaceId} value={w.workspaceId}>
+              {w.name}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <h2 className="text-sm font-semibold text-slate-700 tracking-wide">{active.name}</h2>
+      )}
+      <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full border border-slate-200">
+        {active.role}
+      </span>
+    </div>
+  );
+}
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -106,7 +135,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-slate-200 bg-white px-8 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-700 tracking-wide uppercase">Workspace Overview</h2>
+          <WorkspaceSelector />
         </header>
 
         <main className="flex-1 p-8 overflow-y-auto">
