@@ -46,7 +46,6 @@ model Workspace {
   owner        User              @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   access       WorkspaceAccess[]
   transactions Transaction[]
-  categories   Category[]
   habits       Habit[]
   notes        Note[]
   createdAt    DateTime          @default(now())
@@ -69,19 +68,14 @@ model WorkspaceAccess {
   @@index([userId])
 }
 
+// Global: shared by every workspace
 model Category {
   id           String        @id @default(uuid())
-  name         String
+  name         String        @unique
   color        String?
-  workspaceId  String
-  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   transactions Transaction[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-
-  @@unique([workspaceId, name])
-  @@unique([id, workspaceId])
-  @@index([workspaceId])
 }
 
 model Transaction {
@@ -92,7 +86,7 @@ model Transaction {
   workspaceId String
   workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   categoryId  String?
-  category    Category?       @relation(fields: [categoryId, workspaceId], references: [id, workspaceId], onDelete: Restrict)
+  category    Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
