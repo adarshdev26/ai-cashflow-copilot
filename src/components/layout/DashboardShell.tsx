@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { useState, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut, Plus } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useCurrentUser } from '@/features/auth';
-import { useWorkspace } from '@/features/workspaces';
+import { useWorkspace, useCreateWorkspace } from '@/features/workspaces';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -17,8 +17,109 @@ const navigation = [
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
+function CreateWorkspaceModal({
+  isOpen,
+  onClose,
+  onCreated,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreated: (workspaceId: string) => void;
+}) {
+  const [name, setName] = useState('');
+  const { mutate: createWs, isPending, error, reset } = useCreateWorkspace();
+
+  if (!isOpen) return null;
+
+  const trimmed = name.trim();
+  const isValid = trimmed.length >= 2 && trimmed.length <= 60;
+
+  const handleClose = () => {
+    if (isPending) return;
+    setName('');
+    reset();
+    onClose();
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValid || isPending) return;
+    createWs(trimmed, {
+      onSuccess: (data) => {
+        setName('');
+        onCreated(data.workspace.workspaceId);
+      },
+    });
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+      onClick={handleClose}
+    >
+      <div
+        className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl border border-slate-200"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-workspace-title"
+      >
+        <h2 id="create-workspace-title" className="text-lg font-semibold text-slate-900">
+          Create workspace
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          A workspace keeps its own transactions, habits and notes.
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+          <div className="space-y-1">
+            <label htmlFor="workspace-name" className="text-xs font-medium text-slate-700">
+              Workspace name
+            </label>
+            <input
+              id="workspace-name"
+              type="text"
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={isPending}
+              maxLength={60}
+              placeholder="e.g. Family Budget"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-slate-50"
+            />
+            {error && (
+              <p className="text-xs text-red-600">
+                {error instanceof Error ? error.message : 'Failed to create workspace'}
+              </p>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isPending}
+              className="rounded-md px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!isValid || isPending}
+              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPending ? 'Creating...' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function WorkspaceSelector() {
   const { workspaces, active, setActiveWorkspaceId } = useWorkspace();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
     <div className="flex items-center space-x-3">
@@ -41,6 +142,24 @@ function WorkspaceSelector() {
       <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full border border-slate-200">
         {active.role}
       </span>
+
+      <button
+        type="button"
+        onClick={() => setIsCreateOpen(true)}
+        className="flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        New workspace
+      </button>
+
+      <CreateWorkspaceModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onCreated={(workspaceId) => {
+          setActiveWorkspaceId(workspaceId);
+          setIsCreateOpen(false);
+        }}
+      />
     </div>
   );
 }

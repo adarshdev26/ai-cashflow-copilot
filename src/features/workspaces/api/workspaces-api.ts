@@ -5,6 +5,13 @@ export function getWorkspaces() {
   return apiFetch<WorkspacesResponse>('/api/workspaces');
 }
 
+export function createWorkspace(name: string) {
+  return apiFetch<{ workspace: WorkspaceSummary }>('/api/workspaces', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+}
+
 export function updateWorkspace(workspaceId: string, name: string) {
   return apiFetch<WorkspaceSummary>(`/api/workspaces/${workspaceId}`, {
     ...withWorkspace(workspaceId),

@@ -1,14 +1,29 @@
 'use client';
 
 import { useState } from 'react';
-import { useWorkspace, useUpdateWorkspace, useDeleteWorkspace, useWorkspaceAccess, useAddWorkspaceMember, useUpdateWorkspaceMember, useRemoveWorkspaceMember } from '@/features/workspaces';
+import {
+  useWorkspace,
+  useUpdateWorkspace,
+  useDeleteWorkspace,
+  useWorkspaceAccess,
+  useAddWorkspaceMember,
+  useUpdateWorkspaceMember,
+  useRemoveWorkspaceMember,
+} from '@/features/workspaces';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
+// The key remounts the content when the active workspace changes,
+// so local form state (like the name input) always starts fresh.
 export default function SettingsPage() {
+  const { active } = useWorkspace();
+  return <SettingsContent key={active.workspaceId} />;
+}
+
+function SettingsContent() {
   const { active: workspace, workspaces } = useWorkspace();
   const [name, setName] = useState(workspace.name);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  
+
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState('VIEWER');
 
@@ -25,24 +40,30 @@ export default function SettingsPage() {
 
   const handleUpdateName = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() !== workspace.name) {
-      updateName({ workspaceId: workspace.workspaceId, name });
+    const trimmed = name.trim();
+    if (trimmed && trimmed !== workspace.name) {
+      updateName({ workspaceId: workspace.workspaceId, name: trimmed });
     }
   };
 
   const handleDelete = () => {
-    deleteWs(workspace.workspaceId);
+    deleteWs(workspace.workspaceId, {
+      onSuccess: () => setDeleteOpen(false),
+    });
   };
 
   const handleAddMember = (e: React.FormEvent) => {
     e.preventDefault();
     if (newEmail.trim()) {
-      addMember({ workspaceId: workspace.workspaceId, email: newEmail.trim(), role: newRole }, {
-        onSuccess: () => {
-          setNewEmail('');
-          setNewRole('VIEWER');
+      addMember(
+        { workspaceId: workspace.workspaceId, email: newEmail.trim(), role: newRole },
+        {
+          onSuccess: () => {
+            setNewEmail('');
+            setNewRole('VIEWER');
+          },
         }
-      });
+      );
     }
   };
 
@@ -79,7 +100,7 @@ export default function SettingsPage() {
       {canManage && (
         <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
           <h2 className="text-lg font-semibold text-slate-900">Members</h2>
-          
+
           <form onSubmit={handleAddMember} className="flex gap-4 max-w-2xl items-end">
             <div className="flex-1 space-y-1">
               <label className="text-xs font-medium text-slate-700">Email Address</label>
@@ -127,39 +148,51 @@ export default function SettingsPage() {
               <tbody className="divide-y divide-slate-200 bg-white">
                 {loadingMembers ? (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-slate-500 animate-pulse">Loading members...</td>
-                  </tr>
-                ) : members?.map((m) => (
-                  <tr key={m.userId}>
-                    <td className="px-4 py-3 text-slate-900">{m.user?.email}</td>
-                    <td className="px-4 py-3 text-slate-700">
-                      {m.role === 'OWNER' ? (
-                        <span className="font-medium text-indigo-600">Owner</span>
-                      ) : (
-                        <select
-                          value={m.role}
-                          onChange={(e) => updateMember({ workspaceId: workspace.workspaceId, userId: m.userId, role: e.target.value })}
-                          disabled={!canManage}
-                          className="rounded border-slate-300 text-sm py-1 pl-2 pr-8 focus:ring-indigo-500 focus:border-indigo-500 border-none bg-transparent"
-                        >
-                          <option value="ADMIN">Admin</option>
-                          <option value="MEMBER">Member</option>
-                          <option value="VIEWER">Viewer</option>
-                        </select>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {m.role !== 'OWNER' && (
-                        <button
-                          onClick={() => removeMember({ workspaceId: workspace.workspaceId, userId: m.userId })}
-                          className="text-red-600 hover:text-red-700 font-medium text-sm"
-                        >
-                          Remove
-                        </button>
-                      )}
+                    <td colSpan={3} className="px-4 py-8 text-center text-slate-500 animate-pulse">
+                      Loading members...
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  members?.map((m) => (
+                    <tr key={m.userId}>
+                      <td className="px-4 py-3 text-slate-900">{m.user?.email}</td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {m.role === 'OWNER' ? (
+                          <span className="font-medium text-indigo-600">Owner</span>
+                        ) : (
+                          <select
+                            value={m.role}
+                            onChange={(e) =>
+                              updateMember({
+                                workspaceId: workspace.workspaceId,
+                                userId: m.userId,
+                                role: e.target.value,
+                              })
+                            }
+                            disabled={!canManage}
+                            className="rounded border-slate-300 text-sm py-1 pl-2 pr-8 focus:ring-indigo-500 focus:border-indigo-500 border-none bg-transparent"
+                          >
+                            <option value="ADMIN">Admin</option>
+                            <option value="MEMBER">Member</option>
+                            <option value="VIEWER">Viewer</option>
+                          </select>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {m.role !== 'OWNER' && (
+                          <button
+                            onClick={() =>
+                              removeMember({ workspaceId: workspace.workspaceId, userId: m.userId })
+                            }
+                            className="text-red-600 hover:text-red-700 font-medium text-sm"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -170,7 +203,9 @@ export default function SettingsPage() {
         <section className="bg-red-50 rounded-xl border border-red-100 p-6 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-red-900">Delete Workspace</h2>
-            <p className="text-red-700 text-sm mt-1">Permanently remove this workspace and all its data. This cannot be undone.</p>
+            <p className="text-red-700 text-sm mt-1">
+              Permanently remove this workspace and all its data. This cannot be undone.
+            </p>
           </div>
           <button
             onClick={() => setDeleteOpen(true)}

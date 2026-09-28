@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getWorkspaces,
+  createWorkspace,
   updateWorkspace,
   deleteWorkspace,
   getWorkspaceAccess,
@@ -9,7 +10,7 @@ import {
   removeWorkspaceMember,
 } from '../api/workspaces-api';
 
-export const workspaceKeys = { 
+export const workspaceKeys = {
   all: ['workspaces'] as const,
   access: (workspaceId: string) => ['workspaces', workspaceId, 'access'] as const,
 };
@@ -20,6 +21,17 @@ export function useWorkspaces() {
     queryFn: getWorkspaces,
     select: (data) => data.workspaces,
     staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+export function useCreateWorkspace() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => createWorkspace(name),
+    // Returning the promise makes react-query wait for the refetch BEFORE
+    // the component-level onSuccess runs, so the new workspace is already
+    // in the list when we switch to it.
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: workspaceKeys.all }),
   });
 }
 
@@ -38,8 +50,9 @@ export function useDeleteWorkspace() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (workspaceId: string) => deleteWorkspace(workspaceId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+    onSuccess: (_, workspaceId) => {
+      queryClient.removeQueries({ queryKey: workspaceKeys.access(workspaceId) });
+      return queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
     },
   });
 }

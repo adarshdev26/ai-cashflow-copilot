@@ -69,8 +69,8 @@ export function CategoryDonutChart() {
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie data={slices} dataKey="value" nameKey="name" innerRadius={56} outerRadius={88} paddingAngle={2}>
-            {slices.map((slice) => (
-              <Cell key={slice.name} fill={slice.color} />
+            {slices.map((slice, i) => (
+              <Cell key={i} fill={slice.color} />
             ))}
           </Pie>
           <Tooltip formatter={(value) => formatCurrency(Number(value))} />
