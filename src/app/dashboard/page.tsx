@@ -1,16 +1,33 @@
 'use client';
 
-import { MetricCard, useDashboardMetrics } from '@/features/dashboard';
-import { DollarSign, Activity, FileText } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { ChartCard, MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
+import { Activity, FileText } from 'lucide-react';
+import { FinanceStats } from '@/features/finance';
+
+const CashflowChart = dynamic(
+  () => import('@/features/dashboard/components/CashflowChart').then((m) => m.CashflowChart),
+  { ssr: false, loading: () => <ChartCard title="Income vs Expense" isLoading /> }
+);
+
+const CategoryDonutChart = dynamic(
+  () => import('@/features/dashboard/components/CategoryDonutChart').then((m) => m.CategoryDonutChart),
+  { ssr: false, loading: () => <ChartCard title="Spending by category" isLoading /> }
+);
+
+const BalanceTrendChart = dynamic(
+  () => import('@/features/dashboard/components/BalanceTrendChart').then((m) => m.BalanceTrendChart),
+  { ssr: false, loading: () => <ChartCard title="Balance trend" isLoading /> }
+);
 
 export default function DashboardOverviewPage() {
   const { data, isLoading, error } = useDashboardMetrics();
 
-  if (isLoading) {
-    return <div className="text-sm text-slate-500 animate-pulse">Loading workspace analytics...</div>;
-  }
+  // if (isLoading) {
+  //   return <div className="text-sm text-slate-500 animate-pulse">Loading workspace analytics...</div>;
+  // }
 
-  if (error || !data) {
+  if (error) {
     return <div className="text-sm text-red-600">Failed to load dashboard workspace metrics.</div>;
   }
 
@@ -21,26 +38,40 @@ export default function DashboardOverviewPage() {
         <p className="text-sm text-slate-500">Monitor your financial health, daily habits, and active documentation.</p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-3">
-        <MetricCard 
-          title="Net Balance" 
-          value={`$${data.netBalance.toLocaleString()}`} 
-          description="Aggregated active transactions"
-          icon={DollarSign}
-        />
-        <MetricCard 
-          title="Active Habit Streak" 
-          value={`${data.activeHabitStreak} Days`} 
-          description="Consistent execution metric"
-          icon={Activity}
-        />
-        <MetricCard 
-          title="Workspace Notes" 
-          value={data.pendingNotesCount} 
-          description="Stored documents & sheets"
-          icon={FileText}
-        />
+      <FinanceStats
+        totalIncome={false}
+        totalExpense={false}
+      />
+
+      <div className="grid gap-5 md:grid-cols-2">
+        {isLoading || !data ? (
+          Array.from({ length: 2 }).map((_, i) => <MetricCardSkeleton key={i} />)
+        ) : (
+          <>
+            <MetricCard
+              title="Active Habit Streak"
+              value={`${data.activeHabitStreak} Days`}
+              description="Consistent execution metric"
+              icon={Activity}
+            />
+            <MetricCard
+              title="Workspace Notes"
+              value={data.pendingNotesCount}
+              description="Stored documents & sheets"
+              icon={FileText}
+            />
+          </>
+        )}
       </div>
+
+      <div className="grid gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <CashflowChart />
+        </div>
+        <CategoryDonutChart />
+      </div>
+
+      <BalanceTrendChart />
     </div>
   );
 }

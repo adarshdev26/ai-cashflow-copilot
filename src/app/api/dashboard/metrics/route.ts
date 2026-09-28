@@ -1,41 +1,20 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-// Import your authentication helper or JWT verification here depending on how you're extracting the user ID session
+import { requireUserId } from '@/lib/auth';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    // TODO: Extract the authenticated user's ID from cookies/JWT headers
-    // For demonstration, assume we retrieve a userId or pass a mock user context
-    const userId = 'USER_ID_FROM_SESSION'; 
+    const userId = await requireUserId();
 
-    // Fetch user's workspaces to aggregate financial data
-    const workspaces = await prisma.workspace.findMany({
-      where: { userId },
-      include: {
-        transactions: true,
-      },
-    });
-
-    // Calculate Net Balance from transactions across workspaces
-    let netBalance = 0;
-    workspaces.forEach((workspace) => {
-      workspace.transactions.forEach((tx) => {
-        if (tx.type === 'CREDIT') {
-          netBalance += tx.amount;
-        } else if (tx.type === 'DEBIT') {
-          netBalance -= tx.amount;
-        }
-      });
-    });
+    if (!userId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
 
     // Fetch user habits for streak calculation
-    const habits = await prisma.habit.findMany({
-      where: { userId },
-      include: { logs: true },
-    });
+    const habitCount = await prisma.habit.count({ where: { userId } });
 
     // Simple active habit streak calculation placeholder
-    const activeHabitStreak = habits.length > 0 ? 5 : 0;
+    const activeHabitStreak = habitCount > 0 ? 5 : 0;
 
     // Fetch notes count
     const pendingNotesCount = await prisma.note.count({
@@ -44,7 +23,6 @@ export async function GET(req: Request) {
 
     return NextResponse.json(
       {
-        netBalance,
         activeHabitStreak,
         pendingNotesCount,
       },

@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react';
+import { memo } from 'react';
 
 interface FinanceHeaderProps {
   onOpenModal: () => void;
@@ -6,7 +7,7 @@ interface FinanceHeaderProps {
 
 import { PrimaryButton } from '@/components/ui/Button'
 
-export function FinanceHeader({ onOpenModal }: FinanceHeaderProps) {
+export const FinanceHeader = memo(function FinanceHeader({ onOpenModal }: FinanceHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -18,4 +19,4 @@ export function FinanceHeader({ onOpenModal }: FinanceHeaderProps) {
       </PrimaryButton>
     </div>
   );
-}
+})

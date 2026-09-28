@@ -5,7 +5,7 @@ export type StatTone = 'positive' | 'negative' | 'neutral';
 
 const toneStyles: Record<StatTone, { icon: string; value: string }> = {
   positive: { icon: 'bg-emerald-50 text-emerald-600', value: 'text-emerald-600' },
-  negative: { icon: 'bg-rose-50 text-rose-600', value: 'text-rose-600' },
+  negative: { icon: 'bg-red-50 text-red-600', value: 'text-red-600' },
   neutral: { icon: 'bg-indigo-50 text-indigo-600', value: 'text-slate-900' },
 };
 

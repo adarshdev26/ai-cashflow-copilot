@@ -10,7 +10,7 @@
 */
 // Filter updates are immediate by design; debounce a search input at the caller when its UX requires it.
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useFilters } from './useFilters';
 import { usePagination, UsePaginationOptions } from './usePagination';
 import { SortDirection, useSort } from './useSort';
@@ -46,44 +46,56 @@ export function useListQueryState<
   const sorting = useSort({ defaultSortBy, defaultSortDir });
   const filterState = useFilters(defaultFilters);
 
+  // Depend on these stable methods, not on the hook result objects (which are new every render).
+  const { reset: resetPagination } = pagination;
+  const { setSort: setSortField, toggleSort: toggleSortField } = sorting;
+  const {
+    setFilter: setFilterValue,
+    setFilters: setFilterValues,
+    resetFilters: resetFilterValues,
+  } = filterState;
+
   const setSort = useCallback((field: TSortField | undefined, direction: SortDirection = 'asc') => {
-    sorting.setSort(field, direction);
-    pagination.reset();
-  }, [pagination, sorting]);
+    setSortField(field, direction);
+    resetPagination();
+  }, [setSortField, resetPagination]);
 
   const toggleSort = useCallback((field: TSortField) => {
-    sorting.toggleSort(field);
-    pagination.reset();
-  }, [pagination, sorting]);
+    toggleSortField(field);
+    resetPagination();
+  }, [toggleSortField, resetPagination]);
 
   const setFilter = useCallback(<TKey extends keyof TFilters>(key: TKey, value: TFilters[TKey]) => {
-    filterState.setFilter(key, value);
-    pagination.reset();
-  }, [filterState, pagination]);
+    setFilterValue(key, value);
+    resetPagination();
+  }, [setFilterValue, resetPagination]);
 
   const setFilters = useCallback((partialFilters: Partial<TFilters>) => {
-    filterState.setFilters(partialFilters);
-    pagination.reset();
-  }, [filterState, pagination]);
+    setFilterValues(partialFilters);
+    resetPagination();
+  }, [setFilterValues, resetPagination]);
 
   const resetFilters = useCallback(() => {
-    filterState.resetFilters();
-    pagination.reset();
-  }, [filterState, pagination]);
+    resetFilterValues();
+    resetPagination();
+  }, [resetFilterValues, resetPagination]);
 
   const resetAll = useCallback(() => {
-    filterState.resetFilters();
-    sorting.setSort(defaultSortBy, defaultSortDir);
-    pagination.reset();
-  }, [defaultSortBy, defaultSortDir, filterState, pagination, sorting]);
+    resetFilterValues();
+    setSortField(defaultSortBy, defaultSortDir);
+    resetPagination();
+  }, [defaultSortBy, defaultSortDir, resetFilterValues, setSortField, resetPagination]);
 
-  const params: ListQueryParams<TFilters, TSortField> = {
-    page: pagination.page,
-    limit: pagination.pageSize,
-    sortBy: sorting.sortBy,
-    sortDir: sorting.sortBy ? sorting.sortDir : undefined,
-    ...filterState.filters,
-  };
+  const params = useMemo<ListQueryParams<TFilters, TSortField>>(
+    () => ({
+      page: pagination.page,
+      limit: pagination.pageSize,
+      sortBy: sorting.sortBy,
+      sortDir: sorting.sortBy ? sorting.sortDir : undefined,
+      ...filterState.filters,
+    }),
+    [pagination.page, pagination.pageSize, sorting.sortBy, sorting.sortDir, filterState.filters]
+  );
 
   return {
     params,

@@ -21,16 +21,24 @@ function MonthBreakdown({ income, expense }: Pick<PeriodTotals, 'income' | 'expe
         In <span className="font-medium text-emerald-600">{currency.format(income)}</span>
       </span>
       <span>
-        Out <span className="font-medium text-rose-600">{currency.format(expense)}</span>
+        Out <span className="font-medium text-red-600">{currency.format(expense)}</span>
       </span>
     </div>
   );
 }
 
-const GRID = 'grid gap-4 sm:grid-cols-2 xl:grid-cols-5';
-
-export function FinanceStats() {
+export function FinanceStats({
+  totalIncome = true,
+  totalExpense = true,
+  netBalance = true,
+  thisMonthNet = true,
+  lastMonthNet = true
+}) {
   const { data, isLoading, isError } = useFinanceSummary();
+  const visibleSections = [totalIncome, totalExpense, netBalance, thisMonthNet, lastMonthNet].filter(Boolean).length;
+  const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${
+    visibleSections === 3 ? 'xl:grid-cols-3' : visibleSections === 4 ? 'xl:grid-cols-4' : visibleSections >= 5 ? 'xl:grid-cols-5' : ''
+  }`;
 
   const monthLabels = useMemo(() => {
     const now = new Date();
@@ -43,7 +51,7 @@ export function FinanceStats() {
 
   if (isLoading) {
     return (
-      <div className={GRID}>
+      <div className={gridClass}>
         {Array.from({ length: 5 }).map((_, i) => (
           <StatCardSkeleton key={i} />
         ))}
@@ -58,26 +66,36 @@ export function FinanceStats() {
   const { allTime, thisMonth, lastMonth } = data;
 
   return (
-    <div className={GRID}>
-      <StatCard title="Total income" value={currency.format(allTime.income)} icon={ArrowUpRight} tone="positive" />
-      <StatCard title="Total expense" value={currency.format(allTime.expense)} icon={ArrowDownLeft} tone="negative" />
-      <StatCard title="Net balance" value={currency.format(allTime.net)} icon={Wallet} tone={netTone(allTime.net)} />
-      <StatCard
-        title="This month"
-        caption={monthLabels.thisMonth}
-        value={currency.format(thisMonth.net)}
-        icon={CalendarDays}
-        tone={netTone(thisMonth.net)}
-        footer={<MonthBreakdown income={thisMonth.income} expense={thisMonth.expense} />}
-      />
-      <StatCard
-        title="Last month"
-        caption={monthLabels.lastMonth}
-        value={currency.format(lastMonth.net)}
-        icon={History}
-        tone={netTone(lastMonth.net)}
-        footer={<MonthBreakdown income={lastMonth.income} expense={lastMonth.expense} />}
-      />
+    <div className={gridClass}>
+      {totalIncome && (
+        <StatCard title="Total income" value={currency.format(allTime.income)} icon={ArrowUpRight} tone="positive" />
+      )}
+      {totalExpense && (
+        <StatCard title="Total expense" value={currency.format(allTime.expense)} icon={ArrowDownLeft} tone="negative" />
+      )}
+      {netBalance && (
+        <StatCard title="Net balance" value={currency.format(allTime.net)} icon={Wallet} tone={netTone(allTime.net)} />
+      )}
+      {thisMonthNet && (
+        <StatCard
+          title="This month Net"
+          caption={monthLabels.thisMonth}
+          value={currency.format(thisMonth.net)}
+          icon={CalendarDays}
+          tone={netTone(thisMonth.net)}
+          footer={<MonthBreakdown income={thisMonth.income} expense={thisMonth.expense} />}
+        />
+      )}
+      {lastMonthNet && (
+        <StatCard
+          title="Last month Net"
+          caption={monthLabels.lastMonth}
+          value={currency.format(lastMonth.net)}
+          icon={History}
+          tone={netTone(lastMonth.net)}
+          footer={<MonthBreakdown income={lastMonth.income} expense={lastMonth.expense} />}
+        />
+      )}
     </div>
   );
 }

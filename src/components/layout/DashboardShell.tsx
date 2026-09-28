@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useState, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { useCurrentUser } from '@/features/auth';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -18,16 +20,22 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: user, isLoading: isUserLoading } = useCurrentUser();
+
+  const displayName = user?.name || user?.email?.split('@')[0] || 'User';
+  const initial = displayName.charAt(0).toUpperCase();
 
   const handleSignOut = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
+      queryClient.clear();
       router.push('/login');
       router.refresh();
     } catch (error) {
       console.error('Failed to sign out:', error);
     }
-  }, [router]);
+  }, [router, queryClient]);
 
   const openSignOutDialog = useCallback(() => setIsSignOutOpen(true), []);
   const closeSignOutDialog = useCallback(() => setIsSignOutOpen(false), []);
@@ -52,8 +60,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 key={item.name}
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
-                    ? 'bg-indigo-50 text-indigo-600'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-indigo-50 text-indigo-600'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`}
               >
                 <Icon className={`h-4 w-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
@@ -64,6 +72,27 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="p-4 border-t border-slate-100">
+          <div className="mb-3 flex items-center gap-3 px-3 py-2">
+            {isUserLoading ? (
+              <>
+                <div className="h-9 w-9 shrink-0 rounded-full bg-slate-100 animate-pulse" />
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <div className="h-3 w-24 rounded bg-slate-100 animate-pulse" />
+                  <div className="h-3 w-32 rounded bg-slate-100 animate-pulse" />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="h-9 w-9 shrink-0 rounded-full bg-indigo-50 flex items-center justify-center text-sm font-semibold text-indigo-600">
+                  {initial}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-900">{displayName}</p>
+                  {user?.email && <p className="truncate text-xs text-slate-500">{user.email}</p>}
+                </div>
+              </>
+            )}
+          </div>
           <button
             onClick={openSignOutDialog}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
@@ -78,11 +107,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-slate-200 bg-white px-8 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-700 tracking-wide uppercase">Workspace Overview</h2>
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center font-medium text-slate-600 text-sm">
-              U
-            </div>
-          </div>
         </header>
 
         <main className="flex-1 p-8 overflow-y-auto">

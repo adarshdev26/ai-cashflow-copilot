@@ -37,6 +37,8 @@ interface DataTableProps<TData, TValue> {
   onPaginationChange?: OnChangeFn<PaginationState>;
   onSortingChange?: OnChangeFn<SortingState>;
   onGlobalFilterChange?: OnChangeFn<string>;
+  isLoading?: boolean;
+  isFetching?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -57,6 +59,8 @@ export function DataTable<TData, TValue>({
   onPaginationChange: controlledPaginationChange,
   onSortingChange: controlledSortingChange,
   onGlobalFilterChange: controlledGlobalFilterChange,
+  isLoading = false,
+  isFetching = false,
 }: DataTableProps<TData, TValue>) {
   const [localSorting, setLocalSorting] = useState<SortingState>([]);
   const [localGlobalFilter, setLocalGlobalFilter] = useState('');
@@ -95,6 +99,10 @@ export function DataTable<TData, TValue>({
   const handlePreviousPage = useCallback(() => table.previousPage(), [table]);
   const handleNextPage = useCallback(() => table.nextPage(), [table]);
 
+  const rowCount = table.getRowModel().rows.length;
+  const showSkeleton = isLoading && rowCount === 0;
+  const isRefetching = isFetching && !showSkeleton;
+
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
       {/* Search Header Bar */}
@@ -117,7 +125,10 @@ export function DataTable<TData, TValue>({
       )}
 
       {/* Table Element */}
-      <div className="overflow-x-auto">
+      <div
+        className={`overflow-x-auto transition-opacity ${isRefetching ? 'opacity-60' : 'opacity-100'}`}
+        aria-busy={isFetching}
+      >
         <table className="w-full text-left border-collapse text-sm">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -141,7 +152,17 @@ export function DataTable<TData, TValue>({
             ))}
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {table.getRowModel().rows.length === 0 ? (
+            {showSkeleton ? (
+              Array.from({ length: pageSize }).map((_, rowIndex) => (
+                <tr key={`skeleton-${rowIndex}`}>
+                  {columns.map((_, colIndex) => (
+                    <td key={colIndex} className="py-4 px-6">
+                      <div className="h-4 w-full max-w-40 rounded bg-slate-100 animate-pulse" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : table.getRowModel().rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="p-12 text-center text-slate-500 text-sm">
                   No records found.

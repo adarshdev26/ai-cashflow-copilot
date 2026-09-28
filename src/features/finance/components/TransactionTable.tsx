@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, memo } from 'react';
 import { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2 } from 'lucide-react';
 import { Transaction } from '../types';
@@ -20,9 +20,11 @@ interface TransactionTableProps {
   onPaginationChange: OnChangeFn<PaginationState>;
   onSortingChange: OnChangeFn<SortingState>;
   onGlobalFilterChange: OnChangeFn<string>;
+  isLoading?: boolean;
+  isFetching?: boolean;
 }
 
-export function TransactionTable({
+export const TransactionTable = memo(function TransactionTable({
   transactions = [],
   onEdit,
   onDelete,
@@ -34,6 +36,8 @@ export function TransactionTable({
   onPaginationChange,
   onSortingChange,
   onGlobalFilterChange,
+  isLoading,
+  isFetching,
 }: TransactionTableProps) {
   const handleEdit = useCallback((tx: Transaction) => onEdit(tx), [onEdit]);
   const handleDelete = useCallback((tx: Transaction) => onDelete(tx), [onDelete]);
@@ -47,7 +51,7 @@ export function TransactionTable({
           const tx = row.original;
           return (
             <div className="font-medium text-slate-900 flex items-center gap-3">
-              <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${tx.type === 'CREDIT' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+              <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${tx.type === 'CREDIT' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
                 }`}>
                 {tx.type === 'CREDIT' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4" />}
               </div>
@@ -70,7 +74,7 @@ export function TransactionTable({
         cell: ({ row }) => {
           const type = row.getValue('type') as string;
           return (
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${type === 'CREDIT' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${type === 'CREDIT' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
               }`}>
               {type}
             </span>
@@ -92,7 +96,7 @@ export function TransactionTable({
         cell: ({ row }) => {
           const tx = row.original;
           return (
-            <div className={`text-right font-semibold ${tx.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-900'
+            <div className={`text-right font-semibold ${tx.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-700'
               }`}>
               {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toLocaleString()}
             </div>
@@ -112,7 +116,7 @@ export function TransactionTable({
                 aria-label="Edit transaction"
                 onClick={() => handleEdit(tx)}
               >
-                <Pencil className="h-4 w-4" />
+                <Pencil className="h-4 w-4 text-blue-500" />
               </Button>
               <Button
                 variant="ghost"
@@ -120,7 +124,7 @@ export function TransactionTable({
                 aria-label="Delete transaction"
                 onClick={() => handleDelete(tx)}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4 text-red-600" />
               </Button>
             </div>
           );
@@ -148,6 +152,8 @@ export function TransactionTable({
       onPaginationChange={onPaginationChange}
       onSortingChange={onSortingChange}
       onGlobalFilterChange={onGlobalFilterChange}
+      isLoading={isLoading}
+      isFetching={isFetching}
     />
   );
-}
+})
