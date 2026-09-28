@@ -1,11 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction } from '../api/finance-api';
 import { CreateTransactionInput, TransactionListParams, UpdateTransactionInput } from '../types';
 
-export function useTransactions(params: TransactionListParams = {}) {
+export function useTransactions(
+  params: TransactionListParams = {},
+  options: { enabled?: boolean } = {}
+) {
   return useQuery({
     queryKey: ['transactions', params],
     queryFn: () => getTransactions(params),
+    placeholderData: keepPreviousData,
+    enabled: options.enabled ?? true,
   });
 }
 

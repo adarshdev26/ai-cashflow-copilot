@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, memo } from 'react';
 import { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2 } from 'lucide-react';
 import { Transaction } from '../types';
@@ -20,9 +20,11 @@ interface TransactionTableProps {
   onPaginationChange: OnChangeFn<PaginationState>;
   onSortingChange: OnChangeFn<SortingState>;
   onGlobalFilterChange: OnChangeFn<string>;
+  isLoading?: boolean;
+  isFetching?: boolean;
 }
 
-export function TransactionTable({
+export const TransactionTable = memo(function TransactionTable({
   transactions = [],
   onEdit,
   onDelete,
@@ -34,6 +36,8 @@ export function TransactionTable({
   onPaginationChange,
   onSortingChange,
   onGlobalFilterChange,
+  isLoading,
+  isFetching,
 }: TransactionTableProps) {
   const handleEdit = useCallback((tx: Transaction) => onEdit(tx), [onEdit]);
   const handleDelete = useCallback((tx: Transaction) => onDelete(tx), [onDelete]);
@@ -148,6 +152,8 @@ export function TransactionTable({
       onPaginationChange={onPaginationChange}
       onSortingChange={onSortingChange}
       onGlobalFilterChange={onGlobalFilterChange}
+      isLoading={isLoading}
+      isFetching={isFetching}
     />
   );
-}
+})

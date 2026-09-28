@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import {
   useTransactions,
@@ -51,10 +51,12 @@ export default function FinancePage() {
     defaultFilters: defaultTransactionFilters,
     defaultSortDir: 'desc',
     defaultPageSize: 20,
+    maxPageSize: 100,
   });
+  const isInvalidDateRange = Boolean(filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo);
   const { data: categories, isLoading: categoriesLoading } = useCategories();
 
-  const { data: transactionResponse, isLoading, error } = useTransactions(params);
+  const { data: transactionResponse, isLoading, error, isFetching } = useTransactions(params, { enabled: !isInvalidDateRange });
   const { mutate: addTx, isPending: isAdding } = useCreateTransaction();
   const { mutate: updateTx, isPending: isUpdating } = useUpdateTransaction();
   const { mutate: deleteTx, isPending: isDeleting } = useDeleteTransaction();
@@ -104,8 +106,14 @@ export default function FinancePage() {
 
   const handleSubmit = formState?.mode === 'create' ? handleCreateTransaction : handleUpdateTransaction;
 
-  const pagination: PaginationState = { pageIndex: page - 1, pageSize };
-  const sorting: SortingState = sortBy ? [{ id: sortBy, desc: sortDir === 'desc' }] : [];
+  const pagination: PaginationState = useMemo(
+    () => ({ pageIndex: page - 1, pageSize }),
+    [page, pageSize]
+  );
+  const sorting: SortingState = useMemo(
+    () => (sortBy ? [{ id: sortBy, desc: sortDir === 'desc' }] : []),
+    [sortBy, sortDir]
+  );
   const globalFilter = filters.search ?? '';
 
   const handleSortingChange: OnChangeFn<SortingState> = useCallback((updater) => {
@@ -139,13 +147,14 @@ export default function FinancePage() {
   const handlePaginationChange: OnChangeFn<PaginationState> = useCallback((updater) => {
     const currentPagination: PaginationState = { pageIndex: page - 1, pageSize };
     const nextPagination = typeof updater === 'function' ? updater(currentPagination) : updater;
-    setPage(nextPagination.pageIndex + 1);
     if (nextPagination.pageSize !== pageSize) {
       setPageSize(nextPagination.pageSize);
+    } else {
+      setPage(nextPagination.pageIndex + 1);
     }
   }, [page, pageSize, setPage, setPageSize]);
 
-  if (isLoading) return <div className="text-sm text-slate-500 animate-pulse p-8">Loading finance ledger...</div>;
+  // if (isLoading) return <div className="text-sm text-slate-500 animate-pulse p-8">Loading finance ledger...</div>;
   if (error) return <div className="text-sm text-red-600 p-8">Failed to load transactions.</div>;
 
   return (
@@ -170,7 +179,10 @@ export default function FinancePage() {
           ))}
         </Select>
         <Input aria-label="Filter transactions from date" type="date" value={filters.dateFrom ?? ''} onChange={(event) => handleDateFromChange(event.target.value)} />
-        <Input aria-label="Filter transactions to date" type="date" value={filters.dateTo ?? ''} onChange={(event) => handleDateToChange(event.target.value)} />
+        <Input aria-label="Filter transactions to date" type="date" min={filters.dateFrom} value={filters.dateTo ?? ''} onChange={(event) => handleDateToChange(event.target.value)} />
+        {isInvalidDateRange && (
+          <p className="text-xs text-red-600 md:col-span-4">"From" date must be on or before the "To" date.</p>
+        )}
       </div>
 
       <TransactionTable
@@ -185,6 +197,8 @@ export default function FinancePage() {
         onGlobalFilterChange={handleGlobalFilterChange}
         onEdit={openEditModal}
         onDelete={openDeleteTarget}
+        isLoading={isLoading}
+        isFetching={isFetching}
       />
 
       {formState && (
