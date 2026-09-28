@@ -1,14 +1,12 @@
 'use client';
 
 import { MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
+<<<<<<< HEAD
 import { DollarSign, Activity, FileText } from 'lucide-react';
-
-const currency = new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-});
+=======
+import { Activity, FileText } from 'lucide-react';
+import { FinanceStats } from '@/features/finance';
+>>>>>>> c847260 (removed duplicates)
 
 export default function DashboardOverviewPage() {
   const { data, isLoading, error } = useDashboardMetrics();
@@ -28,17 +26,20 @@ export default function DashboardOverviewPage() {
         <p className="text-sm text-slate-500">Monitor your financial health, daily habits, and active documentation.</p>
       </div>
 
+<<<<<<< HEAD
       <div className="grid gap-5 md:grid-cols-3">
+=======
+      <FinanceStats
+        totalIncome={false}
+        totalExpense={false}
+      />
+
+      <div className="grid gap-5 md:grid-cols-2">
+>>>>>>> c847260 (removed duplicates)
         {isLoading || !data ? (
-          Array.from({ length: 3 }).map((_, i) => <MetricCardSkeleton key={i} />)
+          Array.from({ length: 2 }).map((_, i) => <MetricCardSkeleton key={i} />)
         ) : (
           <>
-            <MetricCard
-              title="Net Balance"
-              value={currency.format(data.netBalance)}
-              description="Aggregated active transactions"
-              icon={DollarSign}
-            />
             <MetricCard
               title="Active Habit Streak"
               value={`${data.activeHabitStreak} Days`}

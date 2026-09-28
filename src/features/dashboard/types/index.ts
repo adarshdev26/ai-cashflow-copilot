@@ -1,5 +1,4 @@
 export interface DashboardMetrics {
-  netBalance: number;
   activeHabitStreak: number;
   pendingNotesCount: number;
 }
