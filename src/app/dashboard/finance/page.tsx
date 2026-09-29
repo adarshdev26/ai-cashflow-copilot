@@ -53,7 +53,7 @@ export default function FinancePage() {
   } = useListQueryState<TransactionFilters, TransactionSortField>({
     defaultFilters: defaultTransactionFilters,
     defaultSortDir: 'desc',
-    defaultPageSize: 20,
+    defaultPageSize: 10,
     maxPageSize: 100,
   });
   const isInvalidDateRange = Boolean(filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo);
