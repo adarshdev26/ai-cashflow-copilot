@@ -1,13 +1,24 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { PrimaryButton } from '@/components/ui/Button'
 import { notify, getErrorMessage } from '@/lib/toast'
+import { getSafeNextPath } from '@/lib/safe-redirect'
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const nextPath = getSafeNextPath(searchParams.get('next'))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -33,7 +44,7 @@ export default function LoginPage() {
         }
 
         notify.success('Welcome back!')
-        router.push('/dashboard')
+        router.push(nextPath ?? '/dashboard')
       } catch (err: any) {
         setError(err.message)
         notify.error(getErrorMessage(err, 'Login failed'))
@@ -41,7 +52,7 @@ export default function LoginPage() {
         setLoading(false)
       }
     },
-    [router, email, password]
+    [router, email, password, nextPath]
   )
 
   return (
@@ -76,7 +87,10 @@ export default function LoginPage() {
         </form>
         <p className="mt-4 text-center text-sm text-gray-400">
           Don't have an account?{' '}
-          <Link href="/signup" className="text-indigo-400 hover:underline">
+          <Link
+            href={nextPath ? `/signup?next=${encodeURIComponent(nextPath)}` : '/signup'}
+            className="text-indigo-400 hover:underline"
+          >
             Sign up
           </Link>
         </p>

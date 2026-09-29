@@ -21,3 +21,14 @@ export function formatTimeLeft(expiresAt: string, now: number): string {
   if (minutes > 0) return `Expires in ${minutes}m`;
   return 'Expires in less than 1m';
 }
+
+export const ACTIVE_WORKSPACE_KEY = 'active-workspace-id';
+
+/** Makes the joined workspace the active one. Storage can be unavailable, so never throw. */
+export function setActiveWorkspaceId(workspaceId: string): void {
+  try {
+    window.localStorage.setItem(ACTIVE_WORKSPACE_KEY, workspaceId);
+  } catch {
+    // Ignore: the app falls back to its default workspace.
+  }
+}
