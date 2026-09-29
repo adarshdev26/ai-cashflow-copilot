@@ -26,6 +26,7 @@ export async function POST(req: Request) {
       slug: generateWorkspaceSlug(name),
       ownerId: userId,
       access: { create: { userId, role: 'OWNER' } },
+      accounts: { create: { name: 'General', type: 'OTHER' } },
     },
     select: { id: true, name: true, slug: true },
   });

@@ -6,7 +6,7 @@ export function hashPassword(password: string) {
   return bcrypt.hash(password, 10)
 }
 
-/** Same writes as signup: user + "Personal" workspace + OWNER access. Must run inside a transaction. */
+/** Same writes as signup: user + "Personal" workspace + OWNER access + default account. Must run inside a transaction. */
 export async function createUserWithPersonalWorkspaceTx(
   tx: TxClient,
   data: { email: string; hashedPassword: string; name?: string | null }
@@ -20,6 +20,8 @@ export async function createUserWithPersonalWorkspaceTx(
       slug: generateWorkspaceSlug('Personal'),
       ownerId: user.id,
       access: { create: { userId: user.id, role: 'OWNER' } },
+      // New workspaces get the workspace default currency (INR), same as the account default
+      accounts: { create: { name: 'General', type: 'OTHER' } },
     },
   })
   return user
