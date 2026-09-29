@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useState, useCallback, useEffect, useSyncExternalStore, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut, Plus,
-  Menu, X, ChevronsLeft, ChevronsRight,
+  Menu, X, ChevronsLeft, ChevronsRight, Compass,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -13,6 +13,7 @@ import { useCurrentUser } from '@/features/auth';
 import { useWorkspace, useCreateWorkspace } from '@/features/workspaces';
 import { notify, getErrorMessage } from '@/lib/toast';
 import { OnboardingTour } from '@/features/onboarding/components/OnboardingTour';
+import { tourHref } from '@/features/onboarding/lib/tour-steps';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -248,9 +249,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const openSignOutDialog = useCallback(() => setIsSignOutOpen(true), []);
   const closeSignOutDialog = useCallback(() => setIsSignOutOpen(false), []);
 
+  const startTour = useCallback(() => {
+    setMobileOpen(false);
+    router.push(tourHref('overview'));
+  }, [router]);
+
   return (
     <div className="h-screen overflow-hidden bg-slate-50/50 flex">
-      <OnboardingTour />
+      <Suspense fallback={null}>
+        <OnboardingTour />
+      </Suspense>
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
@@ -358,6 +366,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </button>
             <WorkspaceSelector />
           </div>
+
+          <button
+            type="button"
+            onClick={startTour}
+            className="flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+          >
+            <Compass className="h-4 w-4" />
+            <span className="hidden sm:inline">Take a tour</span>
+          </button>
         </header>
 
         <main className="flex-1 p-8 overflow-y-auto">
