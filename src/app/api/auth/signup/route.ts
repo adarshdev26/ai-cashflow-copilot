@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
-import bcrypt from 'bcryptjs'
-import { generateWorkspaceSlug } from '@/lib/workspaces'
+import { createUserWithPersonalWorkspaceTx, hashPassword } from '@/lib/users'
 
 export async function POST(req: Request) {
   try {
@@ -15,8 +14,8 @@ export async function POST(req: Request) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    const existingUser = await prisma.user.findFirst({
+      where: { email: { equals: email.trim(), mode: 'insensitive' } },
     })
 
     if (existingUser) {
@@ -26,30 +25,13 @@ export async function POST(req: Request) {
       )
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    // Hash password (bcrypt, 10 rounds, same as before)
+    const hashedPassword = await hashPassword(password)
 
     // Create user, default workspace and OWNER access together (all or nothing)
-    const user = await prisma.$transaction(async (tx) => {
-      const createdUser = await tx.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          name,
-        },
-      })
-
-      await tx.workspace.create({
-        data: {
-          name: 'Personal',
-          slug: generateWorkspaceSlug('Personal'),
-          ownerId: createdUser.id,
-          access: { create: { userId: createdUser.id, role: 'OWNER' } },
-        },
-      })
-
-      return createdUser
-    })
+    const user = await prisma.$transaction((tx) =>
+      createUserWithPersonalWorkspaceTx(tx, { email, hashedPassword, name })
+    )
 
     return NextResponse.json(
       { message: 'User created successfully', userId: user.id },

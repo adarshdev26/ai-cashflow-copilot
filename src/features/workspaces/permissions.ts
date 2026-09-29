@@ -6,6 +6,7 @@ export type WorkspaceAction =
   | 'workspace.delete'
   | 'members.view'
   | 'members.add'
+  | 'members.invite'
   | 'members.changeRole'
   | 'members.remove'
   | 'transaction.create'
@@ -18,6 +19,7 @@ export const ACTION_LABELS: Record<WorkspaceAction, string> = {
   'workspace.delete': 'Delete workspace',
   'members.view': 'View member list and emails',
   'members.add': 'Add members',
+  'members.invite': 'Invite members and manage pending invitations',
   'members.changeRole': 'Change member roles',
   'members.remove': 'Remove members',
   'transaction.create': 'Create transactions',

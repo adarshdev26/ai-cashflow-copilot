@@ -1,7 +1,17 @@
-export function validateTransactionData(data: any) {
-  const { amount, type, description, categoryId } = data;
-  
-  const parsedAmount = parseFloat(amount);
+export type ValidatedTransaction = {
+  amount: number;
+  type: 'CREDIT' | 'DEBIT';
+  description: string | null;
+  categoryId: string | null;
+};
+
+export function validateTransactionData(data: unknown): ValidatedTransaction {
+  if (typeof data !== 'object' || data === null) {
+    throw new Error('Invalid transaction data');
+  }
+  const { amount, type, description, categoryId } = data as Record<string, unknown>;
+
+  const parsedAmount = parseFloat(String(amount));
   if (isNaN(parsedAmount) || parsedAmount <= 0) {
     throw new Error('Amount must be a positive number');
   }
@@ -11,7 +21,7 @@ export function validateTransactionData(data: any) {
     throw new Error('Type must be CREDIT or DEBIT');
   }
 
-  let finalDescription = null;
+  let finalDescription: string | null = null;
   if (description && typeof description === 'string') {
     finalDescription = description.trim();
     if (finalDescription.length > 255) {

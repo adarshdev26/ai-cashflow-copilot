@@ -1,46 +1,63 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { PrimaryButton } from '@/components/ui/Button'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 import { notify, getErrorMessage } from '@/lib/toast'
+import { getSafeNextPath } from '@/lib/safe-redirect'
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
+  )
+}
+
+function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const nextPath = getSafeNextPath(searchParams.get('next'))
+  const loginHref = nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : '/login'
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSignup = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  const handleSignup = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      setError('')
+      setLoading(true)
 
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      });
+      try {
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+        })
 
-      const data = await res.json();
+        const data = await res.json()
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong');
+        if (!res.ok) {
+          throw new Error(data.error || 'Something went wrong')
+        }
+
+        notify.success('Account created. Please log in.')
+        router.push(loginHref)
+      } catch (err) {
+        const message = getErrorMessage(err, 'Signup failed')
+        setError(message)
+        notify.error(message)
+      } finally {
+        setLoading(false)
       }
-
-      notify.success('Account created. Please log in.');
-      router.push('/login');
-    } catch (err: any) {
-      setError(err.message);
-      notify.error(getErrorMessage(err, 'Signup failed'));
-    } finally {
-      setLoading(false);
-    }
-  }, [router, name, email, password]);
+    },
+    [router, name, email, password, loginHref]
+  )
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
@@ -70,10 +87,10 @@ export default function SignupPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Password</label>
-            <input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
               required
               className="w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none"
             />
@@ -84,7 +101,7 @@ export default function SignupPage() {
         </form>
         <p className="mt-4 text-center text-sm text-gray-400">
           Already have an account?{' '}
-          <Link href="/login" className="text-indigo-400 hover:underline">
+          <Link href={loginHref} className="text-indigo-400 hover:underline">
             Log in
           </Link>
         </p>

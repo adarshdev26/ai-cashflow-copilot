@@ -6,10 +6,15 @@ import {
   useUpdateWorkspace,
   useDeleteWorkspace,
   useWorkspaceAccess,
-  useAddWorkspaceMember,
   useUpdateWorkspaceMember,
   useRemoveWorkspaceMember,
 } from '@/features/workspaces';
+import {
+  InvitationLinkCard,
+  InviteMemberForm,
+  PendingInvitationsList,
+  type IssuedInvitationLink,
+} from '@/features/invitations';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { usePermission } from '@/features/workspaces';
 import { RolesPermissionsSection } from '@/features/workspaces';
@@ -27,12 +32,12 @@ function SettingsContent() {
   const [name, setName] = useState(workspace.name);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const [newEmail, setNewEmail] = useState('');
-  const [newRole, setNewRole] = useState('VIEWER');
+  // The newest invite link. Memory only: the raw token is never stored anywhere.
+  const [issuedLink, setIssuedLink] = useState<IssuedInvitationLink | null>(null);
 
   const canViewMembers = usePermission('members.view');
   const canRename = usePermission('workspace.rename');
-  const canAddMembers = usePermission('members.add');
+  const canInvite = usePermission('members.invite');
   const canChangeRoles = usePermission('members.changeRole');
   const canRemoveMembers = usePermission('members.remove');
   const canDeleteWorkspace = usePermission('workspace.delete');
@@ -43,7 +48,6 @@ function SettingsContent() {
 
   const { mutate: updateName, isPending: updatingName } = useUpdateWorkspace();
   const { mutate: deleteWs, isPending: deletingWs } = useDeleteWorkspace();
-  const { mutate: addMember, isPending: addingMember } = useAddWorkspaceMember();
   const { mutate: updateMember } = useUpdateWorkspaceMember();
   const { mutate: removeMember } = useRemoveWorkspaceMember();
 
@@ -69,23 +73,6 @@ function SettingsContent() {
       },
       onError: (error) => notify.error(getErrorMessage(error, 'Failed to delete workspace')),
     });
-  };
-
-  const handleAddMember = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newEmail.trim()) {
-      addMember(
-        { workspaceId: workspace.workspaceId, email: newEmail.trim(), role: newRole },
-        {
-          onSuccess: () => {
-            setNewEmail('');
-            setNewRole('VIEWER');
-            notify.success('Member added');
-          },
-          onError: (error) => notify.error(getErrorMessage(error, 'Failed to add member')),
-        }
-      );
-    }
   };
 
   return (
@@ -126,41 +113,11 @@ function SettingsContent() {
         <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
           <h2 className="text-lg font-semibold text-slate-900">Members</h2>
 
-          {canAddMembers && (
-            <form onSubmit={handleAddMember} className="flex gap-4 max-w-2xl items-end">
-              <div className="flex-1 space-y-1">
-                <label className="text-xs font-medium text-slate-700">Email Address</label>
-                <input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  disabled={addingMember}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  placeholder="colleague@example.com"
-                  required
-                />
-              </div>
-              <div className="w-32 space-y-1">
-                <label className="text-xs font-medium text-slate-700">Role</label>
-                <select
-                  value={newRole}
-                  onChange={(e) => setNewRole(e.target.value)}
-                  disabled={addingMember}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
-                >
-                  <option value="ADMIN">Admin</option>
-                  <option value="MEMBER">Member</option>
-                  <option value="VIEWER">Viewer</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                disabled={addingMember || !newEmail.trim()}
-                className="rounded-md bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
-              >
-                Add
-              </button>
-            </form>
+          {canInvite && (
+            <InviteMemberForm
+              workspaceId={workspace.workspaceId}
+              onCreated={setIssuedLink}
+            />
           )}
 
           <div className="border border-slate-200 rounded-lg overflow-hidden">
@@ -238,6 +195,24 @@ function SettingsContent() {
         </section>
       )}
 
+      {canInvite && (
+        <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Pending Invitations</h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Invitations that have been sent but not yet accepted.
+            </p>
+          </div>
+          <PendingInvitationsList
+            workspaceId={workspace.workspaceId}
+            onLinkReady={setIssuedLink}
+            onCancelled={(email) =>
+              setIssuedLink((current) => (current?.email === email ? null : current))
+            }
+          />
+        </section>
+      )}
+
       {canDeleteWorkspace && workspaces.length > 1 && (
         <section className="bg-red-50 rounded-xl border border-red-100 p-6 flex items-center justify-between">
           <div>
@@ -266,6 +241,7 @@ function SettingsContent() {
         onConfirm={handleDelete}
         onClose={() => setDeleteOpen(false)}
       />
+      <InvitationLinkCard link={issuedLink} onDismiss={() => setIssuedLink(null)} />
     </div>
   );
 }

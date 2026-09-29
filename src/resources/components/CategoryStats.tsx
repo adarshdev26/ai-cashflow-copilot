@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowDownLeft, ArrowUpRight, Info, PieChart } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Info } from 'lucide-react';
 import { useCategorySummary } from '../hooks/use-categories';
 import { useActiveWorkspaceId } from '@/features/workspaces';
 import { CategorySummary, DateRange } from '../types';

@@ -1,72 +1,43 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-
-import { getJwtSecret } from '@/lib/auth'
+import { setAuthCookie } from '@/lib/auth'
 
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json()
 
-    if (!email || !password) {
+    if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400 }
       )
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-    })
+    const trimmed = email.trim()
+
+    // Exact match first (existing users behave exactly as before), then a
+    // case-insensitive fallback so "Bob@Example.com" finds "bob@example.com".
+    const user =
+      (await prisma.user.findUnique({ where: { email: trimmed } })) ??
+      (await prisma.user.findFirst({
+        where: { email: { equals: trimmed, mode: 'insensitive' } },
+      }))
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
-    // Validate password
     const isPasswordValid = await bcrypt.compare(password, user.password)
-
     if (!isPasswordValid) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
-    // Sign JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      getJwtSecret(),
-      { expiresIn: '7d' }
-    )
+    await setAuthCookie({ id: user.id, email: user.email })
 
-    // Set HTTP-only cookie
-    const response = NextResponse.json(
-      { message: 'Login successful', userId: user.id },
-      { status: 200 }
-    )
-
-    response.cookies.set({
-      name: 'token',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    })
-
-    return response
+    return NextResponse.json({ message: 'Login successful', userId: user.id }, { status: 200 })
   } catch (error) {
     console.error('Login error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

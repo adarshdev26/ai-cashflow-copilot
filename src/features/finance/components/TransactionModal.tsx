@@ -6,12 +6,12 @@ import { PrimaryButton, Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { CategorySelect } from '@/resources/components/CategorySelect';
-import { Transaction } from '../types';
+import { Transaction, CreateTransactionInput } from '../types';
 
 interface TransactionModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: any) => void;
+  onSubmit: (values: CreateTransactionInput) => void;
   isSubmitting: boolean;
   error?: string;
   transaction?: Transaction | null;

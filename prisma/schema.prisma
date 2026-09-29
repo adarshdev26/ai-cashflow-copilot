@@ -24,32 +24,40 @@ enum WorkspaceRole {
   VIEWER
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  CANCELLED
+}
+
 model User {
-  id              String            @id @default(uuid())
-  email           String            @unique
+  id              String                @id @default(uuid())
+  email           String                @unique
   password        String
   name            String?
-  createdAt       DateTime          @default(now())
-  ownedWorkspaces Workspace[]       @relation("WorkspaceOwner") // workspaces I own
+  createdAt       DateTime              @default(now())
+  ownedWorkspaces Workspace[]           @relation("WorkspaceOwner") // workspaces I own
   workspaceAccess WorkspaceAccess[] // every workspace I can access (owned + shared)
+  sentInvitations WorkspaceInvitation[] @relation("InvitationInviter") // invites I created
   Habit           Habit[]
   Note            Note[]
-  updatedAt       DateTime          @updatedAt
-  role            Role              @default(USER)
+  updatedAt       DateTime              @updatedAt
+  role            Role                  @default(USER)
 }
 
 model Workspace {
-  id           String            @id @default(uuid())
+  id           String                @id @default(uuid())
   name         String
-  slug         String            @unique
+  slug         String                @unique
   ownerId      String
-  owner        User              @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  owner        User                  @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   access       WorkspaceAccess[]
+  invitations  WorkspaceInvitation[]
   transactions Transaction[]
   habits       Habit[]
   notes        Note[]
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 
   @@index([ownerId])
 }
@@ -66,6 +74,27 @@ model WorkspaceAccess {
 
   @@unique([workspaceId, userId])
   @@index([userId])
+}
+
+// Pending/used/cancelled invitation to join a workspace.
+// The raw token is never stored: only its SHA-256 hash.
+model WorkspaceInvitation {
+  id          String           @id @default(uuid())
+  workspaceId String
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email       String // always stored lowercase + trimmed
+  role        WorkspaceRole // API must only allow ADMIN | MEMBER | VIEWER (never OWNER)
+  tokenHash   String           @unique
+  status      InvitationStatus @default(PENDING)
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  invitedById String
+  invitedBy   User             @relation("InvitationInviter", fields: [invitedById], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([workspaceId, status])
+  @@index([workspaceId, email])
 }
 
 // Global: shared by every workspace

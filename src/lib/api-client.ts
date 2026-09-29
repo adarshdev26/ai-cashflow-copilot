@@ -1,10 +1,13 @@
 export class ApiError extends Error {
   status: number;
+  /** Machine-readable code from the server, if it sent one (e.g. 'EXPIRED'). */
+  code?: string;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, code?: string) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -24,13 +27,15 @@ export async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   
   if (!response.ok) {
     let errorMsg = 'An error occurred';
+    let errorCode: string | undefined;
     try {
       const errorData = await response.json();
       errorMsg = errorData.error || errorMsg;
+      if (typeof errorData.code === 'string') errorCode = errorData.code;
     } catch {
       errorMsg = response.statusText || errorMsg;
     }
-     throw new ApiError(errorMsg, response.status);
+    throw new ApiError(errorMsg, response.status, errorCode);
   }
 
   // Handle empty bodies (e.g. 204 No Content or just empty response)
@@ -38,6 +43,6 @@ export async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   if (!text) {
     return {} as T;
   }
-  
+
   return JSON.parse(text) as T;
 }
