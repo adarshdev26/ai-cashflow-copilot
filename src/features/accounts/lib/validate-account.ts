@@ -34,7 +34,12 @@ function parseType(value: unknown): AccountType {
 
 // Negative allowed (e.g. a credit card that starts with debt).
 function parseMoney(value: unknown): number {
-  const n = typeof value === 'number' ? value : Number(String(value).trim());
+  if (typeof value !== 'number' && typeof value !== 'string') {
+    throw new Error('Opening balance must be a valid amount');
+  }
+  const raw = typeof value === 'string' ? value.trim() : value;
+  if (raw === '') throw new Error('Opening balance must be a valid amount');
+  const n = typeof raw === 'number' ? raw : Number(raw);
   if (!Number.isFinite(n) || Math.abs(n) > MAX_ABS_BALANCE) {
     throw new Error('Opening balance must be a valid amount');
   }

@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
+import { getAccountError } from '@/features/accounts/lib/check-account';
 import { Prisma } from '@/generated/prisma';
 
 // Offset pagination matches the existing numbered table controls and keeps this query compatible with useQuery.
 const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type'] as const;
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 100;
+
+const TRANSACTION_INCLUDE = {
+  category: { select: { id: true, name: true, color: true } },
+  account: { select: { id: true, name: true, type: true, isActive: true } },
+} as const;
 
 function parseDate(value: string | null, endOfDay = false) {
   if (!value) return undefined;
@@ -33,6 +39,7 @@ export async function GET(req: Request) {
     const sortDir = searchParams.get('sortDir') ?? 'desc';
     const type = searchParams.get('type');
     const categoryId = searchParams.get('categoryId') || undefined;
+    const accountId = searchParams.get('accountId') || undefined;
     const search = searchParams.get('search')?.trim() || undefined;
     const dateFrom = parseDate(searchParams.get('dateFrom'));
     const dateTo = parseDate(searchParams.get('dateTo'), true);
@@ -60,10 +67,13 @@ export async function GET(req: Request) {
     }
 
     const limit = Math.min(rawLimit, MAX_LIMIT);
+    // workspaceId is always in the filter, so an accountId from another
+    // workspace simply matches nothing.
     const where = {
       workspaceId,
       ...(type ? { type: type as 'CREDIT' | 'DEBIT' } : {}),
       ...(categoryId ? { categoryId } : {}),
+      ...(accountId ? { accountId } : {}),
       ...(search ? { description: { contains: search, mode: 'insensitive' as const } } : {}),
       ...(dateFrom || dateTo
         ? { createdAt: { ...(dateFrom ? { gte: dateFrom } : {}), ...(dateTo ? { lte: dateTo } : {}) } }
@@ -73,11 +83,7 @@ export async function GET(req: Request) {
     const [transactions, totalCount] = await Promise.all([
       prisma.transaction.findMany({
         where,
-        include: {
-          category: {
-            select: { id: true, name: true, color: true },
-          },
-        },
+        include: TRANSACTION_INCLUDE,
         orderBy,
         skip: (rawPage - 1) * limit,
         take: limit,
@@ -97,6 +103,7 @@ export async function GET(req: Request) {
       appliedFilters: {
         type: type as 'CREDIT' | 'DEBIT' | undefined,
         categoryId,
+        accountId,
         search,
         dateFrom: searchParams.get('dateFrom') || undefined,
         dateTo: searchParams.get('dateTo') || undefined,
@@ -124,12 +131,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid transaction data' }, { status: 400 });
     }
 
-    const { amount, type, description, categoryId } = validatedData;
+    const { amount, type, description, categoryId, accountId } = validatedData;
 
     if (categoryId) {
       const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
       if (!categoryExists) {
         return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
+      }
+    }
+
+    // New transactions need an account of THIS workspace that is active
+    if (accountId) {
+      const accountError = await getAccountError(workspaceId, accountId, { requireActive: true });
+      if (accountError) {
+        return NextResponse.json({ error: accountError }, { status: 400 });
       }
     }
 
@@ -140,19 +155,16 @@ export async function POST(req: Request) {
         description,
         workspaceId,
         categoryId,
+        accountId,
       },
-      include: {
-        category: {
-          select: { id: true, name: true, color: true },
-        },
-      },
+      include: TRANSACTION_INCLUDE,
     });
 
     return NextResponse.json(transaction, { status: 201 });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2003') {
-        return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid category or account' }, { status: 400 });
       }
     }
     console.error('Failed to create transaction:', error);

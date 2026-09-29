@@ -3,13 +3,14 @@ export type ValidatedTransaction = {
   type: 'CREDIT' | 'DEBIT';
   description: string | null;
   categoryId: string | null;
+  accountId: string | null; // optional for now; required in a later commit
 };
 
 export function validateTransactionData(data: unknown): ValidatedTransaction {
   if (typeof data !== 'object' || data === null) {
     throw new Error('Invalid transaction data');
   }
-  const { amount, type, description, categoryId } = data as Record<string, unknown>;
+  const { amount, type, description, categoryId, accountId } = data as Record<string, unknown>;
 
   const parsedAmount = parseFloat(String(amount));
   if (isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -29,10 +30,15 @@ export function validateTransactionData(data: unknown): ValidatedTransaction {
     }
   }
 
+  if (accountId !== undefined && accountId !== null && accountId !== '' && typeof accountId !== 'string') {
+    throw new Error('Invalid account');
+  }
+
   return {
     amount: finalAmount,
     type,
     description: finalDescription,
     categoryId: categoryId && typeof categoryId === 'string' ? categoryId : null,
+    accountId: accountId && typeof accountId === 'string' ? accountId : null,
   };
 }

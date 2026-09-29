@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
+import { getAccountError } from '@/features/accounts/lib/check-account';
+
+const TRANSACTION_INCLUDE = {
+  category: { select: { id: true, name: true, color: true } },
+  account: { select: { id: true, name: true, type: true, isActive: true } },
+} as const;
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -28,6 +34,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       type: body.type !== undefined ? body.type : existing.type,
       description: body.description !== undefined ? body.description : existing.description,
       categoryId: body.categoryId !== undefined ? body.categoryId : existing.categoryId,
+      accountId: body.accountId !== undefined ? body.accountId : existing.accountId,
     };
 
     let validatedData;
@@ -37,12 +44,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid data' }, { status: 400 });
     }
 
-    const { amount, type, description, categoryId } = validatedData;
+    const { amount, type, description, categoryId, accountId } = validatedData;
 
     if (categoryId && categoryId !== existing.categoryId) {
       const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
       if (!categoryExists) {
         return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
+      }
+    }
+
+    // Account rule:
+    //  - unchanged account -> no check (old transactions on an inactive account stay editable)
+    //  - changed account   -> must belong to this workspace AND be active
+    if (accountId && accountId !== existing.accountId) {
+      const accountError = await getAccountError(workspaceId, accountId, { requireActive: true });
+      if (accountError) {
+        return NextResponse.json({ error: accountError }, { status: 400 });
       }
     }
 
@@ -53,12 +70,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         type,
         description,
         categoryId: body.categoryId === null ? null : categoryId,
+        accountId,
       },
-      include: {
-        category: {
-          select: { id: true, name: true, color: true },
-        },
-      },
+      include: TRANSACTION_INCLUDE,
     });
 
     return NextResponse.json(updated, { status: 200 });
