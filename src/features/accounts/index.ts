@@ -6,3 +6,5 @@ export {
   useUpdateAccount,
   useDeleteAccount,
 } from './hooks/use-accounts';
+export { AccountCard } from './components/AccountCard';
+export { AddAccountModal } from './components/AddAccountModal';
