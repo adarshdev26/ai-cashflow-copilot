@@ -53,7 +53,7 @@ export function FinanceStats({
 
   if (isLoading) {
     return (
-      <div className={gridClass}>
+      <div className={gridClass} data-tour="finance-stats">
         {Array.from({ length: 5 }).map((_, i) => (
           <StatCardSkeleton key={i} />
         ))}
@@ -68,7 +68,7 @@ export function FinanceStats({
   const { allTime, thisMonth, lastMonth } = data;
 
   return (
-    <div className={gridClass}>
+    <div className={gridClass} data-tour="finance-stats">
       {totalIncome && (
         <StatCard title="Total income" value={currency.format(allTime.income)} icon={ArrowUpRight} tone="positive" />
       )}

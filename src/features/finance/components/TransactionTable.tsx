@@ -137,25 +137,27 @@ export const TransactionTable = memo(function TransactionTable({
   }, [handleEdit, handleDelete, canEdit, canDelete]);
 
   return (
-    <DataTable
-      columns={columns}
-      data={transactions}
-      searchKey="description"
-      searchPlaceholder="Search transactions..."
-      pageSize={pagination.pageSize}
-      manualPagination
-      manualFiltering
-      manualSorting
-      pageCount={pageCount}
-      totalCount={totalCount}
-      pagination={pagination}
-      sorting={sorting}
-      globalFilter={globalFilter}
-      onPaginationChange={onPaginationChange}
-      onSortingChange={onSortingChange}
-      onGlobalFilterChange={onGlobalFilterChange}
-      isLoading={isLoading}
-      isFetching={isFetching}
-    />
+    <div data-tour="transaction-table">
+      <DataTable
+        columns={columns}
+        data={transactions}
+        searchKey="description"
+        searchPlaceholder="Search transactions..."
+        pageSize={pagination.pageSize}
+        manualPagination
+        manualFiltering
+        manualSorting
+        pageCount={pageCount}
+        totalCount={totalCount}
+        pagination={pagination}
+        sorting={sorting}
+        globalFilter={globalFilter}
+        onPaginationChange={onPaginationChange}
+        onSortingChange={onSortingChange}
+        onGlobalFilterChange={onGlobalFilterChange}
+        isLoading={isLoading}
+        isFetching={isFetching}
+      />
+    </div>
   );
 })

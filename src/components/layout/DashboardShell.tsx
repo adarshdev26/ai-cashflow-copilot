@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useCurrentUser } from '@/features/auth';
 import { useWorkspace, useCreateWorkspace } from '@/features/workspaces';
 import { notify, getErrorMessage } from '@/lib/toast';
+import { OnboardingTour } from '@/features/onboarding/components/OnboardingTour';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -127,7 +128,7 @@ function WorkspaceSelector() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center space-x-3" data-tour="workspace-switcher">
       {workspaces.length > 1 ? (
         <select
           className="text-sm font-semibold text-slate-700 bg-transparent border-none focus:ring-0 p-0 cursor-pointer"
@@ -150,6 +151,7 @@ function WorkspaceSelector() {
 
       <button
         type="button"
+        data-tour="new-workspace-btn"
         onClick={() => setIsCreateOpen(true)}
         className="flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
       >
@@ -248,6 +250,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="h-screen overflow-hidden bg-slate-50/50 flex">
+      <OnboardingTour />
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
@@ -287,6 +290,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.name}
                 href={item.href}
+                data-tour={`nav-${item.name.toLowerCase()}`}
                 onClick={closeMobile}
                 title={collapsed ? item.name : undefined}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${collapsed ? 'md:justify-center' : ''} ${isActive

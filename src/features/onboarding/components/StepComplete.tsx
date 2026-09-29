@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { PrimaryButton } from '@/components/ui/Button';
 import { notify, getErrorMessage } from '@/lib/toast';
 import { useCompleteOnboarding } from '../hooks/use-onboarding';
+import { TOUR_START_KEY } from '../lib/tour-steps';
 
 export function StepComplete() {
   const router = useRouter();
@@ -14,6 +15,9 @@ export function StepComplete() {
     if (complete.isPending || complete.isSuccess) return;
     try {
       await complete.mutateAsync(); // also invalidates ['current-user']
+      try {
+        sessionStorage.setItem(TOUR_START_KEY, '1'); // tells the dashboard to run the tour once
+      } catch { }
       router.replace('/dashboard');
       router.refresh(); // make the server layout re-read the DB
     } catch (err) {
