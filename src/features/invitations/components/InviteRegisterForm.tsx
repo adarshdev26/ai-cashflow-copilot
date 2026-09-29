@@ -4,6 +4,7 @@ import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { PrimaryButton } from '@/components/ui/Button';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { ApiError } from '@/lib/api-client';
 import { notify, getErrorMessage } from '@/lib/toast';
 import { invitationKeys, useRegisterViaInvitation } from '../hooks/use-invitations';
@@ -91,9 +92,8 @@ export function InviteRegisterForm({ token, email }: Props) {
         <label htmlFor={ids.password} className="block text-sm font-medium text-gray-400 mb-1">
           Password
         </label>
-        <input
+        <PasswordInput
           id={ids.password}
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isPending}
@@ -106,9 +106,8 @@ export function InviteRegisterForm({ token, email }: Props) {
         <label htmlFor={ids.confirm} className="block text-sm font-medium text-gray-400 mb-1">
           Confirm password
         </label>
-        <input
+        <PasswordInput
           id={ids.confirm}
-          type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           disabled={isPending}
