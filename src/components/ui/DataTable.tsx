@@ -17,6 +17,7 @@ import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import { useDebouncedSearch } from '@/hooks/useDebouncedSearch';
 
 const DEFAULT_SEARCH_DEBOUNCE_MS = 400;
+const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -26,6 +27,8 @@ interface DataTableProps<TData, TValue> {
   /** Delay before the typed search is applied. Use 0 to apply on every keystroke. */
   searchDebounceMs?: number;
   pageSize?: number;
+  /** Options for the "Rows per page" selector. */
+  pageSizeOptions?: number[];
   manualPagination?: boolean;
   manualFiltering?: boolean;
   manualSorting?: boolean;
@@ -48,6 +51,7 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = 'Search records...',
   searchDebounceMs = DEFAULT_SEARCH_DEBOUNCE_MS,
   pageSize = 5,
+  pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
   manualPagination = false,
   manualFiltering = false,
   manualSorting = false,
@@ -102,6 +106,18 @@ export function DataTable<TData, TValue>({
   const rowCount = table.getRowModel().rows.length;
   const showSkeleton = isLoading && rowCount === 0;
   const isRefetching = isFetching && !showSkeleton;
+
+  const { pageIndex, pageSize: currentPageSize } = table.getState().pagination;
+  const total = totalCount ?? table.getFilteredRowModel().rows.length;
+  const from = total === 0 ? 0 : pageIndex * currentPageSize + 1;
+  const to = Math.min((pageIndex + 1) * currentPageSize, total);
+  // Keep the current size selectable even if it isn't one of the presets (e.g. from the URL).
+  const sizeOptions = pageSizeOptions.includes(currentPageSize)
+    ? pageSizeOptions
+    : [...pageSizeOptions, currentPageSize].sort((a, b) => a - b);
+
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
+    table.setPageSize(Number(e.target.value));
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -184,30 +200,56 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Pagination Bar */}
-      {table.getPageCount() > 1 && (
-        <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <button
-            onClick={handlePreviousPage}
-            disabled={!table.getCanPreviousPage()}
-            className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </button>
-          <span className="text-xs text-slate-500">
-            Page <span className="font-semibold text-slate-700">{table.getState().pagination.pageIndex + 1}</span> of{' '}
-            <span className="font-semibold text-slate-700">{table.getPageCount()}</span>
-          </span>
-          <button
-            onClick={handleNextPage}
-            disabled={!table.getCanNextPage()}
-            className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </button>
+      {total > 0 && (
+        <div className="p-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
+          <div className="flex items-center gap-4 text-xs text-slate-500">
+            <span>
+              Showing <span className="font-semibold text-slate-700">{from}</span>–
+              <span className="font-semibold text-slate-700">{to}</span> of{' '}
+              <span className="font-semibold text-slate-700">{total}</span> entries
+            </span>
+            <label className="flex items-center gap-2">
+              <span>Rows per page</span>
+              <select
+                value={currentPageSize}
+                onChange={handlePageSizeChange}
+                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              >
+                {sizeOptions.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {table.getPageCount() > 1 && (
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handlePreviousPage}
+                disabled={!table.getCanPreviousPage()}
+                className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+              <span className="text-xs text-slate-500">
+                Page <span className="font-semibold text-slate-700">{table.getState().pagination.pageIndex + 1}</span> of{' '}
+                <span className="font-semibold text-slate-700">{table.getPageCount()}</span>
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={!table.getCanNextPage()}
+                className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </div >
   );
 }

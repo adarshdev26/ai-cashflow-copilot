@@ -7,6 +7,7 @@ import { Transaction } from '../types';
 import { DataTable } from '@/components/ui/DataTable';
 import { CategoryBadge } from '@/resources/components/CategoryBadge';
 import { Button } from '@/components/ui/Button';
+import { usePermission } from '@/features/workspaces';
 
 interface TransactionTableProps {
   transactions?: Transaction[];
@@ -39,11 +40,13 @@ export const TransactionTable = memo(function TransactionTable({
   isLoading,
   isFetching,
 }: TransactionTableProps) {
+  const canEdit = usePermission('transaction.update');
+  const canDelete = usePermission('transaction.delete');
   const handleEdit = useCallback((tx: Transaction) => onEdit(tx), [onEdit]);
   const handleDelete = useCallback((tx: Transaction) => onDelete(tx), [onDelete]);
 
-  const columns = useMemo<ColumnDef<Transaction>[]>(
-    () => [
+  const columns = useMemo<ColumnDef<Transaction>[]>(() => {
+    const base: ColumnDef<Transaction>[] = [
       {
         accessorKey: 'description',
         header: 'Description',
@@ -103,6 +106,12 @@ export const TransactionTable = memo(function TransactionTable({
           );
         },
       },
+    ];
+
+    if (!canEdit && !canDelete) return base;
+
+    return [
+      ...base,
       {
         id: 'actions',
         enableSorting: false,
@@ -110,29 +119,22 @@ export const TransactionTable = memo(function TransactionTable({
           const tx = row.original;
           return (
             <div className="flex items-center justify-end gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label="Edit transaction"
-                onClick={() => handleEdit(tx)}
-              >
-                <Pencil className="h-4 w-4 text-blue-500" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label="Delete transaction"
-                onClick={() => handleDelete(tx)}
-              >
-                <Trash2 className="h-4 w-4 text-red-600" />
-              </Button>
+              {canEdit && (
+                <Button variant="ghost" size="sm" aria-label="Edit transaction" onClick={() => handleEdit(tx)}>
+                  <Pencil className="h-4 w-4 text-blue-500" />
+                </Button>
+              )}
+              {canDelete && (
+                <Button variant="ghost" size="sm" aria-label="Delete transaction" onClick={() => handleDelete(tx)}>
+                  <Trash2 className="h-4 w-4 text-red-600" />
+                </Button>
+              )}
             </div>
           );
         },
       },
-    ],
-    [handleEdit, handleDelete]
-  );
+    ];
+  }, [handleEdit, handleDelete, canEdit, canDelete]);
 
   return (
     <DataTable

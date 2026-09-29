@@ -6,7 +6,7 @@ import { Prisma } from '@/generated/prisma';
 
 // Offset pagination matches the existing numbered table controls and keeps this query compatible with useQuery.
 const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type'] as const;
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 100;
 
 function parseDate(value: string | null, endOfDay = false) {

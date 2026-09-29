@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PrimaryButton } from '@/components/ui/Button'
+import { notify, getErrorMessage } from '@/lib/toast'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -31,9 +32,11 @@ export default function LoginPage() {
           throw new Error(data.error || 'Something went wrong')
         }
 
+        notify.success('Welcome back!')
         router.push('/dashboard')
       } catch (err: any) {
         setError(err.message)
+        notify.error(getErrorMessage(err, 'Login failed'))
       } finally {
         setLoading(false)
       }

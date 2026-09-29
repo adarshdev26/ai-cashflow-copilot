@@ -74,18 +74,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ works
       return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
 
+    // Ownership can't be transferred yet, so the owner is never removable.
     if (targetAccess.role === 'OWNER') {
-      // Never remove or demote the last OWNER
-      const ownerCount = await prisma.workspaceAccess.count({
-        where: {
-          workspaceId: access.workspaceId,
-          role: 'OWNER',
-        },
-      });
-
-      if (ownerCount <= 1) {
-        return NextResponse.json({ error: 'Cannot remove the last OWNER' }, { status: 400 });
-      }
+      return NextResponse.json({ error: 'Cannot remove the workspace owner' }, { status: 403 });
     }
 
     await prisma.workspaceAccess.delete({

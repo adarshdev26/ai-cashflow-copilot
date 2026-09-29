@@ -9,6 +9,7 @@ import {
   updateWorkspaceMember,
   removeWorkspaceMember,
 } from '../api/workspaces-api';
+import { WorkspaceSummary } from '../types';
 
 export const workspaceKeys = {
   all: ['workspaces'] as const,
@@ -19,8 +20,10 @@ export function useWorkspaces() {
   return useQuery({
     queryKey: workspaceKeys.all,
     queryFn: getWorkspaces,
-    select: (data) => data.workspaces,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true, // explicit, in case your QueryClient defaults turn it off
+    // Flatten the API response into one array so consumers (the provider) get WorkspaceSummary[].
+    select: (res): WorkspaceSummary[] => res.workspaces,
   });
 }
 
@@ -57,10 +60,11 @@ export function useDeleteWorkspace() {
   });
 }
 
-export function useWorkspaceAccess(workspaceId: string) {
+export function useWorkspaceAccess(workspaceId: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: workspaceKeys.access(workspaceId),
     queryFn: () => getWorkspaceAccess(workspaceId),
+    enabled: options?.enabled ?? true,
   });
 }
 

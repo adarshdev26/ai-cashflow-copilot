@@ -25,7 +25,8 @@ import {
   UpdateTransactionInput,
 } from '@/features/finance/types';
 import { CategoryStatsTooltip } from "@/resources/components/CategoryStats";
-import { useActiveWorkspaceId } from '@/features/workspaces';
+import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
+import { notify, getErrorMessage } from '@/lib/toast';
 
 type FormState = { mode: 'create' } | { mode: 'edit'; transaction: Transaction } | null;
 
@@ -52,11 +53,14 @@ export default function FinancePage() {
   } = useListQueryState<TransactionFilters, TransactionSortField>({
     defaultFilters: defaultTransactionFilters,
     defaultSortDir: 'desc',
-    defaultPageSize: 20,
+    defaultPageSize: 10,
     maxPageSize: 100,
   });
   const isInvalidDateRange = Boolean(filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo);
   const workspaceId = useActiveWorkspaceId();
+  const canCreate = usePermission('transaction.create');
+  const canUpdate = usePermission('transaction.update');
+  const canDelete = usePermission('transaction.delete');
   const { data: categories, isLoading: categoriesLoading } = useCategories();
 
   const { data: transactionResponse, isLoading, error, isFetching } = useTransactions(workspaceId, params, { enabled: !isInvalidDateRange });
@@ -72,8 +76,14 @@ export default function FinancePage() {
   const handleCreateTransaction = useCallback(
     (data: CreateTransactionInput) => {
       addTx(data, {
-        onSuccess: () => setFormState(null),
-        onError: (error) => console.error('Failed to create transaction:', error),
+        onSuccess: () => {
+          setFormState(null);
+          notify.success('Transaction created');
+        },
+        onError: (error) => {
+          console.error('Failed to create transaction:', error);
+          notify.error(getErrorMessage(error, 'Failed to create transaction'));
+        },
       });
     },
     [addTx]
@@ -85,8 +95,14 @@ export default function FinancePage() {
       updateTx(
         { id: formState.transaction.id, data },
         {
-          onSuccess: () => setFormState(null),
-          onError: (error) => console.error('Failed to update transaction:', error),
+          onSuccess: () => {
+            setFormState(null);
+            notify.success('Transaction updated');
+          },
+          onError: (error) => {
+            console.error('Failed to update transaction:', error);
+            notify.error(getErrorMessage(error, 'Failed to update transaction'));
+          },
         }
       );
     },
@@ -96,8 +112,14 @@ export default function FinancePage() {
   const handleDeleteTransaction = useCallback(() => {
     if (!deleteTarget) return;
     deleteTx(deleteTarget.id, {
-      onSuccess: () => setDeleteTarget(null),
-      onError: (error) => console.error('Failed to delete transaction:', error),
+      onSuccess: () => {
+        setDeleteTarget(null);
+        notify.success('Transaction deleted');
+      },
+      onError: (error) => {
+        console.error('Failed to delete transaction:', error);
+        notify.error(getErrorMessage(error, 'Failed to delete transaction'));
+      },
     });
   }, [deleteTarget, deleteTx]);
 
@@ -206,7 +228,7 @@ export default function FinancePage() {
         isFetching={isFetching}
       />
 
-      {formState && (
+      {formState && (formState.mode === 'create' ? canCreate : canUpdate) && (
         <TransactionModal
           key={formState.mode === 'edit' ? formState.transaction.id : 'new'}
           open={true}
@@ -217,7 +239,7 @@ export default function FinancePage() {
         />
       )}
 
-      {deleteTarget && (
+      {deleteTarget && canDelete && (
         <ConfirmDialog
           isOpen={true}
           title="Delete transaction"
