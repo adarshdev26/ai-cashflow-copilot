@@ -17,7 +17,11 @@ export const FinanceHeader = memo(function FinanceHeader({ onOpenModal }: Financ
         <p className="text-sm text-slate-500">Track and manage your income, expenses, and cash flow items.</p>
       </div>
       {canCreate && (
-        <PrimaryButton onClick={onOpenModal} leftIcon={<Plus className="h-4 w-4" />}>
+        <PrimaryButton
+          data-tour="add-transaction-btn"
+          onClick={onOpenModal}
+          leftIcon={<Plus className="h-4 w-4" />}
+        >
           Add Transaction
         </PrimaryButton>
       )}

@@ -15,3 +15,17 @@ export const getValidUser = cache(async () => {
     select: { id: true, name: true, email: true },
   });
 });
+
+/**
+ * Same as getValidUser, plus onboardingCompletedAt.
+ * Used by the onboarding layout and the dashboard layout guard.
+ */
+export const getValidUserWithOnboarding = cache(async () => {
+  const session = await getSession();
+  if (!session) return null;
+
+  return prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { id: true, name: true, email: true, onboardingCompletedAt: true },
+  });
+});

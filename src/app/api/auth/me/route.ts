@@ -13,7 +13,7 @@ export async function GET() {
     // Look up the user, selecting only safe fields (never the password)
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, onboardingCompletedAt: true },
     })
 
     if (!user) {
