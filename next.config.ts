@@ -1,7 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/finance/:path*',
+        destination: '/dashboard/transactions/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -1,4 +1,5 @@
 import { Category } from '@/resources/types';
+import type { AccountType } from '@/features/accounts/types';
 
 export type TransactionType = 'CREDIT' | 'DEBIT';
 
@@ -10,9 +11,17 @@ export interface TransactionFilters {
   [key: string]: unknown;
   type?: TransactionType;
   categoryId?: string;
+  accountId?: string;
   search?: string;
   dateFrom?: string;
   dateTo?: string;
+}
+
+export interface TransactionAccount {
+  id: string;
+  name: string;
+  type: AccountType;
+  isActive: boolean;
 }
 
 export interface Transaction {
@@ -23,6 +32,8 @@ export interface Transaction {
   workspaceId: string;
   categoryId: string | null;
   category: Category | null;
+  accountId: string;
+  account: TransactionAccount;
   createdAt: string;
   updatedAt?: string;
 }
@@ -45,6 +56,7 @@ export interface TransactionListResponse {
   appliedFilters: {
     type?: TransactionType;
     categoryId?: string;
+    accountId?: string;
     search?: string;
     dateFrom?: string;
     dateTo?: string;
@@ -60,6 +72,7 @@ export interface CreateTransactionInput {
   type: TransactionType;
   description?: string;
   categoryId?: string | null;
+  accountId: string;
 }
 
 export type UpdateTransactionInput = Partial<CreateTransactionInput>;

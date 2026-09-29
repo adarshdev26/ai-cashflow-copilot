@@ -2,7 +2,7 @@ import type { DriveStep } from 'driver.js';
 
 export const TOUR_PARAM = 'tour';
 export const OVERVIEW_PATH = '/dashboard';
-export const FINANCE_PATH = '/dashboard/finance';
+export const FINANCE_PATH = '/dashboard/transactions';
 
 export type TourPhase = 'overview' | 'finance';
 
@@ -63,15 +63,15 @@ const overviewSteps = (actions: Actions): DriveStep[] => [
     },
   },
   {
-    element: '[data-tour="nav-finance"]',
+    element: '[data-tour="nav-transactions"]',
     popover: {
-      title: 'Finance',
+      title: 'Transactions',
       description: "Let's see where you add your transactions.",
       side: 'right',
       align: 'start',
       // Last visible step of this phase, so the button shows the "done" label.
-      nextBtnText: 'Open Finance',
-      doneBtnText: 'Open Finance',
+      nextBtnText: 'Open Transactions',
+      doneBtnText: 'Open Transactions',
       onNextClick: () => actions.goToFinance(),
     },
   },
