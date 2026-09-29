@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { CategorySelect } from '@/resources/components/CategorySelect';
 import { Transaction, CreateTransactionInput } from '../types';
-import { AccountSelect, useAccounts } from '@/features/accounts';
+import { AccountSelect, useAccounts, useActiveAccountId } from '@/features/accounts';
 import { useActiveWorkspaceId } from '@/features/workspaces';
 
 interface TransactionModalProps {
@@ -40,7 +40,12 @@ export function TransactionModal({
   const { data: activeAccounts, isLoading: accountsLoading } = useAccounts(workspaceId, { activeOnly: true });
   // null = user hasn't picked; on create we fall back to the first active account.
   const [pickedAccountId, setPickedAccountId] = useState<string | null>(transaction?.accountId ?? null);
-  const accountId = pickedAccountId ?? (isEdit ? null : activeAccounts?.[0]?.id ?? null);
+  const [activeAccountId] = useActiveAccountId();
+  const preferredAccountId =
+    activeAccountId && activeAccounts?.some((a) => a.id === activeAccountId)
+      ? activeAccountId
+      : activeAccounts?.[0]?.id ?? null;
+  const accountId = pickedAccountId ?? (isEdit ? null : preferredAccountId);
 
   const handleSubmit = useCallback(
     (e: React.SyntheticEvent) => {

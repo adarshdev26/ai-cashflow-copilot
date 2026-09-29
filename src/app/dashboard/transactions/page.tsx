@@ -1,5 +1,6 @@
 'use client';
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useActiveAccountId } from '@/features/accounts';
 import { OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import {
   useTransactions,
@@ -66,7 +67,23 @@ export default function TransactionsPage() {
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: accounts, isLoading: accountsLoading } = useAccounts(workspaceId);
 
-  const { data: transactionResponse, isLoading, error, isFetching } = useTransactions(workspaceId, params, { enabled: !isInvalidDateRange });
+  const [activeAccountId] = useActiveAccountId();
+  const queryParams = useMemo(
+    () => ({ ...params, accountId: activeAccountId ?? undefined }),
+    [params, activeAccountId]
+  );
+
+  // Back to page 1 when the account changes.
+  const prevAccountRef = useRef(activeAccountId);
+  useEffect(() => {
+    if (prevAccountRef.current !== activeAccountId) {
+      prevAccountRef.current = activeAccountId;
+      setPage(1);
+    }
+  }, [activeAccountId, setPage]);
+
+  const { data: transactionResponse, isLoading, error, isFetching } =
+    useTransactions(workspaceId, queryParams, { enabled: !isInvalidDateRange });
   const { mutate: addTx, isPending: isAdding } = useCreateTransaction(workspaceId);
   const { mutate: updateTx, isPending: isUpdating } = useUpdateTransaction(workspaceId);
   const { mutate: deleteTx, isPending: isDeleting } = useDeleteTransaction(workspaceId);

@@ -14,6 +14,7 @@ import { useWorkspace, useCreateWorkspace } from '@/features/workspaces';
 import { notify, getErrorMessage } from '@/lib/toast';
 import { OnboardingTour } from '@/features/onboarding/components/OnboardingTour';
 import { tourHref } from '@/features/onboarding/lib/tour-steps';
+import { ActiveAccountSwitcher } from '@/features/accounts';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -366,6 +367,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               )}
             </button>
             <WorkspaceSelector />
+             <div className="hidden h-5 w-px bg-slate-200 sm:block" aria-hidden="true" />
+            <ActiveAccountSwitcher />
           </div>
 
           <button
