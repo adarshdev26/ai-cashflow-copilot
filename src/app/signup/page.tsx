@@ -48,9 +48,10 @@ function SignupForm() {
 
         notify.success('Account created. Please log in.')
         router.push(loginHref)
-      } catch (err: any) {
-        setError(err.message)
-        notify.error(getErrorMessage(err, 'Signup failed'))
+      } catch (err) {
+        const message = getErrorMessage(err, 'Signup failed')
+        setError(message)
+        notify.error(message)
       } finally {
         setLoading(false)
       }

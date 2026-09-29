@@ -208,7 +208,9 @@ export default function FinancePage() {
         <Input aria-label="Filter transactions from date" type="date" value={filters.dateFrom ?? ''} onChange={(event) => handleDateFromChange(event.target.value)} />
         <Input aria-label="Filter transactions to date" type="date" min={filters.dateFrom} value={filters.dateTo ?? ''} onChange={(event) => handleDateToChange(event.target.value)} />
         {isInvalidDateRange && (
-          <p className="text-xs text-red-600 md:col-span-4">"From" date must be on or before the "To" date.</p>
+          <p className="text-xs text-red-600 md:col-span-4">
+            &quot;From&quot; date must be on or before the &quot;To&quot; date.
+          </p>
         )}
       </div>
 
