@@ -46,9 +46,10 @@ function LoginForm() {
 
         notify.success('Welcome back!')
         router.push(nextPath ?? '/dashboard')
-      } catch (err: any) {
-        setError(err.message)
-        notify.error(getErrorMessage(err, 'Login failed'))
+      } catch (err) {
+        const message = getErrorMessage(err, 'Login failed')
+        setError(message)
+        notify.error(message)
       } finally {
         setLoading(false)
       }
@@ -87,7 +88,7 @@ function LoginForm() {
           </PrimaryButton>
         </form>
         <p className="mt-4 text-center text-sm text-gray-400">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link
             href={nextPath ? `/signup?next=${encodeURIComponent(nextPath)}` : '/signup'}
             className="text-indigo-400 hover:underline"

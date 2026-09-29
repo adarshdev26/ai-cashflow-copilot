@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useSyncExternalStore } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut, Plus,
@@ -170,29 +170,44 @@ function WorkspaceSelector() {
   );
 }
 
+const COLLAPSED_KEY = 'sidebar-collapsed';
+const collapsedListeners = new Set<() => void>();
+
+function subscribeCollapsed(cb: () => void) {
+  collapsedListeners.add(cb);
+  window.addEventListener('storage', cb);
+  return () => {
+    collapsedListeners.delete(cb);
+    window.removeEventListener('storage', cb);
+  };
+}
+
+function getCollapsedSnapshot() {
+  try {
+    return localStorage.getItem(COLLAPSED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function setCollapsedStored(next: boolean) {
+  try {
+    localStorage.setItem(COLLAPSED_KEY, String(next));
+  } catch { }
+  collapsedListeners.forEach((l) => l());
+}
+
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false); // desktop rail
+  const collapsed = useSyncExternalStore(subscribeCollapsed, getCollapsedSnapshot, () => false);
   const [mobileOpen, setMobileOpen] = useState(false); // mobile drawer
   const queryClient = useQueryClient();
 
-  // Restore the desktop collapsed state after mount (avoids an SSR hydration mismatch).
-  useEffect(() => {
-    try {
-      setCollapsed(localStorage.getItem('sidebar-collapsed') === 'true');
-    } catch { }
-  }, []);
-
-  // One button for both: collapses the rail on desktop, opens the drawer on mobile.
   const toggleSidebar = useCallback(() => {
     if (window.matchMedia('(min-width: 768px)').matches) {
-      const next = !collapsed;
-      setCollapsed(next);
-      try {
-        localStorage.setItem('sidebar-collapsed', String(next));
-      } catch { }
+      setCollapsedStored(!collapsed);
     } else {
       setMobileOpen((open) => !open);
     }
