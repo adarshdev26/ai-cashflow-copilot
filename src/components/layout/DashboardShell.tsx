@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useCurrentUser } from '@/features/auth';
 import { useWorkspace, useCreateWorkspace } from '@/features/workspaces';
+import { notify, getErrorMessage } from '@/lib/toast';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -159,6 +160,7 @@ function WorkspaceSelector() {
         onCreated={(workspaceId) => {
           setActiveWorkspaceId(workspaceId);
           setIsCreateOpen(false);
+          notify.success('Workspace created');
         }}
       />
     </div>
@@ -181,8 +183,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       queryClient.clear();
       router.push('/login');
       router.refresh();
+      notify.success('Signed out');
     } catch (error) {
       console.error('Failed to sign out:', error);
+      notify.error(getErrorMessage(error, 'Failed to sign out'));
     }
   }, [router, queryClient]);
 

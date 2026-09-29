@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { notify, getErrorMessage } from '@/lib/toast';
 import { ChartCard, MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
 import { Activity, FileText } from 'lucide-react';
 import { FinanceStats } from '@/features/finance';
@@ -24,6 +26,14 @@ const BalanceTrendChart = dynamic(
 export default function DashboardOverviewPage() {
   const workspaceId = useActiveWorkspaceId();
   const { data, isLoading, error } = useDashboardMetrics(workspaceId);
+
+  useEffect(() => {
+    if (error) {
+      notify.error(getErrorMessage(error, 'Failed to load dashboard metrics'), {
+        toastId: 'dashboard-metrics-error',
+      });
+    }
+  }, [error]);
 
   // if (isLoading) {
   //   return <div className="text-sm text-slate-500 animate-pulse">Loading workspace analytics...</div>;

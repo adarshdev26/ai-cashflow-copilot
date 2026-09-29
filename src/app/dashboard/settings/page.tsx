@@ -13,6 +13,7 @@ import {
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { usePermission } from '@/features/workspaces';
 import { RolesPermissionsSection } from '@/features/workspaces';
+import { notify, getErrorMessage } from '@/lib/toast';
 
 // The key remounts the content when the active workspace changes,
 // so local form state (like the name input) always starts fresh.
@@ -50,13 +51,23 @@ function SettingsContent() {
     e.preventDefault();
     const trimmed = name.trim();
     if (trimmed && trimmed !== workspace.name) {
-      updateName({ workspaceId: workspace.workspaceId, name: trimmed });
+      updateName(
+        { workspaceId: workspace.workspaceId, name: trimmed },
+        {
+          onSuccess: () => notify.success('Workspace renamed'),
+          onError: (error) => notify.error(getErrorMessage(error, 'Failed to rename workspace')),
+        }
+      );
     }
   };
 
   const handleDelete = () => {
     deleteWs(workspace.workspaceId, {
-      onSuccess: () => setDeleteOpen(false),
+      onSuccess: () => {
+        setDeleteOpen(false);
+        notify.success('Workspace deleted');
+      },
+      onError: (error) => notify.error(getErrorMessage(error, 'Failed to delete workspace')),
     });
   };
 
@@ -69,7 +80,9 @@ function SettingsContent() {
           onSuccess: () => {
             setNewEmail('');
             setNewRole('VIEWER');
+            notify.success('Member added');
           },
+          onError: (error) => notify.error(getErrorMessage(error, 'Failed to add member')),
         }
       );
     }
@@ -177,11 +190,17 @@ function SettingsContent() {
                           <select
                             value={m.role}
                             onChange={(e) =>
-                              updateMember({
-                                workspaceId: workspace.workspaceId,
-                                userId: m.userId,
-                                role: e.target.value,
-                              })
+                              updateMember(
+                                {
+                                  workspaceId: workspace.workspaceId,
+                                  userId: m.userId,
+                                  role: e.target.value,
+                                },
+                                {
+                                  onSuccess: () => notify.success('Role updated'),
+                                  onError: (error) => notify.error(getErrorMessage(error, 'Failed to update role')),
+                                }
+                              )
                             }
                             disabled={!canChangeRoles}
                             className="rounded border-slate-300 text-sm py-1 pl-2 pr-8 focus:ring-indigo-500 focus:border-indigo-500 border-none bg-transparent"
@@ -196,7 +215,13 @@ function SettingsContent() {
                         {m.role !== 'OWNER' && canRemoveMembers && (
                           <button
                             onClick={() =>
-                              removeMember({ workspaceId: workspace.workspaceId, userId: m.userId })
+                              removeMember(
+                                { workspaceId: workspace.workspaceId, userId: m.userId },
+                                {
+                                  onSuccess: () => notify.success('Member removed'),
+                                  onError: (error) => notify.error(getErrorMessage(error, 'Failed to remove member')),
+                                }
+                              )
                             }
                             className="text-red-600 hover:text-red-700 font-medium text-sm"
                           >

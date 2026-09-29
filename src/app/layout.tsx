@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, DM_Sans, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { ReactQueryProvider } from "@/components/providers/ReactQueryProvider";
+import { AppToaster } from "@/components/ui/AppToaster";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <ReactQueryProvider>{children}</ReactQueryProvider>
+        <AppToaster />
       </body>
     </html>
   );

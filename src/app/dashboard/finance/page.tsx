@@ -26,6 +26,7 @@ import {
 } from '@/features/finance/types';
 import { CategoryStatsTooltip } from "@/resources/components/CategoryStats";
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
+import { notify, getErrorMessage } from '@/lib/toast';
 
 type FormState = { mode: 'create' } | { mode: 'edit'; transaction: Transaction } | null;
 
@@ -75,8 +76,14 @@ export default function FinancePage() {
   const handleCreateTransaction = useCallback(
     (data: CreateTransactionInput) => {
       addTx(data, {
-        onSuccess: () => setFormState(null),
-        onError: (error) => console.error('Failed to create transaction:', error),
+        onSuccess: () => {
+          setFormState(null);
+          notify.success('Transaction created');
+        },
+        onError: (error) => {
+          console.error('Failed to create transaction:', error);
+          notify.error(getErrorMessage(error, 'Failed to create transaction'));
+        },
       });
     },
     [addTx]
@@ -88,8 +95,14 @@ export default function FinancePage() {
       updateTx(
         { id: formState.transaction.id, data },
         {
-          onSuccess: () => setFormState(null),
-          onError: (error) => console.error('Failed to update transaction:', error),
+          onSuccess: () => {
+            setFormState(null);
+            notify.success('Transaction updated');
+          },
+          onError: (error) => {
+            console.error('Failed to update transaction:', error);
+            notify.error(getErrorMessage(error, 'Failed to update transaction'));
+          },
         }
       );
     },
@@ -99,8 +112,14 @@ export default function FinancePage() {
   const handleDeleteTransaction = useCallback(() => {
     if (!deleteTarget) return;
     deleteTx(deleteTarget.id, {
-      onSuccess: () => setDeleteTarget(null),
-      onError: (error) => console.error('Failed to delete transaction:', error),
+      onSuccess: () => {
+        setDeleteTarget(null);
+        notify.success('Transaction deleted');
+      },
+      onError: (error) => {
+        console.error('Failed to delete transaction:', error);
+        notify.error(getErrorMessage(error, 'Failed to delete transaction'));
+      },
     });
   }, [deleteTarget, deleteTx]);
 

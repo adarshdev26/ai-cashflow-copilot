@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PrimaryButton } from '@/components/ui/Button'
+import { notify, getErrorMessage } from '@/lib/toast'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -31,9 +32,11 @@ export default function SignupPage() {
         throw new Error(data.error || 'Something went wrong');
       }
 
+      notify.success('Account created. Please log in.');
       router.push('/login');
     } catch (err: any) {
       setError(err.message);
+      notify.error(getErrorMessage(err, 'Signup failed'));
     } finally {
       setLoading(false);
     }
