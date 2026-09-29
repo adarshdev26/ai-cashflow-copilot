@@ -180,3 +180,18 @@ export async function acceptInvitationTx(
     throw err;
   }
 }
+
+// Fields that are safe to send to the browser. NEVER add tokenHash here.
+export const invitationSelect = {
+  id: true,
+  email: true,
+  role: true,
+  status: true,
+  expiresAt: true,
+  createdAt: true,
+  invitedBy: { select: { id: true, email: true } },
+} as const;
+
+export function isValidEmail(email: string): boolean {
+  return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
