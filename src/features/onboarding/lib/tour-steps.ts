@@ -1,14 +1,12 @@
 import type { DriveStep } from 'driver.js';
 
-/** Set by the last onboarding step; holds which part of the tour should run next. */
-export const TOUR_START_KEY = 'start-dashboard-tour';
-
+export const TOUR_PARAM = 'tour';
 export const OVERVIEW_PATH = '/dashboard';
 export const FINANCE_PATH = '/dashboard/finance';
 
-// '1' is what StepComplete already writes, so that file needs no change.
-const PHASE_VALUE = { overview: '1', finance: 'finance' } as const;
-export type TourPhase = keyof typeof PHASE_VALUE;
+export type TourPhase = 'overview' | 'finance';
+
+const PHASE_PARAM_VALUE: Record<TourPhase, string> = { overview: '1', finance: 'finance' };
 
 export const PHASE_PATH: Record<TourPhase, string> = {
   overview: OVERVIEW_PATH,
@@ -21,27 +19,15 @@ export const PHASE_READY_SELECTOR: Record<TourPhase, string> = {
   finance: '[data-tour="transaction-table"]',
 };
 
-export function readTourPhase(): TourPhase | null {
-  try {
-    const v = sessionStorage.getItem(TOUR_START_KEY);
-    if (v === PHASE_VALUE.overview) return 'overview';
-    if (v === PHASE_VALUE.finance) return 'finance';
-  } catch {
-    /* storage blocked: no tour */
-  }
+export function parseTourPhase(value: string | null): TourPhase | null {
+  if (value === PHASE_PARAM_VALUE.overview) return 'overview';
+  if (value === PHASE_PARAM_VALUE.finance) return 'finance';
   return null;
 }
 
-export function writeTourPhase(phase: TourPhase) {
-  try {
-    sessionStorage.setItem(TOUR_START_KEY, PHASE_VALUE[phase]);
-  } catch {}
-}
-
-export function clearTourPhase() {
-  try {
-    sessionStorage.removeItem(TOUR_START_KEY);
-  } catch {}
+/** tourHref('overview') -> '/dashboard?tour=1' */
+export function tourHref(phase: TourPhase): string {
+  return `${PHASE_PATH[phase]}?${TOUR_PARAM}=${PHASE_PARAM_VALUE[phase]}`;
 }
 
 type Actions = { goToFinance: () => void };
