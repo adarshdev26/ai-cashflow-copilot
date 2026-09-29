@@ -1,16 +1,9 @@
-/**
- * Only allows same-origin, relative /invite/... paths, so ?next= can't become an open redirect.
- * Returns null for anything else.
- */
+// Invite tokens are base64url (A-Z a-z 0-9 _ -), so that is the only shape we allow.
+// This rules out absolute URLs, //host, backslashes, encoded tricks and other paths.
+const INVITE_PATH = /^\/invite\/[A-Za-z0-9_-]{1,128}$/;
+
+/** Returns `next` only if it is a same-site invite path, otherwise null. */
 export function getSafeNextPath(next: string | null | undefined): string | null {
-  if (!next || next.length > 200) return null;
-  if (!next.startsWith('/invite/')) return null;
-  if (next.includes('//') || next.includes('\\') || /[\u0000-\u001f]/.test(next)) return null;
-  try {
-    const url = new URL(next, 'http://localhost');
-    if (url.origin !== 'http://localhost') return null;
-  } catch {
-    return null;
-  }
-  return next;
+  if (!next) return null;
+  return INVITE_PATH.test(next) ? next : null;
 }

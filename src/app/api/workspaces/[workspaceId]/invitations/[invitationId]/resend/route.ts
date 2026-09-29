@@ -43,7 +43,7 @@ export async function POST(req: Request, { params }: Ctx) {
     let invitation;
     try {
       invitation = await prisma.workspaceInvitation.update({
-        where: { id: existing.id, status: 'PENDING' },
+        where: { id: existing.id, workspaceId: access.workspaceId, status: 'PENDING' },
         data: { tokenHash, expiresAt: getExpiryDate(), invitedById: access.userId },
         select: invitationSelect,
       });

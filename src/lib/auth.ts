@@ -1,8 +1,6 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
-const AUTH_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 7
-
 export function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
@@ -30,19 +28,36 @@ export async function requireUserId(): Promise<string | null> {
   return session ? session.userId : null;
 }
 
+// ---------------------------------------------------------------------------
+// Auth cookie (one source of truth for login, invite register and logout)
+// ---------------------------------------------------------------------------
+
+export const AUTH_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 7; // 7 days
+
 export function signAuthToken(user: { id: string; email: string }): string {
   return jwt.sign({ userId: user.id, email: user.email }, getJwtSecret(), {
-    expiresIn: AUTH_COOKIE_MAX_AGE_S,
-  })
+    expiresIn: '7d',
+  });
 }
 
 export async function setAuthCookie(user: { id: string; email: string }) {
-  const cookieStore = await cookies()
+  const cookieStore = await cookies();
   cookieStore.set('token', signAuthToken(user), {
     httpOnly: true,
-    sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
-    path: '/',
+    sameSite: 'strict',
     maxAge: AUTH_COOKIE_MAX_AGE_S,
-  })
+    path: '/',
+  });
+}
+
+export async function clearAuthCookie() {
+  const cookieStore = await cookies();
+  cookieStore.set('token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 0,
+    path: '/',
+  });
 }
