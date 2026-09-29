@@ -30,6 +30,14 @@ enum InvitationStatus {
   CANCELLED
 }
 
+enum AccountType {
+  BANK
+  CASH
+  CREDIT_CARD
+  WALLET
+  OTHER
+}
+
 model User {
   id                    String                @id @default(uuid())
   email                 String                @unique
@@ -57,6 +65,7 @@ model Workspace {
   access       WorkspaceAccess[]
   invitations  WorkspaceInvitation[]
   transactions Transaction[]
+  accounts     FinancialAccount[]
   habits       Habit[]
   notes        Note[]
   createdAt    DateTime              @default(now())
@@ -110,20 +119,45 @@ model Category {
   updatedAt    DateTime      @updatedAt
 }
 
+// Workspace-scoped money container (bank, cash, card, wallet).
+// Named FinancialAccount to avoid confusion with WorkspaceAccess.
+model FinancialAccount {
+  id             String        @id @default(uuid())
+  workspaceId    String
+  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name           String
+  type           AccountType   @default(OTHER)
+  currency       String        @default("INR")
+  openingBalance Float         @default(0)
+  isActive       Boolean       @default(true)
+  transactions   Transaction[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId, isActive])
+  @@map("financial_accounts")
+}
+
 model Transaction {
-  id          String          @id @default(uuid())
+  id          String            @id @default(uuid())
   amount      Float
-  type        TransactionType @default(DEBIT)
+  type        TransactionType   @default(DEBIT)
   description String?
   workspaceId String
-  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   categoryId  String?
-  category    Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  category    Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  // Nullable for now; becomes required after the backfill (Commit 13).
+  // Restrict: an account with transactions can never be hard-deleted.
+  accountId   String?
+  account     FinancialAccount? @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   @@index([workspaceId, createdAt])
   @@index([workspaceId, categoryId])
+  @@index([workspaceId, accountId])
 }
 
 enum TransactionType {
