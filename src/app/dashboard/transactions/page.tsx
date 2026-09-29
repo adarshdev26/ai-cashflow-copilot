@@ -38,7 +38,7 @@ const defaultTransactionFilters: TransactionFilters = {
   dateTo: undefined,
 };
 
-export default function FinancePage() {
+export default function TransactionsPage() {
   const {
     params,
     page,

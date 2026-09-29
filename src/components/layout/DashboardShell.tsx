@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useCallback, useEffect, useSyncExternalStore, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut, Plus,
+  LayoutDashboard, WalletCards, Landmark, CheckSquare, FileText, Settings, LogOut, Plus,
   Menu, X, ChevronsLeft, ChevronsRight, Compass,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,7 +17,8 @@ import { tourHref } from '@/features/onboarding/lib/tour-steps';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Finance', href: '/dashboard/finance', icon: WalletCards },
+  { name: 'Transactions', href: '/dashboard/transactions', icon: WalletCards },
+  { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
   { name: 'Habits', href: '/dashboard/habits', icon: CheckSquare },
   { name: 'Notes', href: '/dashboard/notes', icon: FileText },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
