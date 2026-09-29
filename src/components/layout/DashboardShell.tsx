@@ -1,9 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut, Plus } from 'lucide-react';
+import {
+  LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut, Plus,
+  Menu, X, ChevronsLeft, ChevronsRight,
+} from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useCurrentUser } from '@/features/auth';
@@ -171,7 +174,42 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false); // desktop rail
+  const [mobileOpen, setMobileOpen] = useState(false); // mobile drawer
   const queryClient = useQueryClient();
+
+  // Restore the desktop collapsed state after mount (avoids an SSR hydration mismatch).
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem('sidebar-collapsed') === 'true');
+    } catch { }
+  }, []);
+
+  // One button for both: collapses the rail on desktop, opens the drawer on mobile.
+  const toggleSidebar = useCallback(() => {
+    if (window.matchMedia('(min-width: 768px)').matches) {
+      const next = !collapsed;
+      setCollapsed(next);
+      try {
+        localStorage.setItem('sidebar-collapsed', String(next));
+      } catch { }
+    } else {
+      setMobileOpen((open) => !open);
+    }
+  }, [collapsed]);
+
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  // Escape closes the mobile drawer.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mobileOpen]);
+
   const { data: user, isLoading: isUserLoading } = useCurrentUser();
 
   const displayName = user?.name || user?.email?.split('@')[0] || 'User';
@@ -195,13 +233,35 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="h-screen overflow-hidden bg-slate-50/50 flex">
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-slate-900/40 md:hidden"
+          onClick={closeMobile}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 shrink-0 border-r border-slate-200 bg-white flex-col hidden md:flex h-full">
-        <div className="p-6 border-b border-slate-100 flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-64 shrink-0 flex flex-col border-r border-slate-200 bg-white transition-[transform,width] duration-200 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          } md:static md:z-auto md:translate-x-0 md:h-full ${collapsed ? 'md:w-18' : 'md:w-64'}`}
+      >
+        <div className={`p-6 border-b border-slate-100 flex items-center gap-2 ${collapsed ? 'md:justify-center md:px-0' : ''}`}>
+          <div className="h-8 w-8 shrink-0 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
             A
           </div>
-          <span className="font-semibold text-lg tracking-tight text-slate-900">CashFlow Copilot</span>
+          <span className={`font-semibold text-lg tracking-tight text-slate-900 ${collapsed ? 'md:hidden' : ''}`}>
+            CashFlow Copilot
+          </span>
+          <button
+            type="button"
+            onClick={closeMobile}
+            aria-label="Close menu"
+            className="ml-auto rounded-md p-1.5 text-slate-500 hover:bg-slate-100 md:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -212,24 +272,26 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
+                onClick={closeMobile}
+                title={collapsed ? item.name : undefined}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${collapsed ? 'md:justify-center' : ''} ${isActive
                   ? 'bg-indigo-50 text-indigo-600'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`}
               >
-                <Icon className={`h-4 w-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
-                {item.name}
+                <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                <span className={collapsed ? 'md:hidden' : ''}>{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
         <div className="p-4 border-t border-slate-100">
-          <div className="mb-3 flex items-center gap-3 px-3 py-2">
+          <div className={`mb-3 flex items-center gap-3 px-3 py-2 ${collapsed ? 'md:justify-center md:px-0' : ''}`}>
             {isUserLoading ? (
               <>
                 <div className="h-9 w-9 shrink-0 rounded-full bg-slate-100 animate-pulse" />
-                <div className="min-w-0 flex-1 space-y-1.5">
+                <div className={`min-w-0 flex-1 space-y-1.5 ${collapsed ? 'md:hidden' : ''}`}>
                   <div className="h-3 w-24 rounded bg-slate-100 animate-pulse" />
                   <div className="h-3 w-32 rounded bg-slate-100 animate-pulse" />
                 </div>
@@ -239,7 +301,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 <div className="h-9 w-9 shrink-0 rounded-full bg-indigo-50 flex items-center justify-center text-sm font-semibold text-indigo-600">
                   {initial}
                 </div>
-                <div className="min-w-0 flex-1">
+                <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
                   <p className="truncate text-sm font-medium text-slate-900">{displayName}</p>
                   {user?.email && <p className="truncate text-xs text-slate-500">{user.email}</p>}
                 </div>
@@ -248,18 +310,35 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={openSignOutDialog}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            title={collapsed ? 'Sign Out' : undefined}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ${collapsed ? 'md:justify-center' : ''}`}
           >
-            <LogOut className="h-4 w-4" />
-            Sign Out
+            <LogOut className="h-4 w-4 shrink-0" />
+            <span className={collapsed ? 'md:hidden' : ''}>Sign Out</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
-        <header className="h-16 shrink-0 border-b border-slate-200 bg-white px-8 flex items-center justify-between">
-          <WorkspaceSelector />
+        <header className="h-16 shrink-0 border-b border-slate-200 bg-white px-4 md:px-8 flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label="Toggle sidebar"
+              aria-expanded={mobileOpen || !collapsed}
+              className="rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+            >
+              <Menu className="h-5 w-5 md:hidden" />
+              {collapsed ? (
+                <ChevronsRight className="hidden h-7 w-7 border rounded-lg border-slate-300 p-0.5 md:block" />
+              ) : (
+                <ChevronsLeft className="hidden h-7 w-7 border rounded-lg border-slate-300 p-0.5 md:block" />
+              )}
+            </button>
+            <WorkspaceSelector />
+          </div>
         </header>
 
         <main className="flex-1 p-8 overflow-y-auto">
