@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto';
 
 import { prisma } from '@/lib/prisma'; // adjust if your prisma client lives elsewhere
 import { canWorkspaceAction } from '@/features/workspaces/permissions';
+import type { TxClient } from '@/lib/db-types';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -117,8 +118,6 @@ export function assertInvitationUsable(
 // Accept (shared by the "existing user" and "new user" routes)
 // ---------------------------------------------------------------------------
 
-type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
-
 // MUST be called inside prisma.$transaction. Any throw rolls everything back,
 // including the status flip, so a failed accept never burns the invitation.
 export async function acceptInvitationTx(
@@ -146,7 +145,17 @@ export async function acceptInvitationTx(
     },
     data: { status: 'ACCEPTED', acceptedAt: new Date() },
   });
-  if (claimed.count !== 1) throw new InvitationError('INVALID');
+  if (claimed.count !== 1) {
+    // Lost a race (or the link changed since it was checked). Re-read the row
+    // so the caller sees the real reason instead of a generic "invalid".
+    const current = await tx.workspaceInvitation.findUnique({
+      where: { id: invitation.id },
+      select: { status: true, expiresAt: true },
+    });
+    if (!current) throw new InvitationError('INVALID');
+    assertInvitationUsable(current); // throws ACCEPTED / CANCELLED / EXPIRED
+    throw new InvitationError('INVALID');
+  }
 
   // 3. The inviter must STILL be allowed to invite (not demoted/removed since).
   const inviterAccess = await tx.workspaceAccess.findUnique({
