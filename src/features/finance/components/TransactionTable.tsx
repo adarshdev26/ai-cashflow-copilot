@@ -64,6 +64,21 @@ export const TransactionTable = memo(function TransactionTable({
         },
       },
       {
+        id: 'account',
+        header: 'Account',
+        enableSorting: false,
+        cell: ({ row }) => {
+          const account = row.original.account;
+          if (!account) return <span className="text-slate-400">None</span>;
+          return (
+            <span className="text-slate-700">
+              {account.name}
+              {!account.isActive && <span className="ml-1 text-xs text-slate-400">(inactive)</span>}
+            </span>
+          );
+        },
+      },
+      {
         accessorKey: 'category',
         header: 'Category',
         enableSorting: false,

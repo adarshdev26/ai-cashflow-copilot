@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useCallback, useEffect, useSyncExternalStore, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, WalletCards, CheckSquare, FileText, Settings, LogOut, Plus,
+  LayoutDashboard, WalletCards, Landmark, CheckSquare, FileText, Settings, LogOut, Plus,
   Menu, X, ChevronsLeft, ChevronsRight, Compass,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,10 +14,12 @@ import { useWorkspace, useCreateWorkspace } from '@/features/workspaces';
 import { notify, getErrorMessage } from '@/lib/toast';
 import { OnboardingTour } from '@/features/onboarding/components/OnboardingTour';
 import { tourHref } from '@/features/onboarding/lib/tour-steps';
+import { ActiveAccountSwitcher } from '@/features/accounts';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Finance', href: '/dashboard/finance', icon: WalletCards },
+  { name: 'Transactions', href: '/dashboard/transactions', icon: WalletCards },
+  { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
   { name: 'Habits', href: '/dashboard/habits', icon: CheckSquare },
   { name: 'Notes', href: '/dashboard/notes', icon: FileText },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
@@ -365,6 +367,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               )}
             </button>
             <WorkspaceSelector />
+             <div className="hidden h-5 w-px bg-slate-200 sm:block" aria-hidden="true" />
+            <ActiveAccountSwitcher />
           </div>
 
           <button

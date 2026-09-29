@@ -1,5 +1,6 @@
 'use client';
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useActiveAccountId } from '@/features/accounts';
 import { OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import {
   useTransactions,
@@ -27,6 +28,7 @@ import {
 import { CategoryStatsTooltip } from "@/resources/components/CategoryStats";
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
 import { notify, getErrorMessage } from '@/lib/toast';
+import { useAccounts } from '@/features/accounts';
 
 type FormState = { mode: 'create' } | { mode: 'edit'; transaction: Transaction } | null;
 
@@ -34,11 +36,12 @@ const defaultTransactionFilters: TransactionFilters = {
   search: undefined,
   type: undefined,
   categoryId: undefined,
+  accountId: undefined,
   dateFrom: undefined,
   dateTo: undefined,
 };
 
-export default function FinancePage() {
+export default function TransactionsPage() {
   const {
     params,
     page,
@@ -62,8 +65,25 @@ export default function FinancePage() {
   const canUpdate = usePermission('transaction.update');
   const canDelete = usePermission('transaction.delete');
   const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: accounts, isLoading: accountsLoading } = useAccounts(workspaceId);
 
-  const { data: transactionResponse, isLoading, error, isFetching } = useTransactions(workspaceId, params, { enabled: !isInvalidDateRange });
+  const [activeAccountId] = useActiveAccountId();
+  const queryParams = useMemo(
+    () => ({ ...params, accountId: activeAccountId ?? undefined }),
+    [params, activeAccountId]
+  );
+
+  // Back to page 1 when the account changes.
+  const prevAccountRef = useRef(activeAccountId);
+  useEffect(() => {
+    if (prevAccountRef.current !== activeAccountId) {
+      prevAccountRef.current = activeAccountId;
+      setPage(1);
+    }
+  }, [activeAccountId, setPage]);
+
+  const { data: transactionResponse, isLoading, error, isFetching } =
+    useTransactions(workspaceId, queryParams, { enabled: !isInvalidDateRange });
   const { mutate: addTx, isPending: isAdding } = useCreateTransaction(workspaceId);
   const { mutate: updateTx, isPending: isUpdating } = useUpdateTransaction(workspaceId);
   const { mutate: deleteTx, isPending: isDeleting } = useDeleteTransaction(workspaceId);
@@ -161,6 +181,10 @@ export default function FinancePage() {
     setFilter('categoryId', value || undefined);
   }, [setFilter]);
 
+  const handleAccountChange = useCallback((value: string) => {
+    setFilter('accountId', value || undefined);
+  }, [setFilter]);
+
   const handleDateFromChange = useCallback((value: string) => {
     setFilter('dateFrom', value || undefined);
   }, [setFilter]);
@@ -193,11 +217,19 @@ export default function FinancePage() {
 
       <CategoryStatsTooltip />
 
-      <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-4">
+      <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-5">
         <Select aria-label="Filter by transaction type" value={filters.type ?? ''} onChange={(event) => handleTypeChange(event.target.value as TransactionType | '')}>
           <option value="">All types</option>
           <option value="CREDIT">Credit</option>
           <option value="DEBIT">Debit</option>
+        </Select>
+        <Select aria-label="Filter by account" value={filters.accountId ?? ''} onChange={(event) => handleAccountChange(event.target.value)} disabled={accountsLoading}>
+          <option value="">All accounts</option>
+          {accounts?.map((account) => (
+            <option key={account.id} value={account.id}>
+              {account.name}{account.isActive ? '' : ' (inactive)'}
+            </option>
+          ))}
         </Select>
         <Select aria-label="Filter by category" value={filters.categoryId ?? ''} onChange={(event) => handleCategoryChange(event.target.value)} disabled={categoriesLoading}>
           <option value="">All categories</option>
@@ -208,7 +240,7 @@ export default function FinancePage() {
         <Input aria-label="Filter transactions from date" type="date" value={filters.dateFrom ?? ''} onChange={(event) => handleDateFromChange(event.target.value)} />
         <Input aria-label="Filter transactions to date" type="date" min={filters.dateFrom} value={filters.dateTo ?? ''} onChange={(event) => handleDateToChange(event.target.value)} />
         {isInvalidDateRange && (
-          <p className="text-xs text-red-600 md:col-span-4">
+          <p className="text-xs text-red-600 md:col-span-5">
             &quot;From&quot; date must be on or before the &quot;To&quot; date.
           </p>
         )}

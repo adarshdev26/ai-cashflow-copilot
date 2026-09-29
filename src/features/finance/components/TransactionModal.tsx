@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { CategorySelect } from '@/resources/components/CategorySelect';
 import { Transaction, CreateTransactionInput } from '../types';
+import { AccountSelect, useAccounts, useActiveAccountId } from '@/features/accounts';
+import { useActiveWorkspaceId } from '@/features/workspaces';
 
 interface TransactionModalProps {
   open: boolean;
@@ -34,19 +36,31 @@ export function TransactionModal({
   const [type, setType] = useState<'CREDIT' | 'DEBIT'>(transaction?.type || 'CREDIT');
   const [categoryId, setCategoryId] = useState<string | null>(transaction?.categoryId || null);
 
+  const workspaceId = useActiveWorkspaceId();
+  const { data: activeAccounts, isLoading: accountsLoading } = useAccounts(workspaceId, { activeOnly: true });
+  // null = user hasn't picked; on create we fall back to the first active account.
+  const [pickedAccountId, setPickedAccountId] = useState<string | null>(transaction?.accountId ?? null);
+  const [activeAccountId] = useActiveAccountId();
+  const preferredAccountId =
+    activeAccountId && activeAccounts?.some((a) => a.id === activeAccountId)
+      ? activeAccountId
+      : activeAccounts?.[0]?.id ?? null;
+  const accountId = pickedAccountId ?? (isEdit ? null : preferredAccountId);
+
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    (e: React.SyntheticEvent) => {
       e.preventDefault();
-      if (!amount) return;
+      if (!amount || !accountId) return;
 
       onSubmit({
         amount: Number(amount),
         type,
         description: description || undefined,
         categoryId,
+        accountId,
       });
     },
-    [amount, type, description, categoryId, onSubmit]
+    [amount, type, description, categoryId, accountId, onSubmit]
   );
 
   const handleDescriptionChange = useCallback(
@@ -75,7 +89,11 @@ export function TransactionModal({
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <PrimaryButton onClick={handleSubmit} loading={isSubmitting} disabled={isSubmitting || !amount}>
+          <PrimaryButton
+            onClick={handleSubmit}
+            loading={isSubmitting}
+            disabled={isSubmitting || !amount || !accountId || (!isEdit && accountsLoading)}
+          >
             {submitLabel}
           </PrimaryButton>
         </>
@@ -121,6 +139,15 @@ export function TransactionModal({
             <option value="CREDIT">Credit (Income)</option>
             <option value="DEBIT">Debit (Expense)</option>
           </Select>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-slate-700 mb-1">Account</label>
+          <AccountSelect
+            value={accountId}
+            onChange={setPickedAccountId}
+            currentAccount={transaction?.account ?? null}
+          />
         </div>
 
         <div>
