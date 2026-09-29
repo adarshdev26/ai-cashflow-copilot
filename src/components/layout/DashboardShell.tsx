@@ -119,6 +119,7 @@ function CreateWorkspaceModal({
 
 function WorkspaceSelector() {
   const { workspaces, active, setActiveWorkspaceId } = useWorkspace();
+  const { data: user } = useCurrentUser();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
@@ -132,7 +133,7 @@ function WorkspaceSelector() {
         >
           {workspaces.map((w) => (
             <option key={w.workspaceId} value={w.workspaceId}>
-              {w.name}
+              {w.name} ({w.ownerEmail && w.ownerEmail === user?.email ? 'You' : (w.ownerEmail ?? 'No owner')})
             </option>
           ))}
         </select>
@@ -189,9 +190,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const closeSignOutDialog = useCallback(() => setIsSignOutOpen(false), []);
 
   return (
-    <div className="min-h-screen bg-slate-50/50 flex">
+    <div className="h-screen overflow-hidden bg-slate-50/50 flex">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-200 bg-white flex flex-col hidden md:flex">
+      <aside className="w-64 shrink-0 border-r border-slate-200 bg-white flex-col hidden md:flex h-full">
         <div className="p-6 border-b border-slate-100 flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
             A
@@ -199,7 +200,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <span className="font-semibold text-lg tracking-tight text-slate-900">CashFlow Copilot</span>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -252,8 +253,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-slate-200 bg-white px-8 flex items-center justify-between">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <header className="h-16 shrink-0 border-b border-slate-200 bg-white px-8 flex items-center justify-between">
           <WorkspaceSelector />
         </header>
 

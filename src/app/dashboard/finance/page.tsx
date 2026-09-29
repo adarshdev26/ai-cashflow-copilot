@@ -25,7 +25,7 @@ import {
   UpdateTransactionInput,
 } from '@/features/finance/types';
 import { CategoryStatsTooltip } from "@/resources/components/CategoryStats";
-import { useActiveWorkspaceId } from '@/features/workspaces';
+import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
 
 type FormState = { mode: 'create' } | { mode: 'edit'; transaction: Transaction } | null;
 
@@ -57,6 +57,9 @@ export default function FinancePage() {
   });
   const isInvalidDateRange = Boolean(filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo);
   const workspaceId = useActiveWorkspaceId();
+  const canCreate = usePermission('transaction.create');
+  const canUpdate = usePermission('transaction.update');
+  const canDelete = usePermission('transaction.delete');
   const { data: categories, isLoading: categoriesLoading } = useCategories();
 
   const { data: transactionResponse, isLoading, error, isFetching } = useTransactions(workspaceId, params, { enabled: !isInvalidDateRange });
@@ -206,7 +209,7 @@ export default function FinancePage() {
         isFetching={isFetching}
       />
 
-      {formState && (
+      {formState && (formState.mode === 'create' ? canCreate : canUpdate) && (
         <TransactionModal
           key={formState.mode === 'edit' ? formState.transaction.id : 'new'}
           open={true}
@@ -217,7 +220,7 @@ export default function FinancePage() {
         />
       )}
 
-      {deleteTarget && (
+      {deleteTarget && canDelete && (
         <ConfirmDialog
           isOpen={true}
           title="Delete transaction"

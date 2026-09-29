@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { canWorkspaceAction } from '@/features/workspaces/permissions';
 
 export async function GET(req: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
   try {
@@ -10,15 +11,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ workspac
 
     const workspace = await prisma.workspace.findUnique({
       where: { id: access.workspaceId },
-      include: {
-        access: {
-          include: {
-            user: {
-              select: { id: true, email: true },
-            },
-          },
-        },
-      },
+      include: canWorkspaceAction(access.role, 'members.view')
+        ? { access: { include: { user: { select: { id: true, email: true } } } } }
+        : undefined,
     });
 
     if (!workspace) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });

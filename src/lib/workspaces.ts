@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireUserId } from '@/lib/auth';
 import type { WorkspaceRole } from '@/generated/prisma';
+import { canWorkspaceAction, type WorkspaceAction } from '@/features/workspaces/permissions';
 
 export const WORKSPACE_HEADER = 'x-workspace-id';
 
@@ -67,11 +68,30 @@ export async function requireWorkspaceAccess(
   return { ok: true, userId, workspaceId, role: membership.role };
 }
 
+/**
+ * Preferred guard for routes: checks a named action instead of a rank.
+ * The underlying call only proves membership (every role can read);
+ * the action check is what decides.
+ */
+export async function requireWorkspaceAction(
+  req: Request,
+  action: WorkspaceAction,
+  urlWorkspaceId?: string
+): Promise<WorkspaceAccessResult> {
+  const access = await requireWorkspaceAccess(req, 'VIEWER', urlWorkspaceId);
+  if (!access.ok) return access;
+  if (!canWorkspaceAction(access.role, action)) {
+    return fail('Your role does not allow this action', 403);
+  }
+  return access;
+}
+
 export type WorkspaceSummary = {
   workspaceId: string;
   role: WorkspaceRole;
   name: string;
   slug: string;
+  ownerEmail: string | null;
 };
 
 /** Every workspace the user can open (owned + shared). Uses the userId index. */
@@ -80,7 +100,7 @@ export async function getUserWorkspaces(userId: string): Promise<WorkspaceSummar
     where: { userId },
     select: {
       role: true,
-      workspace: { select: { id: true, name: true, slug: true } },
+      workspace: { select: { id: true, name: true, slug: true, owner: { select: { email: true } }, } },
     },
     orderBy: { createdAt: 'asc' },
   });
@@ -90,6 +110,7 @@ export async function getUserWorkspaces(userId: string): Promise<WorkspaceSummar
     role: r.role,
     name: r.workspace.name,
     slug: r.workspace.slug,
+    ownerEmail: r.workspace.owner?.email ?? null,
   }));
 }
 
