@@ -50,7 +50,7 @@ export function TransactionModal({
   const handleSubmit = useCallback(
     (e: React.SyntheticEvent) => {
       e.preventDefault();
-      if (!amount) return;
+      if (!amount || !accountId) return;
 
       onSubmit({
         amount: Number(amount),
@@ -92,7 +92,7 @@ export function TransactionModal({
           <PrimaryButton
             onClick={handleSubmit}
             loading={isSubmitting}
-            disabled={isSubmitting || !amount || (!isEdit && accountsLoading)}
+            disabled={isSubmitting || !amount || !accountId || (!isEdit && accountsLoading)}
           >
             {submitLabel}
           </PrimaryButton>

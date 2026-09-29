@@ -3,7 +3,7 @@ export type ValidatedTransaction = {
   type: 'CREDIT' | 'DEBIT';
   description: string | null;
   categoryId: string | null;
-  accountId: string | null; // optional for now; required in a later commit
+  accountId: string;
 };
 
 export function validateTransactionData(data: unknown): ValidatedTransaction {
@@ -34,11 +34,15 @@ export function validateTransactionData(data: unknown): ValidatedTransaction {
     throw new Error('Invalid account');
   }
 
+  if (typeof accountId !== 'string' || accountId.trim() === '') {
+    throw new Error('Account is required');
+  }
+
   return {
     amount: finalAmount,
     type,
     description: finalDescription,
     categoryId: categoryId && typeof categoryId === 'string' ? categoryId : null,
-    accountId: accountId && typeof accountId === 'string' ? accountId : null,
+    accountId: accountId.trim(),
   };
 }

@@ -32,8 +32,8 @@ export interface Transaction {
   workspaceId: string;
   categoryId: string | null;
   category: Category | null;
-  accountId?: string | null;
-  account?: TransactionAccount | null;
+  accountId: string;
+  account: TransactionAccount;
   createdAt: string;
   updatedAt?: string;
 }
@@ -72,7 +72,7 @@ export interface CreateTransactionInput {
   type: TransactionType;
   description?: string;
   categoryId?: string | null;
-  accountId?: string | null;
+  accountId: string;
 }
 
 export type UpdateTransactionInput = Partial<CreateTransactionInput>;
