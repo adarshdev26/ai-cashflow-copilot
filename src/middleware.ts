@@ -7,9 +7,10 @@ export function middleware(request: NextRequest) {
 
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
   const isDashboardPage = pathname.startsWith('/dashboard') || pathname === '/';
+  const isOnboardingPage = pathname.startsWith('/onboarding');
 
-  // 1. If user is trying to access dashboard/root without a token, redirect to /login
-  if (isDashboardPage && !token) {
+  // 1. If user is trying to access dashboard/root/onboarding without a token, redirect to /login
+  if ((isDashboardPage || isOnboardingPage) && !token) {
     const loginUrl = new URL('/login', request.url);
     return NextResponse.redirect(loginUrl);
   }
@@ -25,5 +26,5 @@ export function middleware(request: NextRequest) {
 
 // Configure which paths the middleware should run on
 export const config = {
-  matcher: ['/', '/dashboard/:path*', '/login', '/signup'],
+  matcher: ['/', '/dashboard/:path*', '/onboarding/:path*', '/login', '/signup'],
 };
