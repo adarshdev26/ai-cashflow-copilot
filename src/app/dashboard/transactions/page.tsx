@@ -29,6 +29,8 @@ import { CategoryStatsTooltip } from "@/resources/components/CategoryStats";
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
 import { notify, getErrorMessage } from '@/lib/toast';
 import { useAccounts } from '@/features/accounts';
+import { ExportTransactionsModal } from "@/features/finance";
+import { ImportTransactionsModal } from "@/features/finance";
 
 type FormState = { mode: 'create' } | { mode: 'edit'; transaction: Transaction } | null;
 
@@ -90,6 +92,8 @@ export default function TransactionsPage() {
 
   const [formState, setFormState] = useState<FormState>(null);
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const isSubmitting = isAdding || isUpdating;
 
@@ -208,7 +212,11 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      <FinanceHeader onOpenModal={openCreateModal} />
+      <FinanceHeader
+        onOpenModal={openCreateModal}
+        onOpenExport={() => setExportOpen(true)}
+        onOpenImport={() => setImportOpen(true)}
+      />
       <FinanceStats
         netBalance={false}
         thisMonthNet={false}
@@ -283,6 +291,25 @@ export default function TransactionsPage() {
           onConfirm={handleDeleteTransaction}
           onClose={closeDeleteTarget}
           loading={isDeleting}
+        />
+      )}
+
+      {exportOpen && workspaceId && (
+        <ExportTransactionsModal
+          open={true}
+          onClose={() => setExportOpen(false)}
+          workspaceId={workspaceId}
+          initialFilters={{ ...filters, accountId: activeAccountId ?? filters.accountId }}
+        />
+      )}
+
+      {importOpen && workspaceId && canCreate && (
+        <ImportTransactionsModal
+          open={true}
+          onClose={() => setImportOpen(false)}
+          workspaceId={workspaceId}
+          activeAccountId={activeAccountId ?? null}
+          activeAccountName={accounts?.find((a) => a.id === activeAccountId)?.name}
         />
       )}
     </div>

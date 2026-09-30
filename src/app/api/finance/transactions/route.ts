@@ -4,6 +4,8 @@ import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { Prisma } from '@/generated/prisma';
+import { buildTransactionWhere } from '@/lib/transaction-filters';
+import { getCategoryError } from '@/lib/categories';
 
 // Offset pagination matches the existing numbered table controls and keeps this query compatible with useQuery.
 const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type'] as const;
@@ -69,16 +71,15 @@ export async function GET(req: Request) {
     const limit = Math.min(rawLimit, MAX_LIMIT);
     // workspaceId is always in the filter, so an accountId from another
     // workspace simply matches nothing.
-    const where = {
+    const where = buildTransactionWhere({
       workspaceId,
-      ...(type ? { type: type as 'CREDIT' | 'DEBIT' } : {}),
-      ...(categoryId ? { categoryId } : {}),
-      ...(accountId ? { accountId } : {}),
-      ...(search ? { description: { contains: search, mode: 'insensitive' as const } } : {}),
-      ...(dateFrom || dateTo
-        ? { createdAt: { ...(dateFrom ? { gte: dateFrom } : {}), ...(dateTo ? { lte: dateTo } : {}) } }
-        : {}),
-    };
+      type: type as 'CREDIT' | 'DEBIT' | null,
+      categoryId,
+      accountId,
+      search,
+      dateFrom,
+      dateTo,
+    });
     const orderBy = { [sortBy]: sortDir } as Record<string, 'asc' | 'desc'>;
     const [transactions, totalCount] = await Promise.all([
       prisma.transaction.findMany({
@@ -134,10 +135,8 @@ export async function POST(req: Request) {
     const { amount, type, description, categoryId, accountId } = validatedData;
 
     if (categoryId) {
-      const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
-      if (!categoryExists) {
-        return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
-      }
+      const categoryError = await getCategoryError(categoryId, workspaceId, { type, requireActive: true });
+      if (categoryError) return NextResponse.json({ error: categoryError }, { status: 400 });
     }
 
     // New transactions need an account of THIS workspace that is active

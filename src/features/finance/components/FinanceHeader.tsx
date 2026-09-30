@@ -1,14 +1,17 @@
-import { Plus } from 'lucide-react';
+import { Plus, Download, Upload } from 'lucide-react';
 import { memo } from 'react';
+import { Button } from '@/components/ui/Button';
 
-interface FinanceHeaderProps {
+type FinanceHeaderProps = {
   onOpenModal: () => void;
-}
+  onOpenExport?: () => void;
+  onOpenImport?: () => void;
+};
 
 import { PrimaryButton } from '@/components/ui/Button'
 import { usePermission } from '@/features/workspaces'
 
-export const FinanceHeader = memo(function FinanceHeader({ onOpenModal }: FinanceHeaderProps) {
+export const FinanceHeader = memo(function FinanceHeader({ onOpenModal, onOpenExport, onOpenImport }: FinanceHeaderProps) {
   const canCreate = usePermission('transaction.create');
   return (
     <div className="flex items-center justify-between">
@@ -16,15 +19,23 @@ export const FinanceHeader = memo(function FinanceHeader({ onOpenModal }: Financ
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Financial Ledger</h1>
         <p className="text-sm text-slate-500">Track and manage your income, expenses, and cash flow items.</p>
       </div>
-      {canCreate && (
-        <PrimaryButton
-          data-tour="add-transaction-btn"
-          onClick={onOpenModal}
-          leftIcon={<Plus className="h-4 w-4" />}
-        >
-          Add Transaction
-        </PrimaryButton>
-      )}
+      <div className="flex items-center gap-2">
+        {onOpenExport && (
+          <Button variant="secondary" onClick={onOpenExport} leftIcon={<Download className="h-4 w-4" />}>
+            Export
+          </Button>
+        )}
+        {canCreate && onOpenImport && (
+          <Button variant="secondary" onClick={onOpenImport} leftIcon={<Upload className="h-4 w-4" />}>
+            Import
+          </Button>
+        )}
+        {canCreate && (
+          <PrimaryButton onClick={onOpenModal} leftIcon={<Plus className="h-4 w-4" />}>
+            Add Transaction
+          </PrimaryButton>
+        )}
+      </div>
     </div>
   );
 })

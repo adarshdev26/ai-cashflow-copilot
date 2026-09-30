@@ -38,6 +38,12 @@ enum AccountType {
   OTHER
 }
 
+enum CategoryType {
+  CREDIT
+  DEBIT
+  BOTH
+}
+
 model User {
   id                    String                @id @default(uuid())
   email                 String                @unique
@@ -64,6 +70,7 @@ model Workspace {
   owner        User                  @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   access       WorkspaceAccess[]
   invitations  WorkspaceInvitation[]
+  categories   Category[]
   transactions Transaction[]
   accounts     FinancialAccount[]
   habits       Habit[]
@@ -112,11 +119,20 @@ model WorkspaceInvitation {
 // Global: shared by every workspace
 model Category {
   id           String        @id @default(uuid())
-  name         String        @unique
+  name         String
   color        String?
+  // null = global (shared by every workspace). Set = custom, visible only in that workspace.
+  workspaceId  String?
+  workspace    Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   transactions Transaction[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  type         CategoryType  @default(BOTH)
+  isActive     Boolean       @default(true)
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@index([workspaceId, isActive])
 }
 
 // Workspace-scoped money container (bank, cash, card, wallet).

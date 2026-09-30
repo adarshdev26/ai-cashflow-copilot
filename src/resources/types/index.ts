@@ -2,6 +2,9 @@ export type Category = {
   id: string;
   name: string;
   color: string | null;
+  workspaceId?: string | null; // null = global
+  type?: 'CREDIT' | 'DEBIT' | 'BOTH';
+  isActive?: boolean;
 };
 
 export type CategorySummary = {

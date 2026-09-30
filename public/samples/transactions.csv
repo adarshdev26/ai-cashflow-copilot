@@ -1,0 +1,4 @@
+Date,Type,Amount,Description,Category,Financial Account
+2026-09-30T09:15:00.000Z,CREDIT,1250.00,Consulting invoice,Freelance,Main Bank
+2026-09-29T13:00:00.000Z,DEBIT,42.50,"Coffee beans, 2 bags",Food,Main Bank
+2026-09-28T08:30:00.000Z,DEBIT,500.00,Taxi,,

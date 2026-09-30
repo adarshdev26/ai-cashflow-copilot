@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 import { getAccountError } from '@/features/accounts/lib/check-account';
+import { getCategoryError } from '@/lib/categories';
 
 const TRANSACTION_INCLUDE = {
   category: { select: { id: true, name: true, color: true } },
@@ -46,11 +47,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     const { amount, type, description, categoryId, accountId } = validatedData;
 
-    if (categoryId && categoryId !== existing.categoryId) {
-      const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
-      if (!categoryExists) {
-        return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
-      }
+    // Re-check when the category OR the type changed. Active is only required for a *new* category,
+    // so old transactions on a since-deactivated category stay editable.
+    if (categoryId && (categoryId !== existing.categoryId || type !== existing.type)) {
+      const categoryError = await getCategoryError(categoryId, workspaceId, {
+        type,
+        requireActive: categoryId !== existing.categoryId,
+      });
+      if (categoryError) return NextResponse.json({ error: categoryError }, { status: 400 });
     }
 
     // Account rule:
