@@ -5,6 +5,7 @@ import { validateTransactionData } from '@/features/finance/lib/validate-transac
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { Prisma } from '@/generated/prisma';
 import { buildTransactionWhere } from '@/lib/transaction-filters';
+import { isCategoryUsable } from '@/lib/categories';
 
 // Offset pagination matches the existing numbered table controls and keeps this query compatible with useQuery.
 const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type'] as const;
@@ -134,8 +135,7 @@ export async function POST(req: Request) {
     const { amount, type, description, categoryId, accountId } = validatedData;
 
     if (categoryId) {
-      const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
-      if (!categoryExists) {
+      if (categoryId && !(await isCategoryUsable(categoryId, workspaceId))) {
         return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
       }
     }

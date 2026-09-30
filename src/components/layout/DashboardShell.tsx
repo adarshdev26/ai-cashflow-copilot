@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, useSyncExternalStore, Suspense } from
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, WalletCards, Landmark, CheckSquare, FileText, Settings, LogOut, Plus,
-  Menu, X, ChevronsLeft, ChevronsRight, Compass,
+  Menu, X, ChevronsLeft, ChevronsRight, Compass, Tags
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -20,6 +20,7 @@ const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Transactions', href: '/dashboard/transactions', icon: WalletCards },
   { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
+  { name: 'Categories', href: '/dashboard/categories', icon: Tags },
   { name: 'Habits', href: '/dashboard/habits', icon: CheckSquare },
   { name: 'Notes', href: '/dashboard/notes', icon: FileText },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
@@ -300,7 +301,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.name}
                 href={item.href}
-                data-tour={`nav-${item.name.toLowerCase()}`}
+                data-tour={`nav-${item?.name?.toLowerCase()}`}
                 onClick={closeMobile}
                 title={collapsed ? item.name : undefined}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${collapsed ? 'md:justify-center' : ''} ${isActive

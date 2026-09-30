@@ -2,6 +2,7 @@ import { MAX_IMPORT_CHARS, parseTransactionCsv, type CsvRowError } from '@/featu
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { isCategoryUsable, visibleCategoryWhere } from '@/lib/categories';
 
 export async function POST(req: Request) {
     try {
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
 
         const [accounts, categories] = await Promise.all([
             prisma.financialAccount.findMany({ where: { workspaceId }, select: { id: true, name: true, isActive: true } }),
-            prisma.category.findMany({ select: { id: true, name: true } }),
+            prisma.category.findMany({ where: visibleCategoryWhere(workspaceId), select: { id: true, name: true } }),
         ]);
 
         // lookup by id and by lowercase name; a name used twice is ambiguous

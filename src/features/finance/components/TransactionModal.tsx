@@ -8,7 +8,8 @@ import { Select } from '@/components/ui/Select';
 import { CategorySelect } from '@/resources/components/CategorySelect';
 import { Transaction, CreateTransactionInput } from '../types';
 import { AccountSelect, useAccounts, useActiveAccountId } from '@/features/accounts';
-import { useActiveWorkspaceId } from '@/features/workspaces';
+import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
+import { CategoryFormModal } from '@/features/categories/components/CategoryFormModal';
 
 interface TransactionModalProps {
   open: boolean;
@@ -37,6 +38,9 @@ export function TransactionModal({
   const [categoryId, setCategoryId] = useState<string | null>(transaction?.categoryId || null);
 
   const workspaceId = useActiveWorkspaceId();
+  const canCreateCategory = usePermission('category.create');
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+
   const { data: activeAccounts, isLoading: accountsLoading } = useAccounts(workspaceId, { activeOnly: true });
   // null = user hasn't picked; on create we fall back to the first active account.
   const [pickedAccountId, setPickedAccountId] = useState<string | null>(transaction?.accountId ?? null);
@@ -155,9 +159,19 @@ export function TransactionModal({
           <CategorySelect
             value={categoryId}
             onChange={setCategoryId}
+            onAddNew={canCreateCategory ? () => setAddCategoryOpen(true) : undefined}
           />
         </div>
       </form>
+
+      {addCategoryOpen && workspaceId && (
+        <CategoryFormModal
+          open
+          onClose={() => setAddCategoryOpen(false)}
+          workspaceId={workspaceId}
+          onSaved={(created) => setCategoryId(created.id)}
+        />
+      )}
     </Modal>
   );
 }

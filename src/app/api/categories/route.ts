@@ -1,27 +1,56 @@
 import { NextResponse } from 'next/server';
-import { requireUserId } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { findNameConflict, parseCategoryInput, visibleCategoryWhere } from '@/lib/categories';
 
-export async function GET() {
+const CATEGORY_SELECT = { id: true, name: true, color: true, workspaceId: true } as const;
+
+export async function GET(req: Request) {
   try {
-    const userId = await requireUserId();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const access = await requireWorkspaceAccess(req, 'VIEWER');
+    if (!access.ok) return access.response;
 
     const categories = await prisma.category.findMany({
+      where: visibleCategoryWhere(access.workspaceId),
+      select: CATEGORY_SELECT,
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, color: true },
     });
-
-    return NextResponse.json(categories, {
-      status: 200,
-      headers: {
-        'Cache-Control': 'private, max-age=300',
-      },
-    });
+    return NextResponse.json(categories);
   } catch (error) {
     console.error('Failed to fetch categories:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const access = await requireWorkspaceAccess(req, 'MEMBER');
+    if (!access.ok) return access.response;
+    const { workspaceId } = access;
+
+    const parsed = parseCategoryInput(await req.json().catch(() => null));
+    if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    const { name, color } = parsed.data;
+
+    const conflict = await findNameConflict(workspaceId, name!);
+    if (conflict) {
+      return NextResponse.json(
+        { error: conflict.workspaceId ? 'A category with this name already exists in this workspace' : 'A default category with this name already exists' },
+        { status: 409 }
+      );
+    }
+
+    const created = await prisma.category.create({
+      data: { name: name!, color: color ?? null, workspaceId },
+      select: CATEGORY_SELECT,
+    });
+    return NextResponse.json(created, { status: 201 });
+  } catch (error) {
+    // two requests racing with the same name hit the composite unique
+    if ((error as { code?: string }).code === 'P2002') {
+      return NextResponse.json({ error: 'A category with this name already exists' }, { status: 409 });
+    }
+    console.error('Failed to create category:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

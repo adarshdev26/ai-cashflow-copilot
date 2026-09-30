@@ -9,16 +9,24 @@ interface CategorySelectProps {
   onChange: (id: string | null) => void;
   disabled?: boolean;
   id?: string;
+  /** When set, shows a last "+ Add category…" option that calls this instead of changing the value. */
+  onAddNew?: () => void;
 }
 
-export function CategorySelect({ value, onChange, disabled, id }: CategorySelectProps) {
+const ADD_NEW = '__add_new__';
+
+export function CategorySelect({ value, onChange, disabled, id, onAddNew }: CategorySelectProps) {
   const { data: categories, isLoading, error } = useCategories();
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
+      if (e.target.value === ADD_NEW) {
+        onAddNew?.();
+        return;
+      }
       onChange(e.target.value === '' ? null : e.target.value);
     },
-    [onChange]
+    [onChange, onAddNew]
   );
 
   return (
@@ -36,6 +44,7 @@ export function CategorySelect({ value, onChange, disabled, id }: CategorySelect
             {cat.name}
           </option>
         ))}
+        {onAddNew && <option value={ADD_NEW}>+ Add category…</option>}
       </Select>
       {error && (
         <p className="mt-1 text-xs text-red-500">Failed to load categories</p>

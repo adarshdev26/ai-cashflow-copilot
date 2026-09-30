@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 import { getAccountError } from '@/features/accounts/lib/check-account';
+import { isCategoryUsable } from '@/lib/categories';
 
 const TRANSACTION_INCLUDE = {
   category: { select: { id: true, name: true, color: true } },
@@ -47,8 +48,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { amount, type, description, categoryId, accountId } = validatedData;
 
     if (categoryId && categoryId !== existing.categoryId) {
-      const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
-      if (!categoryExists) {
+      if (categoryId && !(await isCategoryUsable(categoryId, workspaceId))) {
         return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
       }
     }
