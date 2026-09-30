@@ -5,7 +5,7 @@ import { validateTransactionData } from '@/features/finance/lib/validate-transac
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { Prisma } from '@/generated/prisma';
 import { buildTransactionWhere } from '@/lib/transaction-filters';
-import { isCategoryUsable } from '@/lib/categories';
+import { getCategoryError } from '@/lib/categories';
 
 // Offset pagination matches the existing numbered table controls and keeps this query compatible with useQuery.
 const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type'] as const;
