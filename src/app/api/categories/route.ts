@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireWorkspaceAccess } from '@/lib/workspaces';
-import { findNameConflict, parseCategoryInput, visibleCategoryWhere } from '@/lib/categories';
-
-const CATEGORY_SELECT = { id: true, name: true, color: true, workspaceId: true } as const;
+import { CATEGORY_SELECT, findNameConflict, parseCategoryInput, visibleCategoryWhere } from '@/lib/categories';
 
 export async function GET(req: Request) {
   try {
@@ -30,7 +28,7 @@ export async function POST(req: Request) {
 
     const parsed = parseCategoryInput(await req.json().catch(() => null));
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
-    const { name, color } = parsed.data;
+    const { name, color, type } = parsed.data;
 
     const conflict = await findNameConflict(workspaceId, name!);
     if (conflict) {
@@ -41,7 +39,7 @@ export async function POST(req: Request) {
     }
 
     const created = await prisma.category.create({
-      data: { name: name!, color: color ?? null, workspaceId },
+      data: { name: name!, color: color ?? null, type: type ?? 'BOTH', workspaceId },
       select: CATEGORY_SELECT,
     });
     return NextResponse.json(created, { status: 201 });

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from "@/lib/prisma";
 import { requireWorkspaceAccess } from '@/lib/workspaces';
-import { findNameConflict, loadCustomCategory, parseCategoryInput } from '@/lib/categories';
+import { CATEGORY_SELECT, findNameConflict, loadCustomCategory, parseCategoryInput } from '@/lib/categories';
 
 type Ctx = { params: Promise<{ id: string }> };
-const CATEGORY_SELECT = { id: true, name: true, color: true, workspaceId: true } as const;
 
 export async function PATCH(req: Request, ctx: Ctx) {
     try {
@@ -23,6 +22,19 @@ export async function PATCH(req: Request, ctx: Ctx) {
             const conflict = await findNameConflict(workspaceId, parsed.data.name, id);
             if (conflict) {
                 return NextResponse.json({ error: 'A category with this name already exists' }, { status: 409 });
+            }
+        }
+
+        const newType = parsed.data.type;
+        if (newType && newType !== 'BOTH') {
+            const opposite = await prisma.transaction.count({
+                where: { categoryId: id, workspaceId, type: newType === 'CREDIT' ? 'DEBIT' : 'CREDIT' },
+            });
+            if (opposite > 0) {
+                return NextResponse.json(
+                    { error: `${opposite} existing transactions use the opposite type. Recategorize them first.` },
+                    { status: 409 }
+                );
             }
         }
 

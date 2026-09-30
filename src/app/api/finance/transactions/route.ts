@@ -135,9 +135,8 @@ export async function POST(req: Request) {
     const { amount, type, description, categoryId, accountId } = validatedData;
 
     if (categoryId) {
-      if (categoryId && !(await isCategoryUsable(categoryId, workspaceId))) {
-        return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
-      }
+      const categoryError = await getCategoryError(categoryId, workspaceId, { type, requireActive: true });
+      if (categoryError) return NextResponse.json({ error: categoryError }, { status: 400 });
     }
 
     // New transactions need an account of THIS workspace that is active

@@ -38,6 +38,12 @@ enum AccountType {
   OTHER
 }
 
+enum CategoryType {
+  CREDIT
+  DEBIT
+  BOTH
+}
+
 model User {
   id                    String                @id @default(uuid())
   email                 String                @unique
@@ -121,9 +127,12 @@ model Category {
   transactions Transaction[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  type         CategoryType  @default(BOTH)
+  isActive     Boolean       @default(true)
 
   @@unique([workspaceId, name])
   @@index([workspaceId])
+  @@index([workspaceId, isActive])
 }
 
 // Workspace-scoped money container (bank, cash, card, wallet).

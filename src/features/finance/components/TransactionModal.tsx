@@ -6,6 +6,7 @@ import { PrimaryButton, Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { CategorySelect } from '@/resources/components/CategorySelect';
+import { useCategoryMap } from '@/resources/hooks/use-categories';
 import { Transaction, CreateTransactionInput } from '../types';
 import { AccountSelect, useAccounts, useActiveAccountId } from '@/features/accounts';
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
@@ -40,6 +41,7 @@ export function TransactionModal({
   const workspaceId = useActiveWorkspaceId();
   const canCreateCategory = usePermission('category.create');
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+  const categoryMap = useCategoryMap();
 
   const { data: activeAccounts, isLoading: accountsLoading } = useAccounts(workspaceId, { activeOnly: true });
   // null = user hasn't picked; on create we fall back to the first active account.
@@ -78,8 +80,14 @@ export function TransactionModal({
   );
 
   const handleTypeChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => setType(e.target.value as 'CREDIT' | 'DEBIT'),
-    []
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const next = e.target.value as 'CREDIT' | 'DEBIT';
+      setType(next);
+      // drop the selected category if it doesn't fit the new type
+      const cat = categoryId ? categoryMap[categoryId] : null;
+      if (cat?.type && cat.type !== 'BOTH' && cat.type !== next) setCategoryId(null);
+    },
+    [categoryId, categoryMap]
   );
 
   return (
@@ -159,6 +167,7 @@ export function TransactionModal({
           <CategorySelect
             value={categoryId}
             onChange={setCategoryId}
+            transactionType={type}
             onAddNew={canCreateCategory ? () => setAddCategoryOpen(true) : undefined}
           />
         </div>
@@ -169,7 +178,10 @@ export function TransactionModal({
           open
           onClose={() => setAddCategoryOpen(false)}
           workspaceId={workspaceId}
-          onSaved={(created) => setCategoryId(created.id)}
+          defaultType={type}
+          onSaved={(created) => {
+            if (created.type === 'BOTH' || created.type === type) setCategoryId(created.id);
+          }}
         />
       )}
     </Modal>

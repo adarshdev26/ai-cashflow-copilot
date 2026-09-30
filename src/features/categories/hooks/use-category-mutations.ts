@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createCategory, updateCategory, deleteCategory } from '../api/categories-crud-api';
-import type { CategoryInput } from '../types';
+import type { CategoryInput, CategoryUpdate } from '../types';
 
 function useInvalidateCategories(workspaceId: string) {
   const queryClient = useQueryClient();
@@ -22,7 +22,7 @@ export function useCreateCategory(workspaceId: string) {
 export function useUpdateCategory(workspaceId: string) {
   const invalidate = useInvalidateCategories(workspaceId);
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CategoryInput> }) =>
+    mutationFn: ({ id, data }: { id: string; data: CategoryUpdate }) =>
       updateCategory(workspaceId, id, data),
     onSuccess: invalidate,
   });

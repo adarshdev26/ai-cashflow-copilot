@@ -1,5 +1,5 @@
 import { apiFetch, withWorkspace } from '@/lib/api-client';
-import type { CategoryInput, CategoryItem } from '../types';
+import type { CategoryInput, CategoryItem, CategoryUpdate } from '../types';
 
 export async function createCategory(workspaceId: string, data: CategoryInput): Promise<CategoryItem> {
   return apiFetch<CategoryItem>('/api/categories', {
@@ -12,7 +12,7 @@ export async function createCategory(workspaceId: string, data: CategoryInput): 
 export async function updateCategory(
   workspaceId: string,
   id: string,
-  data: Partial<CategoryInput>
+  data: CategoryUpdate
 ): Promise<CategoryItem> {
   return apiFetch<CategoryItem>(`/api/categories/${id}`, {
     ...withWorkspace(workspaceId),
