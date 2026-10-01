@@ -60,12 +60,22 @@ export function parsePeriod(params: URLSearchParams): { from: Date; to: Date } |
   return { from, to };
 }
 
+// Browsers send their local month start as a UTC instant, which can be up to 14h
+// earlier than the UTC month start (e.g. IST sends Sep 30 18:30Z for "Oct 1").
+const MAX_TZ_OFFSET_MS = 14 * 60 * 60 * 1000;
+
+export function isBeforeCurrentMonth(date: Date, now: Date = new Date()): boolean {
+  const floor = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1) - MAX_TZ_OFFSET_MS;
+  return date.getTime() < floor;
+}
+
 export function parseStartDate(value: unknown): { startDate: Date } | { error: string } {
   if (value === undefined || value === null || value === '') {
     return { startDate: currentMonthUtc().from };
   }
   const d = new Date(String(value));
   if (Number.isNaN(d.getTime())) return { error: 'Invalid start date' };
+  if (isBeforeCurrentMonth(d)) return { error: 'Budgets cannot be created for past months' };
   return { startDate: d };
 }
 

@@ -67,6 +67,14 @@ export async function DELETE(req: Request, ctx: Ctx) {
             );
         }
 
+        const scheduleCount = await prisma.recurringTransaction.count({ where: { categoryId: id, workspaceId } });
+        if (scheduleCount > 0) {
+            return NextResponse.json(
+                { error: `This category is used by ${scheduleCount} recurring schedule${scheduleCount === 1 ? '' : 's'}. Change or delete them first.` },
+                { status: 409 }
+            );
+        }
+
         const affectedTransactions = await prisma.transaction.count({ where: { categoryId: id, workspaceId } });
         await prisma.category.delete({ where: { id } }); // onDelete: SetNull leaves the transactions uncategorized
         return NextResponse.json({ id, affectedTransactions });

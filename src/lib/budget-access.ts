@@ -6,9 +6,9 @@ type Fail = { ok: false; response: Response };
 /** write=true requires budgets.manage; write=false only needs workspace membership. */
 export async function budgetAccess(request: Request, write: boolean): Promise<Ok | Fail> {
   const result = write
-    ? await requireWorkspaceAction(request as never, 'budgets.manage' as never)
-    : await requireWorkspaceAccess(request as never);
+    ? await requireWorkspaceAction(request, 'budgets.manage')
+    : await requireWorkspaceAccess(request);
 
-  if (result instanceof Response) return { ok: false, response: result };
-  return { ok: true, workspaceId: (result as { workspaceId: string }).workspaceId };
+  if (!result.ok) return { ok: false, response: result.response };
+  return { ok: true, workspaceId: result.workspaceId };
 }

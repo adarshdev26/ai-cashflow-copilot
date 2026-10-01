@@ -69,6 +69,7 @@ export function DataTable<TData, TValue>({
   const [localSorting, setLocalSorting] = useState<SortingState>([]);
   const [localGlobalFilter, setLocalGlobalFilter] = useState('');
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,

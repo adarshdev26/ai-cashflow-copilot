@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback, memo } from 'react';
 import { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
-import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2, Repeat } from 'lucide-react';
 import { Transaction } from '../types';
 import { DataTable } from '@/components/ui/DataTable';
 import { CategoryBadge } from '@/resources/components/CategoryBadge';
@@ -59,6 +59,9 @@ export const TransactionTable = memo(function TransactionTable({
                 {tx.type === 'CREDIT' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4" />}
               </div>
               {tx.description || 'Untitled Transaction'}
+              {(tx.recurringTransactionId || tx.occurrenceDate) && (
+                <Repeat className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-label="Recurring" />
+              )}
             </div>
           );
         },

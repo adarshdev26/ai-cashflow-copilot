@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "cron:test": "node --env-file=.env -e \"setInterval(async()=>{try{const r=await fetch('http://localhost:3000/api/cron/recurring',{headers:{authorization:'Bearer '+process.env.CRON_SECRET}});console.log(new Date().toLocaleTimeString(),await r.text())}catch(e){console.log(e.message)}},5000)\""
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
