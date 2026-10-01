@@ -1,11 +1,20 @@
 export type RecurringFrequency = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
+/**
+ * TEST SWITCH
+ * true  = WEEKLY runs every 5 seconds (no catch-up), for local testing
+ * false = WEEKLY runs every 7 days (normal behaviour)
+ */
+const TEST_FAST_WEEKLY = true;
+const TEST_STEP_MS = 5_000;
+
 /** Schedule dates are calendar dates stored at 12:00 UTC. */
 export const SCHEDULE_HOUR_UTC = 12;
 /** Max occurrences generated per schedule per job run (catch-up cap). */
 export const MAX_OCCURRENCES_PER_RUN = 24;
 
 const DAY_MS = 86_400_000;
+const WEEKLY_STEP_MS = TEST_FAST_WEEKLY ? TEST_STEP_MS : 7 * DAY_MS;
 
 /**
  * Normalise to a schedule date (12:00 UTC of a calendar day).
@@ -61,7 +70,7 @@ export function occurrenceAt(
 
   switch (frequency) {
     case 'WEEKLY':
-      return new Date(s.getTime() + index * 7 * DAY_MS);
+      return new Date(s.getTime() + index * WEEKLY_STEP_MS);
     case 'MONTHLY': {
       const total = sy * 12 + sm + index;
       const y = Math.floor(total / 12);
@@ -89,7 +98,7 @@ function estimateIndex(
 ): number {
   let est: number;
   if (frequency === 'WEEKLY') {
-    est = Math.floor((target.getTime() - start.getTime()) / (7 * DAY_MS));
+    est = Math.floor((target.getTime() - start.getTime()) / WEEKLY_STEP_MS);
   } else if (frequency === 'MONTHLY') {
     est =
       (target.getUTCFullYear() - start.getUTCFullYear()) * 12 +
@@ -107,6 +116,7 @@ export function firstOccurrenceOnOrAfter(
   from: Date,
 ): Date {
   const s = toScheduleDate(startDate);
+  if (TEST_FAST_WEEKLY && frequency === 'WEEKLY') return s; // due immediately
   if (from.getTime() <= s.getTime()) return s;
   let i = estimateIndex(s, frequency, from);
   let occ = occurrenceAt(s, frequency, i);
@@ -164,6 +174,21 @@ export function collectDueOccurrences(
   const isLive = (d: Date) =>
     d.getTime() <= input.now.getTime() &&
     (end === null || d.getTime() <= end.getTime());
+
+  // TEST MODE: no catch-up, emit only the latest due 5-second slot
+  if (TEST_FAST_WEEKLY && input.frequency === 'WEEKLY' && isLive(input.nextRunAt)) {
+    const s = toScheduleDate(input.startDate);
+    const upTo = end && end.getTime() < input.now.getTime() ? end : input.now;
+    const idx = Math.floor((upTo.getTime() - s.getTime()) / WEEKLY_STEP_MS);
+    const latest = occurrenceAt(s, 'WEEKLY', idx);
+    const next = new Date(latest.getTime() + WEEKLY_STEP_MS);
+    return {
+      occurrences: [latest],
+      nextRunAt: next,
+      hasMore: false,
+      finished: end !== null && next.getTime() > end.getTime(),
+    };
+  }
 
   const occurrences: Date[] = [];
   let cursor = input.nextRunAt;

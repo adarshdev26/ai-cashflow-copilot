@@ -126,13 +126,12 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
               key={t}
               type="button"
               onClick={() => changeType(t)}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                type === t
-                  ? t === 'DEBIT'
-                    ? 'bg-white text-red-600 shadow-sm'
-                    : 'bg-white text-emerald-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${type === t
+                ? t === 'DEBIT'
+                  ? 'bg-white text-red-600 shadow-sm'
+                  : 'bg-white text-emerald-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+                }`}
             >
               {t === 'DEBIT' ? 'Expense' : 'Income'}
             </button>
@@ -188,7 +187,7 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Account</label>
-            <AccountSelect value={accountId} onChange={(id) => setAccountId(id ?? '')} />
+            <AccountSelect value={accountId || null} onChange={(id) => setAccountId(id ?? '')} />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
