@@ -2,12 +2,14 @@
 
 import { useMemo, useCallback, memo } from 'react';
 import { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
-import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2, Repeat } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2, Repeat, LayoutTemplate } from 'lucide-react';
 import { Transaction } from '../types';
 import { DataTable } from '@/components/ui/DataTable';
 import { CategoryBadge } from '@/resources/components/CategoryBadge';
 import { Button } from '@/components/ui/Button';
 import { usePermission } from '@/features/workspaces';
+import { useCreateTemplate } from '@/features/transaction-templates';
+import { notify, getErrorMessage } from '@/lib/toast';
 
 interface TransactionTableProps {
   transactions?: Transaction[];
@@ -42,8 +44,28 @@ export const TransactionTable = memo(function TransactionTable({
 }: TransactionTableProps) {
   const canEdit = usePermission('transaction.update');
   const canDelete = usePermission('transaction.delete');
+  const canManageTemplates = usePermission('templates.manage');
+  const { mutate: createTemplate, isPending: isCreatingTemplate } = useCreateTemplate();
+
   const handleEdit = useCallback((tx: Transaction) => onEdit(tx), [onEdit]);
   const handleDelete = useCallback((tx: Transaction) => onDelete(tx), [onDelete]);
+
+  const handleSaveAsTemplate = useCallback((tx: Transaction) => {
+    const name = window.prompt('Template name:', tx.description || 'New template');
+    if (!name) return;
+    createTemplate({
+      name: name.trim(),
+      type: tx.type,
+      amount: tx.amount,
+      description: tx.description,
+      accountId: tx.accountId,
+      categoryId: tx.categoryId,
+      dateMode: 'TODAY',
+    }, {
+      onSuccess: () => notify.success('Template created'),
+      onError: (error) => notify.error(getErrorMessage(error, 'Failed to create template')),
+    });
+  }, [createTemplate]);
 
   const columns = useMemo<ColumnDef<Transaction>[]>(() => {
     const base: ColumnDef<Transaction>[] = [
@@ -126,7 +148,7 @@ export const TransactionTable = memo(function TransactionTable({
       },
     ];
 
-    if (!canEdit && !canDelete) return base;
+    if (!canEdit && !canDelete && !canManageTemplates) return base;
 
     return [
       ...base,
@@ -137,6 +159,17 @@ export const TransactionTable = memo(function TransactionTable({
           const tx = row.original;
           return (
             <div className="flex items-center justify-end gap-1">
+              {canManageTemplates && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Save as template"
+                  onClick={() => handleSaveAsTemplate(tx)}
+                  disabled={isCreatingTemplate}
+                >
+                  <LayoutTemplate className="h-4 w-4 text-indigo-500" />
+                </Button>
+              )}
               {canEdit && (
                 <Button variant="ghost" size="sm" aria-label="Edit transaction" onClick={() => handleEdit(tx)}>
                   <Pencil className="h-4 w-4 text-blue-500" />
@@ -152,7 +185,7 @@ export const TransactionTable = memo(function TransactionTable({
         },
       },
     ];
-  }, [handleEdit, handleDelete, canEdit, canDelete]);
+  }, [handleEdit, handleDelete, canEdit, canDelete, canManageTemplates, handleSaveAsTemplate]);
 
   return (
     <div data-tour="transaction-table">

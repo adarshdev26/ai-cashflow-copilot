@@ -35,7 +35,7 @@ export const FinanceHeader = memo(function FinanceHeader({ onOpenModal, onOpenEx
         )}
         {canCreate && onUseTemplate && <UseTemplateMenu onSelect={onUseTemplate} />}
         {canCreate && (
-          <PrimaryButton onClick={onOpenModal} leftIcon={<Plus className="h-4 w-4" />}>
+          <PrimaryButton data-tour="add-transaction-btn" onClick={onOpenModal} leftIcon={<Plus className="h-4 w-4" />}>
             Add Transaction
           </PrimaryButton>
         )}
