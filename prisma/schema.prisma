@@ -62,23 +62,24 @@ model User {
 }
 
 model Workspace {
-  id           String                @id @default(uuid())
-  name         String
-  slug         String                @unique
-  currency     String                @default("INR")
-  ownerId      String
-  owner        User                  @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Restrict)
-  access       WorkspaceAccess[]
-  invitations  WorkspaceInvitation[]
-  categories   Category[]
-  transactions Transaction[]
-  accounts     FinancialAccount[]
-  habits       Habit[]
-  notes        Note[]
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
-  budgets      Budget[]
+  id                    String                 @id @default(uuid())
+  name                  String
+  slug                  String                 @unique
+  currency              String                 @default("INR")
+  ownerId               String
+  owner                 User                   @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  access                WorkspaceAccess[]
+  invitations           WorkspaceInvitation[]
+  categories            Category[]
+  transactions          Transaction[]
+  accounts              FinancialAccount[]
+  habits                Habit[]
+  notes                 Note[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  budgets               Budget[]
   recurringTransactions RecurringTransaction[]
+  transactionTemplates  TransactionTemplate[]
 
   @@index([ownerId])
 }
@@ -120,19 +121,20 @@ model WorkspaceInvitation {
 
 // Global: shared by every workspace
 model Category {
-  id           String        @id @default(uuid())
-  name         String
-  color        String?
+  id                    String                 @id @default(uuid())
+  name                  String
+  color                 String?
   // null = global (shared by every workspace). Set = custom, visible only in that workspace.
-  workspaceId  String?
-  workspace    Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  type         CategoryType  @default(BOTH)
-  isActive     Boolean       @default(true)
-  budgets      Budget[]
+  workspaceId           String?
+  workspace             Workspace?             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  transactions          Transaction[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  type                  CategoryType           @default(BOTH)
+  isActive              Boolean                @default(true)
+  budgets               Budget[]
   recurringTransactions RecurringTransaction[]
+  transactionTemplates  TransactionTemplate[]
 
   @@unique([workspaceId, name])
   @@index([workspaceId])
@@ -142,18 +144,19 @@ model Category {
 // Workspace-scoped money container (bank, cash, card, wallet).
 // Named FinancialAccount to avoid confusion with WorkspaceAccess.
 model FinancialAccount {
-  id             String        @id @default(uuid())
-  workspaceId    String
-  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  name           String
-  type           AccountType   @default(OTHER)
-  currency       String        @default("INR")
-  openingBalance Float         @default(0)
+  id                    String                 @id @default(uuid())
+  workspaceId           String
+  workspace             Workspace              @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name                  String
+  type                  AccountType            @default(OTHER)
+  currency              String                 @default("INR")
+  openingBalance        Float                  @default(0)
   recurringTransactions RecurringTransaction[]
-  isActive       Boolean       @default(true)
-  transactions   Transaction[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  isActive              Boolean                @default(true)
+  transactions          Transaction[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  transactionTemplates  TransactionTemplate[]
 
   @@unique([workspaceId, name])
   @@index([workspaceId, isActive])
@@ -161,33 +164,33 @@ model FinancialAccount {
 }
 
 model Transaction {
-  id          String            @id @default(uuid())
-  amount      Float
-  type        TransactionType   @default(DEBIT)
-  description String?
-  workspaceId String
-  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  categoryId  String?
-  category    Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  id                     String                @id @default(uuid())
+  amount                 Float
+  type                   TransactionType       @default(DEBIT)
+  description            String?
+  workspaceId            String
+  workspace              Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  categoryId             String?
+  category               Category?             @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   // Nullable for now; becomes required after the backfill (Commit 13).
   // Restrict: an account with transactions can never be hard-deleted.
-  accountId   String?
-  account     FinancialAccount? @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  accountId              String?
+  account                FinancialAccount?     @relation(fields: [accountId], references: [id], onDelete: Restrict)
   // Set only for transactions generated by a schedule.
   recurringTransactionId String?
   recurringTransaction   RecurringTransaction? @relation(fields: [recurringTransactionId], references: [id], onDelete: SetNull)
   occurrenceDate         DateTime?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
 
+  // DB-level idempotency: one transaction per schedule + occurrence.
+  // Manual transactions (NULLs) are never affected.
+  @@unique([workspaceId, recurringTransactionId, occurrenceDate])
   @@index([workspaceId, createdAt])
   @@index([workspaceId, categoryId])
   @@index([workspaceId, accountId])
   @@index([workspaceId, categoryId, createdAt])
   @@index([recurringTransactionId])
-  // DB-level idempotency: one transaction per schedule + occurrence.
-  // Manual transactions (NULLs) are never affected.
-  @@unique([workspaceId, recurringTransactionId, occurrenceDate])
 }
 
 enum TransactionType {
@@ -292,4 +295,30 @@ model RecurringTransaction {
   @@index([workspaceId, isActive])
   @@index([isActive, nextRunAt])
   @@index([workspaceId, accountId])
+}
+
+enum TemplateDateMode {
+  FIXED // always use fixedDate
+  TODAY // use the day the template is applied
+}
+
+model TransactionTemplate {
+  id          String            @id @default(uuid())
+  workspaceId String
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name        String
+  type        TransactionType   @default(DEBIT)
+  amount      Float?
+  description String?
+  accountId   String?
+  account     FinancialAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  categoryId  String?
+  category    Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  dateMode    TemplateDateMode  @default(TODAY)
+  fixedDate   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId, createdAt])
 }
