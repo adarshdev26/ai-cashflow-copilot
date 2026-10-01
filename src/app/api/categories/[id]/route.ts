@@ -59,6 +59,14 @@ export async function DELETE(req: Request, ctx: Ctx) {
         const target = await loadCustomCategory(id, workspaceId);
         if (!target.ok) return NextResponse.json({ error: target.error }, { status: target.status });
 
+        const budgetCount = await prisma.budget.count({ where: { categoryId: id } });
+        if (budgetCount > 0) {
+            return NextResponse.json(
+                { error: 'This category has budgets. Remove its budgets first, or deactivate the category instead.' },
+                { status: 409 }
+            );
+        }
+
         const affectedTransactions = await prisma.transaction.count({ where: { categoryId: id, workspaceId } });
         await prisma.category.delete({ where: { id } }); // onDelete: SetNull leaves the transactions uncategorized
         return NextResponse.json({ id, affectedTransactions });
