@@ -1,8 +1,8 @@
 import { apiFetch, withWorkspace } from '@/lib/api-client';
 import { Category, CategorySummary, DateRange } from '../types';
 
-export async function fetchCategories(): Promise<Category[]> {
-  return apiFetch<Category[]>('/api/categories');
+export async function fetchCategories(workspaceId: string): Promise<Category[]> {
+  return apiFetch<Category[]>('/api/categories', withWorkspace(workspaceId));
 }
 
 export async function fetchCategoriesSummary(

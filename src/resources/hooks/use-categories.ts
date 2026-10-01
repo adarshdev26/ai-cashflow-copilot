@@ -2,14 +2,17 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { fetchCategories, fetchCategoriesSummary } from '../api/categories-api';
 import { Category, CategorySummary, DateRange } from '../types';
+import { useActiveWorkspaceId } from '@/features/workspaces';
 
 export const CATEGORIES_QUERY_KEY = ['categories'] as const;
 
-/** Category list is global — no workspaceId in key. */
+/** Globals + this workspace's custom categories. Key includes workspaceId. */
 export function useCategories() {
+  const workspaceId = useActiveWorkspaceId();
   return useQuery({
-    queryKey: CATEGORIES_QUERY_KEY,
-    queryFn: fetchCategories,
+    queryKey: [...CATEGORIES_QUERY_KEY, workspaceId],
+    queryFn: () => fetchCategories(workspaceId as string),
+    enabled: Boolean(workspaceId),
     staleTime: 10 * 60 * 1000, // 10 minutes
     gcTime: 30 * 60 * 1000,    // 30 minutes
     refetchOnWindowFocus: false,

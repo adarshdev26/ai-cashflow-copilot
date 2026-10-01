@@ -88,6 +88,15 @@ const financeSteps: DriveStep[] = [
     },
   },
   {
+    element: '[aria-label="Save as template"]',
+    popover: {
+      title: 'Save as template',
+      description: 'Turn any transaction into a reusable template for quick entry later.',
+      side: 'left',
+      align: 'start',
+    },
+  },
+  {
     element: '[data-tour="transaction-table"]',
     popover: {
       title: 'Your ledger',

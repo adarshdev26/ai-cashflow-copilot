@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 import { getAccountError } from '@/features/accounts/lib/check-account';
+import { getCategoryError } from '@/lib/categories';
 
 const TRANSACTION_INCLUDE = {
   category: { select: { id: true, name: true, color: true } },
@@ -35,6 +36,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       description: body.description !== undefined ? body.description : existing.description,
       categoryId: body.categoryId !== undefined ? body.categoryId : existing.categoryId,
       accountId: body.accountId !== undefined ? body.accountId : existing.accountId,
+      date: body.date,
     };
 
     let validatedData;
@@ -44,13 +46,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid data' }, { status: 400 });
     }
 
-    const { amount, type, description, categoryId, accountId } = validatedData;
+    const { amount, type, description, categoryId, accountId, date } = validatedData;
 
-    if (categoryId && categoryId !== existing.categoryId) {
-      const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
-      if (!categoryExists) {
-        return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
-      }
+    // Re-check when the category OR the type changed. Active is only required for a *new* category,
+    // so old transactions on a since-deactivated category stay editable.
+    if (categoryId && (categoryId !== existing.categoryId || type !== existing.type)) {
+      const categoryError = await getCategoryError(categoryId, workspaceId, {
+        type,
+        requireActive: categoryId !== existing.categoryId,
+      });
+      if (categoryError) return NextResponse.json({ error: categoryError }, { status: 400 });
     }
 
     // Account rule:
@@ -63,6 +68,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
     }
 
+    // The form only sends `date` when the user changed it, so apply it as given.
+    const newCreatedAt = date;
+
     const updated = await prisma.transaction.update({
       where: { id },
       data: {
@@ -71,6 +79,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         description,
         categoryId: body.categoryId === null ? null : categoryId,
         accountId,
+        ...(newCreatedAt && { createdAt: newCreatedAt }),
       },
       include: TRANSACTION_INCLUDE,
     });
