@@ -6,12 +6,15 @@ type FinanceHeaderProps = {
   onOpenModal: () => void;
   onOpenExport?: () => void;
   onOpenImport?: () => void;
+  onUseTemplate?: (template: TransactionTemplateDTO) => void;
 };
 
 import { PrimaryButton } from '@/components/ui/Button'
 import { usePermission } from '@/features/workspaces'
+import { UseTemplateMenu } from '@/features/transaction-templates/components/UseTemplateMenu';
+import type { TransactionTemplateDTO } from '@/features/transaction-templates/types';
 
-export const FinanceHeader = memo(function FinanceHeader({ onOpenModal, onOpenExport, onOpenImport }: FinanceHeaderProps) {
+export const FinanceHeader = memo(function FinanceHeader({ onOpenModal, onOpenExport, onOpenImport, onUseTemplate }: FinanceHeaderProps) {
   const canCreate = usePermission('transaction.create');
   return (
     <div className="flex items-center justify-between">
@@ -30,6 +33,7 @@ export const FinanceHeader = memo(function FinanceHeader({ onOpenModal, onOpenEx
             Import
           </Button>
         )}
+        {canCreate && onUseTemplate && <UseTemplateMenu onSelect={onUseTemplate} />}
         {canCreate && (
           <PrimaryButton onClick={onOpenModal} leftIcon={<Plus className="h-4 w-4" />}>
             Add Transaction

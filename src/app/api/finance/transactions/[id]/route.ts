@@ -68,12 +68,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
     }
 
-    // Only touch createdAt when the calendar day actually changed, so editing other
-    // fields never rewrites the original timestamp.
-    const newCreatedAt =
-      date && date.toISOString().slice(0, 10) !== existing.createdAt.toISOString().slice(0, 10)
-        ? date
-        : null;
+    // The form only sends `date` when the user changed it, so apply it as given.
+    const newCreatedAt = date;
 
     const updated = await prisma.transaction.update({
       where: { id },

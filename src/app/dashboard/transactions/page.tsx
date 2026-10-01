@@ -10,8 +10,13 @@ import {
   FinanceHeader,
   TransactionTable,
   TransactionModal,
-  FinanceStats
+  FinanceStats,
+  type TransactionInitialValues,
 } from '@/features/finance';
+import {
+  templateToInitialValues,
+  type TransactionTemplateDTO
+} from '@/features/transaction-templates';
 import { useListQueryState } from '@/hooks/list/useListQueryState';
 import { useCategories } from '@/resources/hooks/use-categories';
 import { Select } from '@/components/ui/Select';
@@ -32,7 +37,10 @@ import { useAccounts } from '@/features/accounts';
 import { ExportTransactionsModal } from "@/features/finance";
 import { ImportTransactionsModal } from "@/features/finance";
 
-type FormState = { mode: 'create' } | { mode: 'edit'; transaction: Transaction } | null;
+type FormState =
+  | { mode: 'create'; initialValues?: TransactionInitialValues; templateId?: string }
+  | { mode: 'edit'; transaction: Transaction }
+  | null;
 
 const defaultTransactionFilters: TransactionFilters = {
   search: undefined,
@@ -148,6 +156,11 @@ export default function TransactionsPage() {
   }, [deleteTarget, deleteTx]);
 
   const openCreateModal = useCallback(() => setFormState({ mode: 'create' }), []);
+  const openCreateFromTemplate = useCallback(
+    (t: TransactionTemplateDTO) =>
+      setFormState({ mode: 'create', initialValues: templateToInitialValues(t), templateId: t.id }),
+    []
+  );
   const closeModal = useCallback(() => setFormState(null), []);
   const openEditModal = useCallback((tx: Transaction) => setFormState({ mode: 'edit', transaction: tx }), []);
   const openDeleteTarget = useCallback((tx: Transaction) => setDeleteTarget(tx), []);
@@ -214,6 +227,7 @@ export default function TransactionsPage() {
     <div className="space-y-8 max-w-7xl mx-auto">
       <FinanceHeader
         onOpenModal={openCreateModal}
+        onUseTemplate={openCreateFromTemplate}
         onOpenExport={() => setExportOpen(true)}
         onOpenImport={() => setImportOpen(true)}
       />
@@ -272,12 +286,13 @@ export default function TransactionsPage() {
 
       {formState && (formState.mode === 'create' ? canCreate : canUpdate) && (
         <TransactionModal
-          key={formState.mode === 'edit' ? formState.transaction.id : 'new'}
+          key={formState.mode === 'edit' ? formState.transaction.id : `new-${formState.templateId ?? ''}`}
           open={true}
           onClose={closeModal}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           transaction={formState.mode === 'edit' ? formState.transaction : null}
+          initialValues={formState.mode === 'create' ? formState.initialValues : undefined}
         />
       )}
 
