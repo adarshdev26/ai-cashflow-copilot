@@ -76,6 +76,8 @@ export interface CreateTransactionInput {
   description?: string;
   categoryId?: string | null;
   accountId: string;
+  /** Optional YYYY-MM-DD. Omitted = now. Stored in createdAt at 12:00 UTC. */
+  date?: string;
 }
 
 export type UpdateTransactionInput = Partial<CreateTransactionInput>;

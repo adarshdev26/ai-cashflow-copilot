@@ -36,6 +36,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       description: body.description !== undefined ? body.description : existing.description,
       categoryId: body.categoryId !== undefined ? body.categoryId : existing.categoryId,
       accountId: body.accountId !== undefined ? body.accountId : existing.accountId,
+      date: body.date,
     };
 
     let validatedData;
@@ -45,7 +46,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid data' }, { status: 400 });
     }
 
-    const { amount, type, description, categoryId, accountId } = validatedData;
+    const { amount, type, description, categoryId, accountId, date } = validatedData;
 
     // Re-check when the category OR the type changed. Active is only required for a *new* category,
     // so old transactions on a since-deactivated category stay editable.
@@ -67,6 +68,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
     }
 
+    // The form only sends `date` when the user changed it, so apply it as given.
+    const newCreatedAt = date;
+
     const updated = await prisma.transaction.update({
       where: { id },
       data: {
@@ -75,6 +79,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         description,
         categoryId: body.categoryId === null ? null : categoryId,
         accountId,
+        ...(newCreatedAt && { createdAt: newCreatedAt }),
       },
       include: TRANSACTION_INCLUDE,
     });
