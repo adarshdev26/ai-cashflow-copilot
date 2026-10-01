@@ -79,7 +79,8 @@ export function Modal({
       onClick={handleBackdropClick}
       className={cn(
         "backdrop:bg-slate-900/40 backdrop:backdrop-blur-sm",
-        "w-full rounded-xl border border-slate-200 bg-white p-0 shadow-xl",
+        "fixed inset-0 m-auto h-fit max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto",
+        "rounded-xl border border-slate-200 bg-white p-0 shadow-xl",
         "animate-in fade-in zoom-in-95 duration-200",
         sizeClasses[size]
       )}

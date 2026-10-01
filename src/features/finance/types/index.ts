@@ -36,6 +36,9 @@ export interface Transaction {
   account: TransactionAccount;
   createdAt: string;
   updatedAt?: string;
+
+  recurringTransactionId: string | null;
+  occurrenceDate: string | null;
 }
 
 export interface TransactionListParams extends TransactionFilters {
@@ -73,6 +76,8 @@ export interface CreateTransactionInput {
   description?: string;
   categoryId?: string | null;
   accountId: string;
+  /** Optional YYYY-MM-DD. Omitted = now. Stored in createdAt at 12:00 UTC. */
+  date?: string;
 }
 
 export type UpdateTransactionInput = Partial<CreateTransactionInput>;

@@ -6,9 +6,29 @@ import { PrimaryButton, Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { CategorySelect } from '@/resources/components/CategorySelect';
+import { useCategoryMap } from '@/resources/hooks/use-categories';
 import { Transaction, CreateTransactionInput } from '../types';
 import { AccountSelect, useAccounts, useActiveAccountId } from '@/features/accounts';
-import { useActiveWorkspaceId } from '@/features/workspaces';
+import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
+import { CategoryFormModal } from '@/features/categories/components/CategoryFormModal';
+
+/** Prefill for a NEW transaction (e.g. from a template). Ignored when editing. */
+export interface TransactionInitialValues {
+  amount?: number | null;
+  type?: 'CREDIT' | 'DEBIT';
+  description?: string | null;
+  accountId?: string | null;
+  categoryId?: string | null;
+  /** YYYY-MM-DD */
+  date?: string;
+}
+
+/** Local calendar date as YYYY-MM-DD (toISOString would shift the day in some timezones). */
+function toLocalDateISO(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
 
 interface TransactionModalProps {
   open: boolean;
@@ -17,6 +37,7 @@ interface TransactionModalProps {
   isSubmitting: boolean;
   error?: string;
   transaction?: Transaction | null;
+  initialValues?: TransactionInitialValues;
 }
 
 export function TransactionModal({
@@ -25,21 +46,38 @@ export function TransactionModal({
   onSubmit,
   isSubmitting,
   error,
-  transaction
+  transaction,
+  initialValues,
 }: TransactionModalProps) {
   const isEdit = !!transaction;
   const title = isEdit ? 'Edit transaction' : 'Add transaction';
   const submitLabel = isEdit ? 'Save changes' : 'Save Transaction';
 
-  const [description, setDescription] = useState(transaction?.description || '');
-  const [amount, setAmount] = useState(transaction?.amount ? String(transaction.amount) : '');
-  const [type, setType] = useState<'CREDIT' | 'DEBIT'>(transaction?.type || 'CREDIT');
-  const [categoryId, setCategoryId] = useState<string | null>(transaction?.categoryId || null);
+  const [description, setDescription] = useState(transaction?.description || initialValues?.description || '');
+  const [amount, setAmount] = useState(
+    transaction?.amount ? String(transaction.amount) : initialValues?.amount != null ? String(initialValues.amount) : ''
+  );
+  const [type, setType] = useState<'CREDIT' | 'DEBIT'>(transaction?.type || initialValues?.type || 'CREDIT');
+  const [categoryId, setCategoryId] = useState<string | null>(transaction?.categoryId || initialValues?.categoryId || null);
+  // Date shown in the form: the local day of the stored timestamp when editing,
+  // today (or the template's date) when creating.
+  const [initialDate] = useState(() =>
+    transaction
+      ? toLocalDateISO(new Date(transaction.createdAt))
+      : initialValues?.date ?? toLocalDateISO(new Date())
+  );
+  const [date, setDate] = useState(initialDate);
 
   const workspaceId = useActiveWorkspaceId();
+  const canCreateCategory = usePermission('category.create');
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+  const categoryMap = useCategoryMap();
+
   const { data: activeAccounts, isLoading: accountsLoading } = useAccounts(workspaceId, { activeOnly: true });
   // null = user hasn't picked; on create we fall back to the first active account.
-  const [pickedAccountId, setPickedAccountId] = useState<string | null>(transaction?.accountId ?? null);
+  const [pickedAccountId, setPickedAccountId] = useState<string | null>(
+    transaction?.accountId ?? initialValues?.accountId ?? null
+  );
   const [activeAccountId] = useActiveAccountId();
   const preferredAccountId =
     activeAccountId && activeAccounts?.some((a) => a.id === activeAccountId)
@@ -52,15 +90,20 @@ export function TransactionModal({
       e.preventDefault();
       if (!amount || !accountId) return;
 
+      // Only send a date when it differs from the default (today on create, the stored day on
+      // edit), so ordinary entries keep their exact creation time and ordering.
+      const baseline = isEdit ? initialDate : toLocalDateISO(new Date());
+
       onSubmit({
         amount: Number(amount),
         type,
         description: description || undefined,
         categoryId,
         accountId,
+        ...(date && date !== baseline && { date }),
       });
     },
-    [amount, type, description, categoryId, accountId, onSubmit]
+    [amount, type, description, categoryId, accountId, date, initialDate, isEdit, onSubmit]
   );
 
   const handleDescriptionChange = useCallback(
@@ -74,8 +117,14 @@ export function TransactionModal({
   );
 
   const handleTypeChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => setType(e.target.value as 'CREDIT' | 'DEBIT'),
-    []
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const next = e.target.value as 'CREDIT' | 'DEBIT';
+      setType(next);
+      // drop the selected category if it doesn't fit the new type
+      const cat = categoryId ? categoryMap[categoryId] : null;
+      if (cat?.type && cat.type !== 'BOTH' && cat.type !== next) setCategoryId(null);
+    },
+    [categoryId, categoryMap]
   );
 
   return (
@@ -155,9 +204,28 @@ export function TransactionModal({
           <CategorySelect
             value={categoryId}
             onChange={setCategoryId}
+            transactionType={type}
+            onAddNew={canCreateCategory ? () => setAddCategoryOpen(true) : undefined}
           />
         </div>
+
+        <div>
+          <label className="block text-xs font-medium text-slate-700 mb-1">Date</label>
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
       </form>
+
+      {addCategoryOpen && workspaceId && (
+        <CategoryFormModal
+          open
+          onClose={() => setAddCategoryOpen(false)}
+          workspaceId={workspaceId}
+          defaultType={type}
+          onSaved={(created) => {
+            if (created.type === 'BOTH' || created.type === type) setCategoryId(created.id);
+          }}
+        />
+      )}
     </Modal>
   );
 }

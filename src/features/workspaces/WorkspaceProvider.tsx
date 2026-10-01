@@ -23,6 +23,60 @@ function readSavedId(): string | null {
   }
 }
 
+function WorkspaceSkeleton() {
+  return (
+    <div className="flex min-h-screen animate-pulse bg-slate-50" aria-busy="true" aria-label="Loading workspace">
+      {/* Sidebar */}
+      <aside className="hidden w-64 shrink-0 space-y-6 border-r border-slate-200 bg-white p-4 md:block">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-slate-200" />
+          <div className="h-4 w-28 rounded bg-slate-200" />
+        </div>
+        <div className="space-y-2">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 rounded-lg px-2 py-2">
+              <div className="h-5 w-5 rounded bg-slate-200" />
+              <div className="h-3.5 rounded bg-slate-200" style={{ width: `${55 + ((i * 17) % 35)}%` }} />
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 space-y-6 p-6 md:p-8">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-6 w-48 rounded bg-slate-200" />
+            <div className="h-3.5 w-72 rounded bg-slate-200" />
+          </div>
+          <div className="h-10 w-32 rounded-lg bg-slate-200" />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="space-y-3 rounded-xl border border-slate-200 bg-white p-5">
+              <div className="h-3.5 w-24 rounded bg-slate-200" />
+              <div className="h-7 w-32 rounded bg-slate-200" />
+              <div className="h-3 w-20 rounded bg-slate-200" />
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-5">
+          <div className="h-4 w-40 rounded bg-slate-200" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 py-2">
+              <div className="h-8 w-8 rounded-full bg-slate-200" />
+              <div className="h-3.5 flex-1 rounded bg-slate-200" />
+              <div className="h-3.5 w-20 rounded bg-slate-200" />
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
+
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { data: workspaces, isPending, isError, refetch } = useWorkspaces();
   const [savedId, setSavedId] = useState<string | null>(readSavedId);
@@ -37,10 +91,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setSavedId(id);
     try {
       localStorage.setItem(STORAGE_KEY, id);
-    } catch {}
+    } catch { }
   }, []);
 
-  if (isPending) return <div className="p-8 text-sm text-slate-500">Loading workspace…</div>;
+  if (isPending) return <WorkspaceSkeleton />;
 
   if (isError) {
     return (

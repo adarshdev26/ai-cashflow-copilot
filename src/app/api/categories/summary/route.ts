@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireWorkspaceAccess } from '@/lib/workspaces';
 import { prisma } from '@/lib/prisma';
+import { visibleCategoryWhere } from '@/lib/categories';
 
 type CategoryTotals = {
   categoryId: string;
@@ -44,6 +45,7 @@ export async function GET(req: Request) {
 
     const [categories, rows] = await Promise.all([
       prisma.category.findMany({
+        where: visibleCategoryWhere(workspaceId),
         orderBy: { name: 'asc' },
         select: { id: true, name: true, color: true },
       }),

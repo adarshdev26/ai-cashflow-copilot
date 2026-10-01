@@ -1,0 +1,189 @@
+'use client';
+
+import { memo, useMemo } from 'react';
+import { ColumnDef } from '@tanstack/react-table';
+import { AlertTriangle, Pause, Pencil, Play, Repeat, Trash2 } from 'lucide-react';
+import { DataTable } from '@/components/ui/DataTable';
+import { Button } from '@/components/ui/Button';
+import { formatINR } from '@/features/budgets/utils';
+import { getRecurringStatus, type RecurringTransactionDTO } from '../types';
+import { formatScheduleDate } from './RecurringModal';
+
+interface RecurringTableProps {
+  items?: RecurringTransactionDTO[];
+  canManage: boolean;
+  onEdit: (r: RecurringTransactionDTO) => void;
+  onToggle: (r: RecurringTransactionDTO) => void;
+  onDelete: (r: RecurringTransactionDTO) => void;
+  isLoading?: boolean;
+  isFetching?: boolean;
+}
+
+const FREQUENCY_LABEL = { WEEKLY: 'Weekly', MONTHLY: 'Monthly', YEARLY: 'Yearly' } as const;
+
+function StatusBadge({ item }: { item: RecurringTransactionDTO }) {
+  const status = getRecurringStatus(item);
+  const styles = {
+    ACTIVE: 'bg-emerald-50 text-emerald-700',
+    PAUSED: 'bg-amber-50 text-amber-700',
+    ENDED: 'bg-slate-100 text-slate-600',
+  }[status];
+  const label = { ACTIVE: 'Active', PAUSED: 'Paused', ENDED: 'Ended' }[status];
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span
+        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles}`}
+      >
+        {label}
+      </span>
+      {item.lastError && (
+        <span
+          title={item.lastError}
+          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700"
+        >
+          <AlertTriangle className="h-3 w-3" />
+          Needs attention
+        </span>
+      )}
+    </div>
+  );
+}
+
+export const RecurringTable = memo(function RecurringTable({
+  items = [],
+  canManage,
+  onEdit,
+  onToggle,
+  onDelete,
+  isLoading,
+  isFetching,
+}: RecurringTableProps) {
+  const columns = useMemo<ColumnDef<RecurringTransactionDTO>[]>(() => {
+    const base: ColumnDef<RecurringTransactionDTO>[] = [
+      {
+        id: 'description',
+        header: 'Description',
+        accessorFn: (row) => row.description ?? '',
+        cell: ({ row }) => {
+          const r = row.original;
+          const isIncome = r.type === 'CREDIT';
+          return (
+            <div className="flex items-center gap-3 font-medium text-slate-900">
+              <div
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                  isIncome ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'
+                }`}
+              >
+                <Repeat className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate">{r.description || 'Untitled'}</p>
+                <p className="text-xs font-normal text-slate-400">{FREQUENCY_LABEL[r.frequency]}</p>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'amount',
+        header: 'Amount',
+        cell: ({ row }) => {
+          const r = row.original;
+          const isIncome = r.type === 'CREDIT';
+          return (
+            <span className={`font-semibold ${isIncome ? 'text-emerald-600' : 'text-slate-900'}`}>
+              {isIncome ? '+' : '-'}
+              {formatINR(r.amount)}
+            </span>
+          );
+        },
+      },
+      {
+        id: 'account',
+        header: 'Account',
+        accessorFn: (row) => row.account.name,
+        cell: ({ row }) => <span className="text-slate-700">{row.original.account.name}</span>,
+      },
+      {
+        id: 'status',
+        header: 'Status',
+        enableSorting: false,
+        cell: ({ row }) => <StatusBadge item={row.original} />,
+      },
+      {
+        accessorKey: 'nextRunAt',
+        header: 'Next',
+        cell: ({ row }) => {
+          const r = row.original;
+          if (getRecurringStatus(r) === 'ENDED') return <span className="text-slate-400">-</span>;
+          return (
+            <span className={r.isActive ? 'text-slate-700' : 'text-slate-400'}>
+              {formatScheduleDate(r.nextRunAt)}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: 'endDate',
+        header: 'Ends',
+        cell: ({ row }) =>
+          row.original.endDate ? (
+            <span className="text-slate-700">{formatScheduleDate(row.original.endDate)}</span>
+          ) : (
+            <span className="text-slate-400">No end date</span>
+          ),
+      },
+    ];
+
+    if (!canManage) return base;
+
+    return [
+      ...base,
+      {
+        id: 'actions',
+        enableSorting: false,
+        cell: ({ row }) => {
+          const r = row.original;
+          const ended = getRecurringStatus(r) === 'ENDED';
+          return (
+            <div className="flex items-center justify-end gap-1">
+              {!ended && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={r.isActive ? 'Pause schedule' : 'Resume schedule'}
+                  onClick={() => onToggle(r)}
+                >
+                  {r.isActive ? (
+                    <Pause className="h-4 w-4 text-amber-600" />
+                  ) : (
+                    <Play className="h-4 w-4 text-emerald-600" />
+                  )}
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" aria-label="Edit schedule" onClick={() => onEdit(r)}>
+                <Pencil className="h-4 w-4 text-blue-500" />
+              </Button>
+              <Button variant="ghost" size="sm" aria-label="Delete schedule" onClick={() => onDelete(r)}>
+                <Trash2 className="h-4 w-4 text-red-600" />
+              </Button>
+            </div>
+          );
+        },
+      },
+    ];
+  }, [canManage, onEdit, onToggle, onDelete]);
+
+  return (
+    <DataTable
+      columns={columns}
+      data={items}
+      searchKey="description"
+      searchPlaceholder="Search recurring..."
+      pageSize={10}
+      isLoading={isLoading}
+      isFetching={isFetching}
+    />
+  );
+});

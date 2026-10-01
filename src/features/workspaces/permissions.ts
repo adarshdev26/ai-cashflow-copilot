@@ -14,7 +14,13 @@ export type WorkspaceAction =
   | 'transaction.delete'
   | 'account.create'
   | 'account.update'
-  | 'account.deactivate';
+  | 'account.deactivate'
+  | 'category.create'
+  | 'category.delete'
+  | 'category.update'
+  | 'budgets.manage'
+  | 'recurring.manage'
+  | 'templates.manage';
 
 export const ACTION_LABELS: Record<WorkspaceAction, string> = {
   'workspace.read': 'View workspace, finance data and dashboard',
@@ -31,6 +37,12 @@ export const ACTION_LABELS: Record<WorkspaceAction, string> = {
   'account.create': 'Create accounts',
   'account.update': 'Edit accounts',
   'account.deactivate': 'Deactivate, reactivate or delete accounts',
+  'category.create': 'Create categories',
+  'category.update': 'Edit categories',
+  'category.delete': 'Delete categories',
+  'budgets.manage': 'Create, edit and deactivate budgets',
+  'recurring.manage': 'Create, edit, pause and delete recurring transactions',
+  'templates.manage': 'Create, edit and delete transaction templates',
 };
 
 const ALL = Object.keys(ACTION_LABELS) as WorkspaceAction[];
@@ -46,6 +58,9 @@ export const ROLE_PERMISSIONS: Record<WorkspaceRole, WorkspaceAction[]> = {
     'account.create',
     'account.update',
     'account.deactivate',
+    'category.create',
+    'recurring.manage',
+    'templates.manage',
   ],
   VIEWER: ['workspace.read'],
 };
