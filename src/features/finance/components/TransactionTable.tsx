@@ -185,7 +185,7 @@ export const TransactionTable = memo(function TransactionTable({
         },
       },
     ];
-  }, [handleEdit, handleDelete, canEdit, canDelete, canManageTemplates, handleSaveAsTemplate]);
+  }, [handleEdit, handleDelete, canEdit, canDelete, canManageTemplates, handleSaveAsTemplate, isCreatingTemplate]);
 
   return (
     <div data-tour="transaction-table">
