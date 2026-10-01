@@ -31,7 +31,7 @@ export function ContactForm() {
     return (
       <div className="rounded-2xl border border-mk-line bg-mk-surface p-8 text-center">
         <h3 className="mk-heading text-xl font-semibold">Thanks, message received</h3>
-        <p className="mt-2 text-mk-muted">We'll get back to you by email soon.</p>
+        <p className="mt-2 text-mk-muted">We&apos;ll get back to you by email soon.</p>
       </div>
     );
   }

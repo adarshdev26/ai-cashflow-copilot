@@ -1,15 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export function MobileMenu({ links }: { links: { href: string; label: string }[] }) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
-  useEffect(() => setOpen(false), [pathname]);
+  // Adjust state during render when the route changes — no effect required.
+  // React will re-render immediately and discard the previous output.
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setOpen(false);
+  }
 
   return (
     <div className="md:hidden">
@@ -27,7 +33,11 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
         <div className="absolute inset-x-0 top-16 border-b border-mk-line bg-mk-bg p-4 shadow-lg">
           <nav className="flex flex-col gap-1">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className="rounded-md px-3 py-3 font-medium hover:bg-mk-surface">
+              <Link
+                key={l.href}
+                href={l.href}
+                className="rounded-md px-3 py-3 font-medium hover:bg-mk-surface"
+              >
                 {l.label}
               </Link>
             ))}
