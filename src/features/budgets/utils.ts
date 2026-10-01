@@ -24,3 +24,12 @@ export function usageTone(percentUsed: number) {
   if (percentUsed >= 80) return { bar: 'bg-amber-500', text: 'text-amber-600' };
   return { bar: 'bg-emerald-500', text: 'text-emerald-600' };
 }
+
+export function isPastMonth(year: number, month: number): boolean {
+  const now = new Date();
+  return year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
+}
+
+export function categoryColor(color: string | null | undefined): string {
+  return color && /^#[0-9a-fA-F]{6}$/.test(color) ? color : '#6366f1';
+}

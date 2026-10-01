@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify } from '@/lib/toast';
 import { usePermission } from '@/features/workspaces/hooks/use-permission';
-import { BudgetCard } from '@/features/budgets/components/BudgetCard';
+import { BudgetTable } from '@/features/budgets/components/BudgetTable';
 import { BudgetFormModal } from '@/features/budgets/components/BudgetFormModal';
 import { useBudgetUsage, useDeactivateBudget } from '@/features/budgets/hooks/use-budgets';
 import type { BudgetUsage } from '@/features/budgets/types';
-import { formatINR, monthLabel, monthRange } from '@/features/budgets/utils';
+import { formatINR, isPastMonth, monthLabel, monthRange } from '@/features/budgets/utils';
 
 export default function BudgetsPage() {
   const canManage = usePermission('budgets.manage');
@@ -20,8 +20,9 @@ export default function BudgetsPage() {
     return { year: d.getFullYear(), month: d.getMonth() };
   });
   const range = useMemo(() => monthRange(cursor.year, cursor.month), [cursor]);
+  const isPast = isPastMonth(cursor.year, cursor.month);
 
-  const { data, isLoading, isError, error } = useBudgetUsage(range.from, range.to);
+  const { data, isLoading, isFetching, isError, error } = useBudgetUsage(range.from, range.to);
   const deactivate = useDeactivateBudget();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -47,12 +48,19 @@ export default function BudgetsPage() {
   }
 
   function openCreate() {
+    if (isPast) return;
     setEditing(null);
+    setFormOpen(true);
+  }
+
+  function openEdit(b: BudgetUsage) {
+    setEditing(b);
     setFormOpen(true);
   }
 
   const budgets = data?.budgets ?? [];
   const totals = data?.totals;
+  const showEmpty = !isLoading && !isError && budgets.length === 0;
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -61,10 +69,14 @@ export default function BudgetsPage() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Budgets</h1>
           <p className="text-sm text-slate-500">Track and control your spending.</p>
         </div>
-        {canManage && <Button onClick={openCreate}>+ Create Budget</Button>}
+        {canManage && (
+          <Button onClick={openCreate} disabled={isPast}>
+            + Create Budget
+          </Button>
+        )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button variant="secondary" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -74,6 +86,11 @@ export default function BudgetsPage() {
         <Button variant="secondary" aria-label="Next month" onClick={() => shiftMonth(1)}>
           <ChevronRight className="h-4 w-4" />
         </Button>
+        {isPast && (
+          <span className="text-xs text-slate-500">
+            Past month: new budgets can only be created for the current or a future month.
+          </span>
+        )}
       </div>
 
       {totals && budgets.length > 0 && (
@@ -93,8 +110,9 @@ export default function BudgetsPage() {
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs text-slate-500">{totals.remaining >= 0 ? 'Remaining' : 'Over by'}</p>
             <p
-              className={`mt-1 text-2xl font-bold tracking-tight ${totals.remaining < 0 ? 'text-red-600' : 'text-emerald-600'
-                }`}
+              className={`mt-1 text-2xl font-bold tracking-tight ${
+                totals.remaining < 0 ? 'text-red-600' : 'text-emerald-600'
+              }`}
             >
               {formatINR(Math.abs(totals.remaining))}
             </p>
@@ -102,61 +120,44 @@ export default function BudgetsPage() {
         </div>
       )}
 
-      {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 animate-pulse rounded-lg bg-slate-100" />
-                <div className="space-y-2">
-                  <div className="h-3 w-24 animate-pulse rounded bg-slate-100" />
-                  <div className="h-3 w-16 animate-pulse rounded bg-slate-100" />
-                </div>
-              </div>
-              <div className="mt-5 h-7 w-40 animate-pulse rounded bg-slate-100" />
-              <div className="mt-4 h-2 w-full animate-pulse rounded-full bg-slate-100" />
-              <div className="mt-3 h-3 w-full animate-pulse rounded bg-slate-100" />
-            </div>
-          ))}
-        </div>
-      ) : isError ? (
+      {isError ? (
         <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
           {error instanceof Error ? error.message : 'Failed to load budgets'}
         </div>
-      ) : budgets.length === 0 ? (
+      ) : showEmpty ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
           <p className="text-sm font-semibold text-slate-900">No budgets for this month</p>
-          <p className="mt-1 text-sm text-slate-500">Set a monthly limit for a spending category.</p>
-          {canManage && (
+          <p className="mt-1 text-sm text-slate-500">
+            {isPast
+              ? 'Budgets cannot be created for past months.'
+              : 'Set a monthly limit for a spending category.'}
+          </p>
+          {canManage && !isPast && (
             <div className="mt-4 flex justify-center">
               <Button onClick={openCreate}>+ Create Budget</Button>
             </div>
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {budgets.map((b) => (
-            <BudgetCard
-              key={b.id}
-              budget={b}
-              canManage={canManage}
-              onEdit={(x) => {
-                setEditing(x);
-                setFormOpen(true);
-              }}
-              onDeactivate={setRemoving}
-            />
-          ))}
-        </div>
+        <BudgetTable
+          budgets={budgets}
+          canManage={canManage}
+          onEdit={openEdit}
+          onDeactivate={setRemoving}
+          isLoading={isLoading}
+          isFetching={isFetching}
+        />
       )}
 
-      <BudgetFormModal
-        key={editing?.id ?? 'new'}
-        isOpen={formOpen}
-        onClose={() => setFormOpen(false)}
-        periodStart={range.from}
-        editing={editing}
-      />
+      {formOpen && (
+        <BudgetFormModal
+          key={editing?.id ?? 'new'}
+          isOpen={true}
+          onClose={() => setFormOpen(false)}
+          periodStart={range.from}
+          editing={editing}
+        />
+      )}
 
       <ConfirmDialog
         isOpen={!!removing}
