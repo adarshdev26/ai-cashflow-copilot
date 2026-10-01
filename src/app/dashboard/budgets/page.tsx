@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Wallet, TrendingDown, PiggyBank, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify } from '@/lib/toast';
@@ -10,7 +10,7 @@ import { BudgetTable } from '@/features/budgets/components/BudgetTable';
 import { BudgetFormModal } from '@/features/budgets/components/BudgetFormModal';
 import { useBudgetUsage, useDeactivateBudget } from '@/features/budgets/hooks/use-budgets';
 import type { BudgetUsage } from '@/features/budgets/types';
-import { formatINR, isPastMonth, monthLabel, monthRange } from '@/features/budgets/utils';
+import { formatINR, isPastMonth, monthLabel, monthRange, usageTone } from '@/features/budgets/utils';
 
 export default function BudgetsPage() {
   const canManage = usePermission('budgets.manage');
@@ -62,6 +62,9 @@ export default function BudgetsPage() {
   const totals = data?.totals;
   const showEmpty = !isLoading && !isError && budgets.length === 0;
 
+  const tone = usageTone(totals?.percentUsed ?? 0);
+  const spentWidth = Math.min(totals?.percentUsed ?? 0, 100);
+
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -95,27 +98,90 @@ export default function BudgetsPage() {
 
       {totals && budgets.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
+          {/* Total budgeted */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs text-slate-500">Total budgeted</p>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-              {formatINR(totals.budgeted)}
-            </p>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <Wallet className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-900">Total budgeted</p>
+                <p className="text-xs text-slate-500">
+                  {budgets.length} {budgets.length === 1 ? 'budget' : 'budgets'} this month
+                </p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-xs text-slate-500">Monthly limit</p>
+              <p className="text-2xl font-bold tracking-tight text-slate-900">
+                {formatINR(totals.budgeted)}
+              </p>
+            </div>
           </div>
+
+          {/* Total spent */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs text-slate-500">Total spent</p>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-              {formatINR(totals.spent)}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${totals.isOverBudget ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                    }`}
+                >
+                  <TrendingDown className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900">Total spent</p>
+                  <p className="text-xs text-slate-500">Across budgeted categories</p>
+                </div>
+              </div>
+              {totals.isOverBudget && (
+                <span className="shrink-0 rounded-full border border-red-100 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">
+                  Over budget
+                </span>
+              )}
+            </div>
+            <div className="mt-4">
+              <p className="text-xs text-slate-500">Spent</p>
+              <p className="text-2xl font-bold tracking-tight text-slate-900">
+                {formatINR(totals.spent)}
+              </p>
+            </div>
+
           </div>
+
+          {/* Remaining / Over by */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs text-slate-500">{totals.remaining >= 0 ? 'Remaining' : 'Over by'}</p>
-            <p
-              className={`mt-1 text-2xl font-bold tracking-tight ${
-                totals.remaining < 0 ? 'text-red-600' : 'text-emerald-600'
-              }`}
-            >
-              {formatINR(Math.abs(totals.remaining))}
-            </p>
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${totals.remaining < 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
+                  }`}
+              >
+                {totals.remaining < 0 ? (
+                  <AlertTriangle className="h-5 w-5" />
+                ) : (
+                  <PiggyBank className="h-5 w-5" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-900">
+                  {totals.remaining >= 0 ? 'Remaining' : 'Over by'}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {totals.remaining >= 0 ? 'Still available to spend' : 'Above your total limit'}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-xs text-slate-500">
+                {totals.remaining >= 0 ? 'Left this month' : 'Overspent'}
+              </p>
+              <p
+                className={`text-2xl font-bold tracking-tight ${totals.remaining < 0 ? 'text-red-600' : 'text-emerald-600'
+                  }`}
+              >
+                {formatINR(Math.abs(totals.remaining))}
+              </p>
+            </div>
           </div>
         </div>
       )}
