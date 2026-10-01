@@ -19,6 +19,7 @@ import { ActiveAccountSwitcher } from '@/features/accounts';
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Transactions', href: '/dashboard/transactions', icon: WalletCards },
+  { name: 'Budgets', href: '/dashboard/budgets', icon: WalletCards },
   { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
   { name: 'Categories', href: '/dashboard/categories', icon: Tags },
   { name: 'Habits', href: '/dashboard/habits', icon: CheckSquare },
@@ -368,7 +369,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               )}
             </button>
             <WorkspaceSelector />
-             <div className="hidden h-5 w-px bg-slate-200 sm:block" aria-hidden="true" />
+            <div className="hidden h-5 w-px bg-slate-200 sm:block" aria-hidden="true" />
             <ActiveAccountSwitcher />
           </div>
 
