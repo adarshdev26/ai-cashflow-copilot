@@ -132,7 +132,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid transaction data' }, { status: 400 });
     }
 
-    const { amount, type, description, categoryId, accountId } = validatedData;
+    const { amount, type, description, categoryId, accountId, date } = validatedData;
 
     if (categoryId) {
       const categoryError = await getCategoryError(categoryId, workspaceId, { type, requireActive: true });
@@ -155,6 +155,7 @@ export async function POST(req: Request) {
         workspaceId,
         categoryId,
         accountId,
+        ...(date && { createdAt: date }),
       },
       include: TRANSACTION_INCLUDE,
     });
