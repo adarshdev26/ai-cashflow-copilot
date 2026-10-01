@@ -64,7 +64,7 @@ export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props
         </>
       }
     >
-      <div className="space-y-4">
+      <div className={editing ? 'space-y-4' : 'min-h-80 space-y-4'}>
         {editing ? (
           <p className="text-sm text-slate-700">
             Category: <span className="font-medium">{editing.category.name}</span>
