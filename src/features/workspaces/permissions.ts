@@ -17,7 +17,8 @@ export type WorkspaceAction =
   | 'account.deactivate'
   | 'category.create'
   | 'category.delete'
-  | 'category.update';
+  | 'category.update'
+  | 'budgets.manage';
 
 export const ACTION_LABELS: Record<WorkspaceAction, string> = {
   'workspace.read': 'View workspace, finance data and dashboard',
@@ -37,6 +38,7 @@ export const ACTION_LABELS: Record<WorkspaceAction, string> = {
   'category.create': 'Create categories',
   'category.update': 'Edit categories',
   'category.delete': 'Delete categories',
+  'budgets.manage': 'Create, edit and deactivate budgets',
 };
 
 const ALL = Object.keys(ACTION_LABELS) as WorkspaceAction[];

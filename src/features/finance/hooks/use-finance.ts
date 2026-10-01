@@ -31,6 +31,7 @@ export function useCreateTransaction(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
     },
   });
 }
@@ -44,6 +45,7 @@ export function useUpdateTransaction(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
     },
   });
 }
@@ -56,6 +58,7 @@ export function useDeleteTransaction(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
     },
   });
 }
