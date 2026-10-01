@@ -44,3 +44,51 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+.marketing {
+  --mk-brand: #6366f1;
+  /* indigo-500, buttons, icons, eyebrows */
+  --mk-brand-fg: #ffffff;
+  --mk-bg: #0b0d14;
+  /* page */
+  --mk-surface: #12151f;
+  /* alt sections, cards-on-bg, footer */
+  --mk-fg: #e8eaf2;
+  --mk-muted: #9aa3b8;
+  --mk-line: #242840;
+  color-scheme: dark;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-mk-brand: var(--mk-brand);
+  --color-mk-brand-fg: var(--mk-brand-fg);
+  --color-mk-bg: var(--mk-bg);
+  --color-mk-surface: var(--mk-surface);
+  --color-mk-fg: var(--mk-fg);
+  --color-mk-muted: var(--mk-muted);
+  --color-mk-line: var(--mk-line);
+}
+
+.mk-heading {
+  font-family: var(--font-bricolage), var(--font-dm-sans), system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.mk-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--mk-fg) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--mk-fg) 7%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, #000 25%, transparent 100%);
+}
+
+.mk-dots {
+  background-image: radial-gradient(color-mix(in oklab, var(--mk-fg) 14%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 100%);
+}
