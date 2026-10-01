@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify } from '@/lib/toast';
@@ -45,51 +46,56 @@ export default function BudgetsPage() {
     }
   }
 
+  function openCreate() {
+    setEditing(null);
+    setFormOpen(true);
+  }
+
   const budgets = data?.budgets ?? [];
   const totals = data?.totals;
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Budgets</h1>
-          <p className="text-sm text-gray-500">Track and control your spending.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Budgets</h1>
+          <p className="text-sm text-slate-500">Track and control your spending.</p>
         </div>
-        {canManage && (
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
-            + Create Budget
-          </Button>
-        )}
+        {canManage && <Button onClick={openCreate}>+ Create Budget</Button>}
       </div>
 
       <div className="flex items-center gap-3">
-        <button type="button" onClick={() => shiftMonth(-1)} className="rounded-lg border px-3 py-1 text-sm">
-          ←
-        </button>
-        <span className="min-w-36 text-center font-medium">{monthLabel(cursor.year, cursor.month)}</span>
-        <button type="button" onClick={() => shiftMonth(1)} className="rounded-lg border px-3 py-1 text-sm">
-          →
-        </button>
+        <Button variant="secondary" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="min-w-36 text-center text-sm font-semibold text-slate-900">
+          {monthLabel(cursor.year, cursor.month)}
+        </span>
+        <Button variant="secondary" aria-label="Next month" onClick={() => shiftMonth(1)}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
 
       {totals && budgets.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-xs text-gray-500">Total budgeted</p>
-            <p className="text-lg font-semibold">{formatINR(totals.budgeted)}</p>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs text-slate-500">Total budgeted</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+              {formatINR(totals.budgeted)}
+            </p>
           </div>
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-xs text-gray-500">Total spent</p>
-            <p className="text-lg font-semibold">{formatINR(totals.spent)}</p>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs text-slate-500">Total spent</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+              {formatINR(totals.spent)}
+            </p>
           </div>
-          <div className="rounded-xl border bg-white p-4">
-            <p className="text-xs text-gray-500">{totals.remaining >= 0 ? 'Remaining' : 'Over by'}</p>
-            <p className={`text-lg font-semibold ${totals.remaining < 0 ? 'text-red-600' : ''}`}>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs text-slate-500">{totals.remaining >= 0 ? 'Remaining' : 'Over by'}</p>
+            <p
+              className={`mt-1 text-2xl font-bold tracking-tight ${totals.remaining < 0 ? 'text-red-600' : 'text-emerald-600'
+                }`}
+            >
               {formatINR(Math.abs(totals.remaining))}
             </p>
           </div>
@@ -99,27 +105,32 @@ export default function BudgetsPage() {
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-44 animate-pulse rounded-xl bg-gray-100" />
+            <div key={i} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 animate-pulse rounded-lg bg-slate-100" />
+                <div className="space-y-2">
+                  <div className="h-3 w-24 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-16 animate-pulse rounded bg-slate-100" />
+                </div>
+              </div>
+              <div className="mt-5 h-7 w-40 animate-pulse rounded bg-slate-100" />
+              <div className="mt-4 h-2 w-full animate-pulse rounded-full bg-slate-100" />
+              <div className="mt-3 h-3 w-full animate-pulse rounded bg-slate-100" />
+            </div>
           ))}
         </div>
       ) : isError ? (
-        <p className="text-sm text-red-600">
+        <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
           {error instanceof Error ? error.message : 'Failed to load budgets'}
-        </p>
+        </div>
       ) : budgets.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-10 text-center">
-          <p className="font-medium text-gray-900">No budgets for this month</p>
-          <p className="mt-1 text-sm text-gray-500">Set a monthly limit for a spending category.</p>
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
+          <p className="text-sm font-semibold text-slate-900">No budgets for this month</p>
+          <p className="mt-1 text-sm text-slate-500">Set a monthly limit for a spending category.</p>
           {canManage && (
-            <Button
-              className="mt-4"
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            >
-              + Create Budget
-            </Button>
+            <div className="mt-4 flex justify-center">
+              <Button onClick={openCreate}>+ Create Budget</Button>
+            </div>
           )}
         </div>
       ) : (
