@@ -36,6 +36,9 @@ export interface Transaction {
   account: TransactionAccount;
   createdAt: string;
   updatedAt?: string;
+
+  recurringTransactionId: string | null;
+  occurrenceDate: string | null;
 }
 
 export interface TransactionListParams extends TransactionFilters {

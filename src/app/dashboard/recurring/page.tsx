@@ -27,7 +27,7 @@ export default function RecurringPage() {
   const [editing, setEditing] = useState<RecurringTransactionDTO | null>(null);
   const [removing, setRemoving] = useState<RecurringTransactionDTO | null>(null);
 
-  const items = data ?? [];
+  const items = useMemo(() => data ?? [], [data]);
   const showEmpty = !isLoading && !isError && items.length === 0;
 
   const stats = useMemo(() => {

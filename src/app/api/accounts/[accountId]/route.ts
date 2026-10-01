@@ -56,6 +56,20 @@ export async function PATCH(req: Request, { params }: Ctx) {
       return NextResponse.json({ error: 'Your role does not allow this action' }, { status: 403 });
     }
 
+    if (data.isActive === false && existing.isActive) {
+      const activeSchedules = await prisma.recurringTransaction.count({
+        where: { accountId, workspaceId, isActive: true },
+      });
+      if (activeSchedules > 0) {
+        return NextResponse.json(
+          {
+            error: `This account is used by ${activeSchedules} active recurring schedule${activeSchedules === 1 ? '' : 's'}. Pause or delete them before deactivating the account.`,
+          },
+          { status: 409 }
+        );
+      }
+    }
+
     if (data.name && data.name.toLowerCase() !== existing.name.toLowerCase()) {
       const duplicate = await prisma.financialAccount.findFirst({
         where: { workspaceId, id: { not: accountId }, name: { equals: data.name, mode: 'insensitive' } },
@@ -105,13 +119,24 @@ export async function DELETE(req: Request, { params }: Ctx) {
       );
     }
 
+    const scheduleCount = await prisma.recurringTransaction.count({ where: { accountId, workspaceId } });
+    if (scheduleCount > 0) {
+      return NextResponse.json(
+        {
+          error: `This account is used by ${scheduleCount} recurring schedule${scheduleCount === 1 ? '' : 's'}. Delete them first.`,
+        },
+        { status: 409 }
+      );
+    }
+
     await prisma.financialAccount.delete({ where: { id: accountId } });
     return NextResponse.json({ id: accountId }, { status: 200 });
   } catch (error) {
     // FK Restrict fired because a transaction was added between the count and the delete
+    // FK Restrict fired because a transaction or recurring schedule was added between the count and the delete
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
       return NextResponse.json(
-        { error: 'This account has transactions and cannot be deleted. Deactivate it instead.' },
+        { error: 'This account is still used by transactions or recurring schedules and cannot be deleted. Deactivate it instead.' },
         { status: 409 }
       );
     }

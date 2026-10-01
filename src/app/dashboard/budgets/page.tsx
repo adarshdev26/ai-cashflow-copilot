@@ -10,7 +10,7 @@ import { BudgetTable } from '@/features/budgets/components/BudgetTable';
 import { BudgetFormModal } from '@/features/budgets/components/BudgetFormModal';
 import { useBudgetUsage, useDeactivateBudget } from '@/features/budgets/hooks/use-budgets';
 import type { BudgetUsage } from '@/features/budgets/types';
-import { formatINR, isPastMonth, monthLabel, monthRange, usageTone } from '@/features/budgets/utils';
+import { formatINR, isPastMonth, monthLabel, monthRange } from '@/features/budgets/utils';
 
 export default function BudgetsPage() {
   const canManage = usePermission('budgets.manage');
@@ -61,9 +61,6 @@ export default function BudgetsPage() {
   const budgets = data?.budgets ?? [];
   const totals = data?.totals;
   const showEmpty = !isLoading && !isError && budgets.length === 0;
-
-  const tone = usageTone(totals?.percentUsed ?? 0);
-  const spentWidth = Math.min(totals?.percentUsed ?? 0, 100);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">

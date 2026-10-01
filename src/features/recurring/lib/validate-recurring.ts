@@ -19,8 +19,11 @@ export interface ValidData {
 }
 type Result = { ok: true; data: ValidData } | { ok: false; error: string };
 
-export function validateRecurringInput(body: any, opts: { partial: boolean }): Result {
-    if (!body || typeof body !== 'object') return { ok: false, error: 'Invalid body' };
+export function validateRecurringInput(input: unknown, opts: { partial: boolean }): Result {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) {
+        return { ok: false, error: 'Invalid body' };
+    }
+    const body = input as Record<string, unknown>;
     const p = opts.partial;
     const d: ValidData = {};
     const has = (k: string) => body[k] !== undefined;
@@ -34,11 +37,11 @@ export function validateRecurringInput(body: any, opts: { partial: boolean }): R
     }
     if (!p || has('type')) {
         if (body.type !== 'CREDIT' && body.type !== 'DEBIT') return { ok: false, error: 'Invalid type' };
-        d.type = body.type;
+        d.type = body.type as 'CREDIT' | 'DEBIT';
     }
     if (!p || has('frequency')) {
-        if (!FREQS.includes(body.frequency)) return { ok: false, error: 'Invalid frequency' };
-        d.frequency = body.frequency;
+        if (!FREQS.includes(body.frequency as RecurringFrequency)) return { ok: false, error: 'Invalid frequency' };
+        d.frequency = body.frequency as RecurringFrequency;
     }
     if (has('description')) {
         if (body.description === null) d.description = null;
@@ -56,12 +59,12 @@ export function validateRecurringInput(body: any, opts: { partial: boolean }): R
     }
     if (has('categoryId')) {
         if (body.categoryId !== null && typeof body.categoryId !== 'string') return { ok: false, error: 'Invalid category' };
-        d.categoryId = body.categoryId || null;
+        d.categoryId = (body.categoryId as string | null) || null;
     } else if (!p) d.categoryId = null;
 
     try {
-        if (!p || has('startDate')) d.startDate = toScheduleDate(body.startDate);
-        if (has('endDate')) d.endDate = body.endDate ? toScheduleDate(body.endDate) : null;
+        if (!p || has('startDate')) d.startDate = toScheduleDate(body.startDate as string);
+        if (has('endDate')) d.endDate = body.endDate ? toScheduleDate(body.endDate as string) : null;
     } catch {
         return { ok: false, error: 'Invalid date (use YYYY-MM-DD)' };
     }

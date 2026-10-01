@@ -22,6 +22,8 @@ function useInvalidate() {
     qc.invalidateQueries({ queryKey: ['recurring'] });
     qc.invalidateQueries({ queryKey: ['transactions'] });
     qc.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+    qc.invalidateQueries({ queryKey: ['accounts'] });
+    qc.invalidateQueries({ queryKey: ['budgets'] });
   };
 }
 
