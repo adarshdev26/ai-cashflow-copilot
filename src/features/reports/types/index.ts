@@ -1,5 +1,17 @@
 export type ReportType = 'CREDIT' | 'DEBIT';
 
+export type ReportTimezoneParams = {
+  tz?: string;
+  tzOffset?: number;
+};
+
+export type ReportApiErrorCode = 'SERIES_TOO_LARGE';
+
+export type ReportApiError = {
+  code: ReportApiErrorCode;
+  message: string;
+};
+
 export type ReportFilters = {
   from: string; // YYYY-MM-DD, local date
   to: string; // YYYY-MM-DD, local date, inclusive
@@ -15,6 +27,14 @@ export type ReportSummary = {
   expenses: number;
   netCashFlow: number;
   savingsRate: number; // percent, 1 decimal; 0 when income is 0
+  transactionCount: number;
+};
+
+export type ReportCurrencyTotal = {
+  currency: string | null;
+  income: number;
+  expenses: number;
+  netCashFlow: number;
   transactionCount: number;
 };
 
@@ -64,12 +84,13 @@ export type ReportResponse = {
   granularity: Granularity;
   mixedCurrency: boolean;
   summary: ReportSummary;
+  totalsByCurrency?: ReportCurrencyTotal[];
   series: SeriesPoint[];
   categories: CategoryRow[];
   accounts: AccountRow[];
   budget:
     | { available: true; items: BudgetRow[] }
-    | { available: false; reason: 'range_not_single_month' };
+    | { available: false; reason: 'range_not_single_month' | 'income_only' };
   topExpenses: TopExpenseRow[];
   options: {
     accounts: { id: string; name: string }[];

@@ -1,24 +1,15 @@
 'use client';
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { formatINR } from '@/features/budgets/utils';
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { ChartTooltip, formatINR, categoryFallbackColor } from '@/components/ui/chart';
 import type { CategoryRow } from '../types';
 
-const FALLBACK = [
-  'var(--color-primary)',
-  'var(--color-secondary)',
-  'var(--color-accent)',
-  'var(--color-info)',
-  'var(--color-warning)',
-  'var(--color-success)',
-];
-
-export function CategorySpending({ rows }: { rows: CategoryRow[] }) {
-  const colorOf = (r: CategoryRow, i: number) => r.color ?? FALLBACK[i % FALLBACK.length];
+export function CategorySpending({ rows, ariaLabel }: { rows: CategoryRow[]; ariaLabel: string }) {
+  const colorOf = (r: CategoryRow, i: number) => r.color ?? categoryFallbackColor(i);
 
   return (
     <div className="grid items-center gap-6 md:grid-cols-2">
-      <div className="mx-auto h-56 w-full max-w-xs">
+      <div className="mx-auto h-56 w-full max-w-xs" role="img" aria-label={ariaLabel}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie data={rows} dataKey="amount" nameKey="name" innerRadius="60%" outerRadius="90%" stroke="none">
@@ -26,14 +17,7 @@ export function CategorySpending({ rows }: { rows: CategoryRow[] }) {
                 <Cell key={r.categoryId ?? 'none'} fill={colorOf(r, i)} />
               ))}
             </Pie>
-            <Tooltip
-              formatter={(v) => formatINR(Number(v))}
-              contentStyle={{
-                background: 'var(--color-base-100)',
-                border: '1px solid var(--color-base-300)',
-                color: 'var(--color-base-content)',
-              }}
-            />
+            <ChartTooltip />
           </PieChart>
         </ResponsiveContainer>
       </div>

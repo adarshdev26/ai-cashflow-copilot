@@ -30,7 +30,7 @@ export async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
     let errorCode: string | undefined;
     try {
       const errorData = await response.json();
-      errorMsg = errorData.error || errorMsg;
+      errorMsg = errorData.error || errorData.message || errorMsg;
       if (typeof errorData.code === 'string') errorCode = errorData.code;
     } catch {
       errorMsg = response.statusText || errorMsg;

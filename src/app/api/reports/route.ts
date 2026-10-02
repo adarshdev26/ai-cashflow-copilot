@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { requireWorkspaceAction } from '@/lib/workspaces';
 import { parseReportParams } from '@/features/reports/lib/report-filters';
-import { buildReport, validateScopedIds } from '@/features/reports/lib/report-queries';
+import type { ReportApiError } from '@/features/reports/types';
+import {
+  buildReport,
+  ReportSeriesTooLargeError,
+  validateScopedIds,
+} from '@/features/reports/lib/report-queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,10 +25,15 @@ export async function GET(req: Request) {
       access.workspaceId,
       parsed.filters,
       parsed.range,
-      parsed.tz
+      parsed.tz,
+      parsed.timeZone
     );
     return NextResponse.json(report);
   } catch (error) {
+    if (error instanceof ReportSeriesTooLargeError) {
+      const payload: ReportApiError = { code: error.code, message: error.message };
+      return NextResponse.json(payload, { status: 422 });
+    }
     console.error('Reports error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

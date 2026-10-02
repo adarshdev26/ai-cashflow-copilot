@@ -1,8 +1,9 @@
-import type { Granularity, ReportFilters, ReportType } from '../types';
+import type { Granularity, ReportFilters, ReportTimezoneParams, ReportType } from '../types';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DAYS = 1830; // ~60 months
 const DAY_MS = 86_400_000;
+const zonedFormatters = new Map<string, Intl.DateTimeFormat>();
 
 export type DateRange = { start: Date; endExclusive: Date };
 
@@ -59,8 +60,88 @@ function parseYmd(s: string): [number, number, number] | null {
   return [y, m, d];
 }
 
+function formatterFor(timeZone: string) {
+  let formatter = zonedFormatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    });
+    zonedFormatters.set(timeZone, formatter);
+  }
+  return formatter;
+}
+
+function zonedParts(date: Date, timeZone: string) {
+  const values = Object.fromEntries(
+    formatterFor(timeZone)
+      .formatToParts(date)
+      .filter((part) => part.type !== 'literal')
+      .map((part) => [part.type, Number(part.value)])
+  );
+  return {
+    year: values.year,
+    month: values.month,
+    day: values.day,
+    hour: values.hour,
+    minute: values.minute,
+    second: values.second,
+  };
+}
+
+export function isValidTimeZone(value: string) {
+  try {
+    formatterFor(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Converts the start of a viewer-local calendar date to its UTC instant, including DST. */
+export function localDayStart(value: string, timeZone: string) {
+  const parts = parseYmd(value);
+  if (!parts) throw new Error('Invalid local date');
+  const [year, month, day] = parts;
+  const target = Date.UTC(year, month - 1, day);
+  let instant = target;
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const local = zonedParts(new Date(instant), timeZone);
+    const represented = Date.UTC(
+      local.year,
+      local.month - 1,
+      local.day,
+      local.hour,
+      local.minute,
+      local.second
+    );
+    const difference = target - represented;
+    instant += difference;
+    if (difference === 0) break;
+  }
+  return new Date(instant);
+}
+
+export function localDateKey(date: Date, timeZone: string) {
+  const parts = zonedParts(date, timeZone);
+  return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
+}
+
 export type ParsedParams =
-  | { ok: true; filters: ReportFilters; range: DateRange; tz: number }
+  | {
+      ok: true;
+      filters: ReportFilters;
+      range: DateRange;
+      tz: number;
+      timeZone?: ReportTimezoneParams['tz'];
+    }
   | { ok: false; error: string };
 
 export function parseReportParams(sp: URLSearchParams): ParsedParams {
@@ -70,14 +151,25 @@ export function parseReportParams(sp: URLSearchParams): ParsedParams {
   const b = parseYmd(to);
   if (!a || !b) return { ok: false, error: 'from and to must be valid dates (YYYY-MM-DD)' };
 
-  const tz = Number(sp.get('tz') ?? '0');
-  if (!Number.isInteger(tz) || tz < -840 || tz > 840) {
+  const rawTz = sp.get('tz');
+  const parsedLegacyTz = rawTz === null ? Number.NaN : Number(rawTz);
+  const timeZone = rawTz && !Number.isFinite(parsedLegacyTz) && isValidTimeZone(rawTz)
+    ? rawTz
+    : undefined;
+  const fallbackTz = sp.get('tzOffset') ?? rawTz ?? '0';
+  const parsedOffset = Number(fallbackTz);
+  if (!timeZone && (!Number.isInteger(parsedOffset) || parsedOffset < -840 || parsedOffset > 840)) {
     return { ok: false, error: 'Invalid timezone offset' };
   }
+  const tz = Number.isInteger(parsedOffset) && parsedOffset >= -840 && parsedOffset <= 840 ? parsedOffset : 0;
 
-  // local midnight expressed in UTC = UTC midnight + offset minutes
-  const start = new Date(Date.UTC(a[0], a[1] - 1, a[2]) + tz * 60_000);
-  const endExclusive = new Date(Date.UTC(b[0], b[1] - 1, b[2] + 1) + tz * 60_000);
+  const nextDate = new Date(Date.UTC(b[0], b[1] - 1, b[2] + 1)).toISOString().slice(0, 10);
+  const start = timeZone
+    ? localDayStart(from, timeZone)
+    : new Date(Date.UTC(a[0], a[1] - 1, a[2]) + tz * 60_000);
+  const endExclusive = timeZone
+    ? localDayStart(nextDate, timeZone)
+    : new Date(Date.UTC(b[0], b[1] - 1, b[2] + 1) + tz * 60_000);
   if (endExclusive <= start) return { ok: false, error: 'from must be on or before to' };
   if ((endExclusive.getTime() - start.getTime()) / DAY_MS > MAX_DAYS) {
     return { ok: false, error: 'Date range is too large (max 5 years)' };
@@ -92,22 +184,39 @@ export function parseReportParams(sp: URLSearchParams): ParsedParams {
     type = typeRaw;
   }
 
-  const idOf = (key: string) => {
-    const v = sp.get(key);
-    return v && v.length <= 100 ? v : undefined;
-  };
+  const accountId = sp.get('accountId');
+  const categoryId = sp.get('categoryId');
+  if (accountId && accountId.length > 100) {
+    return { ok: false, error: 'accountId is too long' };
+  }
+  if (categoryId && categoryId.length > 100) {
+    return { ok: false, error: 'categoryId is too long' };
+  }
 
   return {
     ok: true,
     tz,
+    ...(timeZone ? { timeZone } : {}),
     range: { start, endExclusive },
-    filters: { from, to, accountId: idOf('accountId'), categoryId: idOf('categoryId'), type },
+    filters: {
+      from,
+      to,
+      accountId: accountId || undefined,
+      categoryId: categoryId || undefined,
+      type,
+    },
   };
 }
 
 /** Query string for the client; the exact inverse of parseReportParams. */
-export function toQueryString(f: ReportFilters, tz: number): string {
-  const sp = new URLSearchParams({ from: f.from, to: f.to, tz: String(tz) });
+export function toQueryString(f: ReportFilters, tz: string | number, tzOffset?: number): string {
+  const sp = new URLSearchParams({ from: f.from, to: f.to });
+  if (typeof tz === 'number') {
+    sp.set('tz', String(tz));
+  } else {
+    sp.set('tz', tz);
+    if (tzOffset !== undefined) sp.set('tzOffset', String(tzOffset));
+  }
   if (f.accountId) sp.set('accountId', f.accountId);
   if (f.categoryId) sp.set('categoryId', f.categoryId);
   if (f.type) sp.set('type', f.type);
@@ -145,7 +254,11 @@ function local(date: Date, tz: number) {
   return new Date(date.getTime() - tz * 60_000);
 }
 
-export function bucketKey(date: Date, tz: number, g: Granularity): string {
+export function bucketKey(date: Date, tz: number, g: Granularity, timeZone?: string): string {
+  if (timeZone) {
+    const key = localDateKey(date, timeZone);
+    return g === 'month' ? key.slice(0, 7) : key;
+  }
   const d = local(date, tz);
   const ym = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
   return g === 'month' ? ym : `${ym}-${String(d.getUTCDate()).padStart(2, '0')}`;

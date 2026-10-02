@@ -1,16 +1,27 @@
 import { apiFetch, withWorkspace } from '@/lib/api-client';
 import { toQueryString } from '../lib/report-filters';
-import type { ReportFilters, ReportResponse } from '../types';
+import type { ReportFilters, ReportResponse, ReportTimezoneParams } from '../types';
 
-export function getReport(workspaceId: string, filters: ReportFilters, tz: number) {
+export function getReport(
+  workspaceId: string,
+  filters: ReportFilters,
+  tz: NonNullable<ReportTimezoneParams['tz']> | number,
+  tzOffset?: ReportTimezoneParams['tzOffset'],
+  signal?: AbortSignal
+) {
   return apiFetch<ReportResponse>(
-    `/api/reports?${toQueryString(filters, tz)}`,
-    withWorkspace(workspaceId)
+    `/api/reports?${toQueryString(filters, tz, tzOffset)}`,
+    withWorkspace(workspaceId, { signal })
   );
 }
 
-export async function downloadReportCsv(workspaceId: string, filters: ReportFilters, tz: number) {
-  const res = await fetch(`/api/reports/export?${toQueryString(filters, tz)}`, {
+export async function downloadReportCsv(
+  workspaceId: string,
+  filters: ReportFilters,
+  tz: NonNullable<ReportTimezoneParams['tz']> | number,
+  tzOffset?: ReportTimezoneParams['tzOffset']
+) {
+  const res = await fetch(`/api/reports/export?${toQueryString(filters, tz, tzOffset)}`, {
     headers: { 'X-Workspace-Id': workspaceId },
   });
   if (!res.ok) {

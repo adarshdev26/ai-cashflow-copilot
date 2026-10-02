@@ -41,7 +41,7 @@ export default function CategoriesPage() {
   const global = all.filter((c) => !c.workspaceId);
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-base-content">Categories</h1>
@@ -115,7 +115,7 @@ export default function CategoriesPage() {
         <h2 className="border-b border-base-200 px-4 py-3 text-sm font-semibold text-base-content">
           Default categories <span className="ml-2 text-xs font-normal text-base-content/50">read-only</span>
         </h2>
-        <ul className="grid gap-x-6 px-4 py-3 sm:grid-cols-2">
+        <ul className="grid gap-x-6 px-4 py-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {global.map((c) => (
             <li key={c.id} className="flex items-center gap-3 py-1.5 text-sm text-base-content/80">
               <Dot color={c.color} />

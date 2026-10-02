@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { importTransactionsCsv, type ImportTransactionsCsvInput } from '../api/finance-csv-api';
 import { financeKeys } from './use-finance';
+import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
 
 export function useImportTransactionsCsv(workspaceId: string) {
   const queryClient = useQueryClient();
@@ -12,6 +13,8 @@ export function useImportTransactionsCsv(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+      invalidateReports(queryClient);
     },
   });
 }

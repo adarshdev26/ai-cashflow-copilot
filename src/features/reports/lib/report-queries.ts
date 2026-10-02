@@ -4,6 +4,7 @@ import type {
   BudgetRow,
   CategoryRow,
   ReportFilters,
+  ReportApiErrorCode,
   ReportResponse,
   SeriesPoint,
 } from '../types';
@@ -19,7 +20,16 @@ import {
   type DateRange,
 } from './report-filters';
 
-const SERIES_ROW_CAP = 200_000;
+export const REPORT_SERIES_ROW_CAP = 200_000;
+
+export class ReportSeriesTooLargeError extends Error {
+  readonly code: ReportApiErrorCode = 'SERIES_TOO_LARGE';
+
+  constructor() {
+    super('Too many transactions in this range. Narrow the date range.');
+    this.name = 'ReportSeriesTooLargeError';
+  }
+}
 
 /** Returns an error message if an id doesn't belong to this workspace, else null. */
 export async function validateScopedIds(
@@ -47,7 +57,8 @@ export async function buildReport(
   workspaceId: string,
   filters: ReportFilters,
   range: DateRange,
-  tz: number
+  tz: number,
+  timeZone?: string
 ): Promise<ReportResponse> {
   const where = buildReportWhere(workspaceId, filters, range);
   const granularity = pickGranularity(range);
@@ -66,6 +77,7 @@ export async function buildReport(
         by: ['accountId', 'type'],
         where,
         _sum: { amount: true },
+        _count: { _all: true },
       }),
       skipSpending
         ? Promise.resolve([])
@@ -77,7 +89,7 @@ export async function buildReport(
       prisma.transaction.findMany({
         where,
         select: { createdAt: true, type: true, amount: true },
-        take: SERIES_ROW_CAP,
+        take: REPORT_SERIES_ROW_CAP + 1,
       }),
       skipSpending
         ? Promise.resolve([])
@@ -106,6 +118,8 @@ export async function buildReport(
       }),
     ]);
 
+  if (rows.length > REPORT_SERIES_ROW_CAP) throw new ReportSeriesTooLargeError();
+
   // ---- summary ----
   let income = 0;
   let expenses = 0;
@@ -130,7 +144,7 @@ export async function buildReport(
     bucketKeys(filters, granularity).map((key) => [key, { key, income: 0, expense: 0 }])
   );
   for (const r of rows) {
-    const p = map.get(bucketKey(r.createdAt, tz, granularity));
+    const p = map.get(bucketKey(r.createdAt, tz, granularity, timeZone));
     if (!p) continue;
     if (r.type === 'CREDIT') p.income += r.amount;
     else p.expense += r.amount;
@@ -174,6 +188,30 @@ export async function buildReport(
       })
     : [];
   const accById = new Map(accs.map((a) => [a.id, a]));
+  const currencyTotals = new Map<
+    string,
+    { currency: string | null; income: number; expenses: number; transactionCount: number }
+  >();
+  for (const g of byAccountType) {
+    const currency = g.accountId ? accById.get(g.accountId)?.currency ?? null : null;
+    const key = currency ?? '__unknown__';
+    const total = currencyTotals.get(key) ?? {
+      currency,
+      income: 0,
+      expenses: 0,
+      transactionCount: 0,
+    };
+    if (g.type === 'CREDIT') total.income += g._sum.amount ?? 0;
+    else total.expenses += g._sum.amount ?? 0;
+    total.transactionCount += g._count._all;
+    currencyTotals.set(key, total);
+  }
+  const totalsByCurrency = [...currencyTotals.values()].map((total) => ({
+    ...total,
+    income: round2(total.income),
+    expenses: round2(total.expenses),
+    netCashFlow: round2(total.income - total.expenses),
+  }));
   const accMap = new Map<string, AccountRow>();
   for (const g of byAccountType) {
     const key = g.accountId ?? '__none__';
@@ -205,15 +243,18 @@ export async function buildReport(
 
   // ---- budgets ----
   const month = singleFullMonth(filters);
-  const budget = month
-    ? { available: true as const, items: await loadBudgets(workspaceId, filters, range) }
-    : { available: false as const, reason: 'range_not_single_month' as const };
+  const budget = filters.type === 'CREDIT'
+    ? { available: false as const, reason: 'income_only' as const }
+    : month
+      ? { available: true as const, items: await loadBudgets(workspaceId, filters, range) }
+      : { available: false as const, reason: 'range_not_single_month' as const };
 
   return {
     filters,
     granularity,
     mixedCurrency,
     summary,
+    totalsByCurrency,
     series,
     categories,
     accounts,
@@ -257,6 +298,7 @@ async function loadBudgets(
         type: 'DEBIT',
         categoryId: { in: ids },
         createdAt: { gte: range.start, lt: range.endExclusive },
+        ...(f.accountId ? { accountId: f.accountId } : {}),
       },
       _sum: { amount: true },
     }),

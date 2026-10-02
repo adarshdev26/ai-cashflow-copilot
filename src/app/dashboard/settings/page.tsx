@@ -30,7 +30,7 @@ function SettingsTabs() {
   const active: TabId = searchParams.get('tab') === 'workspace' ? 'workspace' : 'profile';
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-base-content">Settings</h1>
         <p className="mt-1 text-base-content/60">Manage your account and workspace.</p>

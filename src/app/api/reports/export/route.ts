@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import Papa from 'papaparse';
 import { requireWorkspaceAction } from '@/lib/workspaces';
-import { buildReportWhere, parseReportParams } from '@/features/reports/lib/report-filters';
+import {
+  buildReportWhere,
+  localDateKey,
+  parseReportParams,
+} from '@/features/reports/lib/report-filters';
 import { validateScopedIds } from '@/features/reports/lib/report-queries';
 import { prisma } from '@/lib/prisma';
 
@@ -48,11 +52,12 @@ export async function GET(req: Request) {
       );
     }
 
-    const tz = parsed.tz;
     const csv = Papa.unparse({
       fields: ['Date', 'Description', 'Account', 'Category', 'Type', 'Amount'],
       data: rows.map((r) => [
-        new Date(r.createdAt.getTime() - tz * 60_000).toISOString().slice(0, 10),
+        parsed.timeZone
+          ? localDateKey(r.createdAt, parsed.timeZone)
+          : new Date(r.createdAt.getTime() - parsed.tz * 60_000).toISOString().slice(0, 10),
         safe(r.description),
         safe(r.account?.name),
         safe(r.category?.name),

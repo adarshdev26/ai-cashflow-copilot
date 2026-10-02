@@ -4,6 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { useActiveWorkspaceId } from '@/features/workspaces/WorkspaceProvider';
 import { budgetsApi } from '../api/budgets-api';
 import type { CreateBudgetInput, UpdateBudgetInput } from '../types';
+import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
 
 export const budgetKeys = {
   all: (workspaceId: string | null | undefined) => ['budgets', workspaceId] as const,
@@ -24,7 +25,10 @@ export function useBudgetUsage(from: string, to: string) {
 function useInvalidateBudgets() {
   const queryClient = useQueryClient();
   const workspaceId = useActiveWorkspaceId();
-  return () => queryClient.invalidateQueries({ queryKey: budgetKeys.all(workspaceId) });
+  return () => {
+    queryClient.invalidateQueries({ queryKey: budgetKeys.all(workspaceId) });
+    invalidateReports(queryClient);
+  };
 }
 
 export function useCreateBudget() {

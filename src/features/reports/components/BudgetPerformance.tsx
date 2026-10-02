@@ -11,8 +11,9 @@ export function BudgetPerformance({ budget }: { budget: ReportResponse['budget']
   if (!budget.available) {
     return (
       <p className="text-sm text-base-content/60">
-        Budgets are monthly. Select a single full month (for example This Month or Last Month) to
-        see budget performance.
+        {budget.reason === 'income_only'
+          ? 'Budget performance applies to expenses. Select Expenses or All types to see budget performance.'
+          : 'Budgets are monthly. Select a single full month (for example This Month or Last Month) to see budget performance.'}
       </p>
     );
   }
