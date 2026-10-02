@@ -18,7 +18,7 @@ export function RolesPermissionsSection() {
   const { active } = useWorkspace();
 
   return (
-    <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-4">
+    <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-4" data-tour="settings-role-permissions">
       <div>
         <h2 className="text-lg font-semibold text-base-content">Roles &amp; permissions</h2>
         <p className="text-sm text-base-content/60 mt-1">

@@ -77,10 +77,10 @@ function WorkspaceContent() {
 
   return (
     <div className="space-y-8">
-      <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-4">
+      <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-4" data-tour="settings-workspace-general">
         <h2 className="text-lg font-semibold text-base-content">General</h2>
         {canRename ? (
-          <form onSubmit={handleUpdateName} className="flex gap-4 max-w-md">
+          <form onSubmit={handleUpdateName} className="flex gap-4 max-w-md" data-tour="settings-workspace-rename">
             <input
               type="text"
               value={name}
@@ -104,7 +104,7 @@ function WorkspaceContent() {
       </section>
 
       {canViewMembers && (
-        <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-6">
+        <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-6" data-tour="settings-members">
           <h2 className="text-lg font-semibold text-base-content">Members</h2>
 
           {canInvite && (
@@ -192,7 +192,7 @@ function WorkspaceContent() {
       )}
 
       {canInvite && (
-        <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-4">
+        <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-4" data-tour="settings-invitations">
           <div>
             <h2 className="text-lg font-semibold text-base-content">Pending Invitations</h2>
             <p className="text-sm text-base-content/60 mt-1">

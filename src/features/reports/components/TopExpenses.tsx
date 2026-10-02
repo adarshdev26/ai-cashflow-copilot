@@ -3,7 +3,7 @@ import type { TopExpenseRow } from '../types';
 
 export function TopExpenses({ rows }: { rows: TopExpenseRow[] }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" data-tour="reports-top-expenses">
       <table className="min-w-full text-sm">
         <thead className="text-left text-base-content/60">
           <tr>

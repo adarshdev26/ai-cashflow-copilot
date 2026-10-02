@@ -34,7 +34,7 @@ export function TransactionFilters({
   onDateToChange,
 }: Props) {
   return (
-    <div className="grid gap-4 rounded-xl border border-base-300 bg-base-100 p-4 md:grid-cols-5">
+    <div className="grid gap-4 rounded-xl border border-base-300 bg-base-100 p-4 md:grid-cols-5" data-tour="transaction-filters">
       <Select
         aria-label="Filter by transaction type"
         value={filters.type ?? ''}

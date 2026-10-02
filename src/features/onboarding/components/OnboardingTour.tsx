@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useWorkspace } from '@/features/workspaces';
 import { driver, type Driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import {
@@ -18,6 +19,7 @@ export function OnboardingTour() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { active } = useWorkspace();
   const tourParam = searchParams.get(TOUR_PARAM);
   const tourRef = useRef<Driver | null>(null);
 
@@ -45,7 +47,7 @@ export function OnboardingTour() {
           stop();
           router.push(tourHref('finance'));
         },
-      });
+      }, active.role);
       if (steps.length === 0) return;
 
       stop(); // in case a tour is already open
@@ -69,7 +71,7 @@ export function OnboardingTour() {
     return () => {
       cancelled = true; // only cancels a pending start; a running tour is left alone
     };
-  }, [tourParam, pathname, router, stop]);
+  }, [tourParam, pathname, router, stop, active.role]);
 
   // Teardown: when the user leaves the page or the shell unmounts.
   useEffect(() => () => stop(), [pathname, stop]);

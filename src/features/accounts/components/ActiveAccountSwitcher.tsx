@@ -13,7 +13,7 @@ export function ActiveAccountSwitcher() {
   const selected = accounts?.find((a) => a.id === activeAccountId);
 
   return (
-    <div className="flex items-center gap-2" data-tour="account-switcher">
+    <div className="flex items-center gap-2" data-tour={accounts?.length ? 'account-switcher' : undefined}>
       <Landmark className="h-4 w-4 shrink-0 text-base-content/50" />
       <select
         className="cursor-pointer border-none bg-transparent p-0 text-sm font-semibold text-base-content/80 focus:ring-0"

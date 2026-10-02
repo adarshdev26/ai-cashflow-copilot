@@ -3,7 +3,7 @@ import type { AccountRow } from '../types';
 
 export function AccountBreakdown({ rows }: { rows: AccountRow[] }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" data-tour="reports-account-breakdown">
       <table className="min-w-full text-sm">
         <thead className="text-left text-base-content/60">
           <tr>

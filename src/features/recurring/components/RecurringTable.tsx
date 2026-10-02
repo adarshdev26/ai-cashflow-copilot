@@ -177,6 +177,7 @@ export const RecurringTable = memo(function RecurringTable({
 
   return (
     <DataTable
+      actionsTourId={canManage ? 'recurring-actions' : undefined}
       columns={columns}
       data={items}
       searchKey="description"

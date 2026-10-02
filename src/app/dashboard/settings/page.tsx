@@ -36,11 +36,13 @@ function SettingsTabs() {
         <p className="mt-1 text-base-content/60">Manage your account and workspace.</p>
       </div>
 
-      <Tabs
-        tabs={TABS}
-        active={active}
-        onChange={(id) => router.replace(`${pathname}?tab=${id}`, { scroll: false })}
-      />
+      <div data-tour="settings-tabs">
+        <Tabs
+          tabs={TABS}
+          active={active}
+          onChange={(id) => router.replace(`${pathname}?tab=${id}`, { scroll: false })}
+        />
+      </div>
 
       {active === 'profile' ? <ProfileTab /> : <WorkspaceTab />}
     </div>

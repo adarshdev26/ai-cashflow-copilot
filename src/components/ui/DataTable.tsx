@@ -40,6 +40,9 @@ interface DataTableProps<TData, TValue> {
   onPaginationChange?: OnChangeFn<PaginationState>;
   onSortingChange?: OnChangeFn<SortingState>;
   onGlobalFilterChange?: OnChangeFn<string>;
+  searchTourId?: string;
+  paginationTourId?: string;
+  actionsTourId?: string;
   isLoading?: boolean;
   isFetching?: boolean;
 }
@@ -63,6 +66,9 @@ export function DataTable<TData, TValue>({
   onPaginationChange: controlledPaginationChange,
   onSortingChange: controlledSortingChange,
   onGlobalFilterChange: controlledGlobalFilterChange,
+  searchTourId,
+  paginationTourId,
+  actionsTourId,
   isLoading = false,
   isFetching = false,
 }: DataTableProps<TData, TValue>) {
@@ -121,7 +127,10 @@ export function DataTable<TData, TValue>({
     table.setPageSize(Number(e.target.value));
 
   return (
-    <div className="rounded-xl border border-base-300 bg-base-100 shadow-sm overflow-hidden">
+    <div
+      className="rounded-xl border border-base-300 bg-base-100 shadow-sm overflow-hidden"
+      data-tour={actionsTourId}
+    >
       {/* Search Header Bar */}
       {searchKey && (
         <div className="p-4 border-b border-base-200 flex items-center justify-between gap-4 bg-base-200/50">
@@ -129,6 +138,7 @@ export function DataTable<TData, TValue>({
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-base-content/50" />
             <input
               type="text"
+              data-tour={searchTourId}
               value={search.value}
               onChange={search.onChange}
               placeholder={searchPlaceholder}
@@ -202,7 +212,7 @@ export function DataTable<TData, TValue>({
 
       {/* Pagination Bar */}
       {total > 0 && (
-        <div className="p-4 border-t border-base-200 flex flex-wrap items-center justify-between gap-3 bg-base-200/50">
+        <div className="p-4 border-t border-base-200 flex flex-wrap items-center justify-between gap-3 bg-base-200/50" data-tour={paginationTourId}>
           <div className="flex items-center gap-4 text-xs text-base-content/60">
             <span>
               Showing <span className="font-semibold text-base-content/80">{from}</span>–

@@ -58,6 +58,8 @@ export function CategoryDonutChart() {
 
   return (
     <ChartCard
+      tourId="overview-category-breakdown"
+      exportTourId="overview-category-png"
       title="Spending by category"
       description="Expenses"
       action={<RangeSelect label="Spending period" value={period} options={OPTIONS} onChange={setPeriod} />}

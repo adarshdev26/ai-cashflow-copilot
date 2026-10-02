@@ -13,7 +13,7 @@ export function ProfileTab() {
   const { data: user, isLoading } = useCurrentUser();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="settings-profile">
       <section className={card}>
         <h2 className="text-lg font-semibold text-base-content">Profile</h2>
         {isLoading || !user ? (

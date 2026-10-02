@@ -15,7 +15,7 @@ export function ThemeMenu() {
 
   return (
     <div className="dropdown dropdown-end">
-      <button type="button" tabIndex={0} aria-label="Change theme" className="btn btn-ghost btn-sm gap-1.5">
+      <button type="button" tabIndex={0} data-tour="theme-switcher" aria-label="Change theme" className="btn btn-ghost btn-sm gap-1.5">
         <Palette className="h-4 w-4" />
         <span className="hidden sm:inline">{mounted ? labelOf(theme ?? 'system') : 'Theme'}</span>
       </button>
