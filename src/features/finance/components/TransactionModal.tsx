@@ -150,13 +150,13 @@ export function TransactionModal({
     >
       <form id="transaction-form" onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-100">
+          <div className="rounded-lg bg-error/10 p-3 text-sm text-error border border-error/30">
             {error}
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">Description</label>
+          <label className="block text-xs font-medium text-base-content/80 mb-1">Description</label>
           <Input
             type="text"
             value={description}
@@ -167,7 +167,7 @@ export function TransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">Amount</label>
+          <label className="block text-xs font-medium text-base-content/80 mb-1">Amount</label>
           <Input
             type="number"
             step="0.01"
@@ -180,7 +180,7 @@ export function TransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">Type</label>
+          <label className="block text-xs font-medium text-base-content/80 mb-1">Type</label>
           <Select
             value={type}
             onChange={handleTypeChange}
@@ -191,7 +191,7 @@ export function TransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">Account</label>
+          <label className="block text-xs font-medium text-base-content/80 mb-1">Account</label>
           <AccountSelect
             value={accountId}
             onChange={setPickedAccountId}
@@ -200,7 +200,7 @@ export function TransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">Category</label>
+          <label className="block text-xs font-medium text-base-content/80 mb-1">Category</label>
           <CategorySelect
             value={categoryId}
             onChange={setCategoryId}
@@ -210,7 +210,7 @@ export function TransactionModal({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">Date</label>
+          <label className="block text-xs font-medium text-base-content/80 mb-1">Date</label>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
       </form>

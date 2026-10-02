@@ -4,9 +4,9 @@ import type { LucideIcon } from 'lucide-react';
 export type StatTone = 'positive' | 'negative' | 'neutral';
 
 const toneStyles: Record<StatTone, { icon: string; value: string }> = {
-  positive: { icon: 'bg-emerald-50 text-emerald-600', value: 'text-emerald-600' },
-  negative: { icon: 'bg-red-50 text-red-600', value: 'text-red-600' },
-  neutral: { icon: 'bg-indigo-50 text-indigo-600', value: 'text-slate-900' },
+  positive: { icon: 'bg-success/10 text-success', value: 'text-success' },
+  negative: { icon: 'bg-error/10 text-error', value: 'text-error' },
+  neutral: { icon: 'bg-primary/10 text-primary', value: 'text-base-content' },
 };
 
 interface StatCardProps {
@@ -34,11 +34,11 @@ export function StatCard({
   const styles = toneStyles[tone];
 
   return (
-    <div className={`rounded-xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>
+    <div className={`rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm ${className}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-slate-500">{title}</p>
-          {caption && <p className="text-xs text-slate-400">{caption}</p>}
+          <p className="text-sm font-medium text-base-content/60">{title}</p>
+          {caption && <p className="text-xs text-base-content/50">{caption}</p>}
         </div>
         {Icon && (
           <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${styles.icon}`}>
@@ -49,13 +49,13 @@ export function StatCard({
 
       <p className={`mt-3 truncate text-2xl font-semibold ${styles.value}`}>{value}</p>
 
-      {footer && <div className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">{footer}</div>}
+      {footer && <div className="mt-3 border-t border-base-200 pt-3 text-xs text-base-content/60">{footer}</div>}
     </div>
   );
 }
 
 export function StatCardSkeleton({ className = '' }: { className?: string }) {
   return (
-    <div className={`h-[116px] animate-pulse rounded-xl border border-slate-200 bg-slate-50 ${className}`} />
+    <div className={`h-[116px] animate-pulse rounded-xl border border-base-300 bg-base-200 ${className}`} />
   );
 }

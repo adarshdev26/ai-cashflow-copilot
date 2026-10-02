@@ -15,6 +15,7 @@ import { notify, getErrorMessage } from '@/lib/toast';
 import { OnboardingTour } from '@/features/onboarding/components/OnboardingTour';
 import { tourHref } from '@/features/onboarding/lib/tour-steps';
 import { ActiveAccountSwitcher } from '@/features/accounts';
+import { ThemeMenu } from '@/components/ui/ThemePicker';
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -70,22 +71,22 @@ function CreateWorkspaceModal({
       onClick={handleClose}
     >
       <div
-        className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl border border-slate-200"
+        className="w-full max-w-md rounded-xl bg-base-100 p-6 shadow-xl border border-base-300"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-workspace-title"
       >
-        <h2 id="create-workspace-title" className="text-lg font-semibold text-slate-900">
+        <h2 id="create-workspace-title" className="text-lg font-semibold text-base-content">
           Create workspace
         </h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-base-content/60">
           A workspace keeps its own transactions, habits and notes.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="space-y-1">
-            <label htmlFor="workspace-name" className="text-xs font-medium text-slate-700">
+            <label htmlFor="workspace-name" className="text-xs font-medium text-base-content/80">
               Workspace name
             </label>
             <input
@@ -97,10 +98,10 @@ function CreateWorkspaceModal({
               disabled={isPending}
               maxLength={60}
               placeholder="e.g. Family Budget"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-slate-50"
+              className="w-full rounded-md border border-base-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-base-200"
             />
             {error && (
-              <p className="text-xs text-red-600">
+              <p className="text-xs text-error">
                 {error instanceof Error ? error.message : 'Failed to create workspace'}
               </p>
             )}
@@ -111,14 +112,14 @@ function CreateWorkspaceModal({
               type="button"
               onClick={handleClose}
               disabled={isPending}
-              className="rounded-md px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+              className="rounded-md px-4 py-2 text-sm font-medium text-base-content/70 hover:bg-base-200 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!isValid || isPending}
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-content hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending ? 'Creating...' : 'Create'}
             </button>
@@ -138,7 +139,7 @@ function WorkspaceSelector() {
     <div className="flex items-center space-x-3" data-tour="workspace-switcher">
       {workspaces.length > 1 ? (
         <select
-          className="text-sm font-semibold text-slate-700 bg-transparent border-none focus:ring-0 p-0 cursor-pointer"
+          className="text-sm font-semibold text-base-content/80 bg-transparent border-none focus:ring-0 p-0 cursor-pointer"
           value={active.workspaceId}
           onChange={(e) => setActiveWorkspaceId(e.target.value)}
           aria-label="Select workspace"
@@ -150,9 +151,9 @@ function WorkspaceSelector() {
           ))}
         </select>
       ) : (
-        <h2 className="text-sm font-semibold text-slate-700 tracking-wide">{active.name}</h2>
+        <h2 className="text-sm font-semibold text-base-content/80 tracking-wide">{active.name}</h2>
       )}
-      <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full border border-slate-200">
+      <span className="px-2 py-0.5 text-xs font-medium bg-base-200 text-base-content/70 rounded-full border border-base-300">
         {active.role}
       </span>
 
@@ -160,7 +161,7 @@ function WorkspaceSelector() {
         type="button"
         data-tour="new-workspace-btn"
         onClick={() => setIsCreateOpen(true)}
-        className="flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+        className="flex items-center gap-1 rounded-md border border-base-300 px-2.5 py-1 text-xs font-medium text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors"
       >
         <Plus className="h-3.5 w-3.5" />
         New workspace
@@ -261,7 +262,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50/50 flex">
+    <div className="h-screen overflow-hidden bg-base-200/50 flex">
       <Suspense fallback={null}>
         <OnboardingTour />
       </Suspense>
@@ -276,21 +277,21 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 shrink-0 flex flex-col border-r border-slate-200 bg-white transition-[transform,width] duration-200 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-40 w-64 shrink-0 flex flex-col border-r border-base-300 bg-base-100 transition-[transform,width] duration-200 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
           } md:static md:z-auto md:translate-x-0 md:h-full ${collapsed ? 'md:w-18' : 'md:w-64'}`}
       >
-        <div className={`p-6 border-b border-slate-100 flex items-center gap-2 ${collapsed ? 'md:justify-center md:px-0' : ''}`}>
-          <div className="h-8 w-8 shrink-0 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+        <div className={`p-6 border-b border-base-200 flex items-center gap-2 ${collapsed ? 'md:justify-center md:px-0' : ''}`}>
+          <div className="h-8 w-8 shrink-0 rounded-lg bg-primary flex items-center justify-center text-primary-content font-bold text-lg">
             A
           </div>
-          <span className={`font-semibold text-lg tracking-tight text-slate-900 ${collapsed ? 'md:hidden' : ''}`}>
+          <span className={`font-semibold text-lg tracking-tight text-base-content ${collapsed ? 'md:hidden' : ''}`}>
             Cashflow Copilot
           </span>
           <button
             type="button"
             onClick={closeMobile}
             aria-label="Close menu"
-            className="ml-auto rounded-md p-1.5 text-slate-500 hover:bg-slate-100 md:hidden"
+            className="ml-auto rounded-md p-1.5 text-base-content/60 hover:bg-base-200 md:hidden"
           >
             <X className="h-5 w-5" />
           </button>
@@ -308,35 +309,35 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 onClick={closeMobile}
                 title={collapsed ? item.name : undefined}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${collapsed ? 'md:justify-center' : ''} ${isActive
-                  ? 'bg-indigo-50 text-indigo-600'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'
                   }`}
               >
-                <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : 'text-base-content/50'}`} />
                 <span className={collapsed ? 'md:hidden' : ''}>{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-100">
+        <div className="p-4 border-t border-base-200">
           <div className={`mb-3 flex items-center gap-3 px-3 py-2 ${collapsed ? 'md:justify-center md:px-0' : ''}`}>
             {isUserLoading ? (
               <>
-                <div className="h-9 w-9 shrink-0 rounded-full bg-slate-100 animate-pulse" />
+                <div className="h-9 w-9 shrink-0 rounded-full bg-base-200 animate-pulse" />
                 <div className={`min-w-0 flex-1 space-y-1.5 ${collapsed ? 'md:hidden' : ''}`}>
-                  <div className="h-3 w-24 rounded bg-slate-100 animate-pulse" />
-                  <div className="h-3 w-32 rounded bg-slate-100 animate-pulse" />
+                  <div className="h-3 w-24 rounded bg-base-200 animate-pulse" />
+                  <div className="h-3 w-32 rounded bg-base-200 animate-pulse" />
                 </div>
               </>
             ) : (
               <>
-                <div className="h-9 w-9 shrink-0 rounded-full bg-indigo-50 flex items-center justify-center text-sm font-semibold text-indigo-600">
+                <div className="h-9 w-9 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
                   {initial}
                 </div>
                 <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
-                  <p className="truncate text-sm font-medium text-slate-900">{displayName}</p>
-                  {user?.email && <p className="truncate text-xs text-slate-500">{user.email}</p>}
+                  <p className="truncate text-sm font-medium text-base-content">{displayName}</p>
+                  {user?.email && <p className="truncate text-xs text-base-content/60">{user.email}</p>}
                 </div>
               </>
             )}
@@ -344,7 +345,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <button
             onClick={openSignOutDialog}
             title={collapsed ? 'Sign Out' : undefined}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ${collapsed ? 'md:justify-center' : ''}`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-error hover:bg-error/10 transition-colors ${collapsed ? 'md:justify-center' : ''}`}
           >
             <LogOut className="h-4 w-4 shrink-0" />
             <span className={collapsed ? 'md:hidden' : ''}>Sign Out</span>
@@ -354,35 +355,34 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
-        <header className="h-16 shrink-0 border-b border-slate-200 bg-white px-4 md:px-8 flex items-center justify-between">
+        <header className="h-16 shrink-0 border-b border-base-300 bg-base-100 px-4 md:px-8 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={toggleSidebar}
               aria-label="Toggle sidebar"
               aria-expanded={mobileOpen || !collapsed}
-              className="rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+              className="rounded-md p-2 text-base-content/60 hover:bg-base-200 hover:text-base-content transition-colors"
             >
               <Menu className="h-5 w-5 md:hidden" />
               {collapsed ? (
-                <ChevronsRight className="hidden h-7 w-7 border rounded-lg border-slate-300 p-0.5 md:block" />
+                <ChevronsRight className="hidden h-7 w-7 border rounded-lg border-base-300 p-0.5 md:block" />
               ) : (
-                <ChevronsLeft className="hidden h-7 w-7 border rounded-lg border-slate-300 p-0.5 md:block" />
+                <ChevronsLeft className="hidden h-7 w-7 border rounded-lg border-base-300 p-0.5 md:block" />
               )}
             </button>
             <WorkspaceSelector />
-            <div className="hidden h-5 w-px bg-slate-200 sm:block" aria-hidden="true" />
+            <div className="hidden h-5 w-px bg-base-300 sm:block" aria-hidden="true" />
             <ActiveAccountSwitcher />
           </div>
 
-          <button
-            type="button"
-            onClick={startTour}
-            className="flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-          >
-            <Compass className="h-4 w-4" />
-            <span className="hidden sm:inline">Take a tour</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeMenu />
+            <button type="button" onClick={startTour} className="btn btn-outline btn-sm gap-1.5">
+              <Compass className="h-4 w-4" />
+              <span className="hidden sm:inline">Take a tour</span>
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 p-8 overflow-y-auto">

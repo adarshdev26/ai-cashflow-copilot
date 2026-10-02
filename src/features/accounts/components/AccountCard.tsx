@@ -55,39 +55,39 @@ export const AccountCard = memo(function AccountCard({
 
   return (
     <div
-      className={`rounded-xl border border-slate-200 bg-white p-5 shadow-sm ${
+      className={`rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm ${
         account.isActive ? '' : 'opacity-70'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Icon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-slate-900">{account.name}</p>
-            <p className="text-xs text-slate-500">{ACCOUNT_TYPE_LABELS[account.type]}</p>
+            <p className="truncate text-sm font-semibold text-base-content">{account.name}</p>
+            <p className="text-xs text-base-content/60">{ACCOUNT_TYPE_LABELS[account.type]}</p>
           </div>
         </div>
         {!account.isActive && (
-          <span className="shrink-0 rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+          <span className="shrink-0 rounded-full border border-base-300 bg-base-200 px-2 py-0.5 text-xs font-medium text-base-content/70">
             Inactive
           </span>
         )}
       </div>
 
       <div className="mt-4">
-        <p className="text-xs text-slate-500">Balance</p>
-        <p className={`text-2xl font-bold tracking-tight ${isNegative ? 'text-red-600' : 'text-slate-900'}`}>
+        <p className="text-xs text-base-content/60">Balance</p>
+        <p className={`text-2xl font-bold tracking-tight ${isNegative ? 'text-error' : 'text-base-content'}`}>
           {formatMoney(account.balance, account.currency)}
         </p>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-base-content/50">
           {txCount} {txCount === 1 ? 'transaction' : 'transactions'}
         </p>
       </div>
 
       {(canEdit || canManage) && (
-        <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-base-200 pt-3">
           {canEdit && (
             <Button variant="secondary" onClick={() => onEdit(account)} disabled={busy}>
               Edit

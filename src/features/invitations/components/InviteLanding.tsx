@@ -25,7 +25,7 @@ function Shell({
       <div className="w-full max-w-md space-y-6 rounded-xl border border-gray-800 bg-gray-900 p-8 shadow-2xl">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-gray-400">{subtitle}</p>}
+          {subtitle && <p className="mt-1 text-sm text-base-content/50">{subtitle}</p>}
         </div>
         {children}
       </div>
@@ -107,7 +107,7 @@ export function InviteLanding({ token }: { token: string }) {
   if (data.viewer.signedIn) {
     return (
       <Shell title={title} subtitle={subtitle}>
-        <div className="rounded bg-yellow-500/10 p-3 text-sm text-yellow-300 border border-yellow-500/20">
+        <div className="rounded bg-warning/10 p-3 text-sm text-yellow-300 border border-warning/20">
           You are signed in with a different account. This invitation was sent to{' '}
           <span className="font-medium">{data.email}</span>. Log out to continue with that email.
         </div>
@@ -122,12 +122,12 @@ export function InviteLanding({ token }: { token: string }) {
   if (data.accountExists) {
     return (
       <Shell title={title} subtitle={subtitle}>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-base-content/50">
           An account already exists for this email. Sign in to accept the invitation.
         </p>
         <Link
           href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}
-          className="block w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-indigo-700"
+          className="block w-full rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-primary-content hover:bg-primary"
         >
           Sign in to accept
         </Link>

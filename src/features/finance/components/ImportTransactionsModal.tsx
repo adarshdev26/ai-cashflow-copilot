@@ -103,7 +103,7 @@ export function ImportTransactionsModal({
     >
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3 text-sm">
-          <p className="text-slate-600">
+          <p className="text-base-content/70">
             {activeAccountId
               ? <>Rows without a Financial Account go to <span className="font-medium">{activeAccountName ?? 'the selected account'}</span>.</>
               : <>No account is selected, so every row needs a Financial Account value.</>}
@@ -111,7 +111,7 @@ export function ImportTransactionsModal({
           <a
             href="/samples/transactions.csv"
             download
-            className="inline-flex shrink-0 items-center gap-1 text-blue-600 hover:underline"
+            className="inline-flex shrink-0 items-center gap-1 text-primary hover:underline"
           >
             <Download className="h-4 w-4" /> Sample CSV
           </a>
@@ -119,25 +119,25 @@ export function ImportTransactionsModal({
 
         <Input aria-label="CSV file" type="file" accept=".csv,text/csv" onChange={handleFile} disabled={isPending} />
 
-        {fileError && <p className="text-sm text-red-600">{fileError}</p>}
+        {fileError && <p className="text-sm text-error">{fileError}</p>}
 
         {fileName && !fileError && (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-base-content/60">
             {fileName}{isPending && !check ? ' — checking…' : ''}
           </p>
         )}
 
         {check && check.ok && check.dryRun && (
-          <p className="text-sm text-green-700">All {check.total} rows are valid and ready to import.</p>
+          <p className="text-sm text-success">All {check.total} rows are valid and ready to import.</p>
         )}
 
         {check && !check.ok && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-            <p className="mb-2 text-sm font-medium text-red-700">
+          <div className="rounded-lg border border-error/30 bg-error/10 p-3">
+            <p className="mb-2 text-sm font-medium text-error">
               Nothing was imported. Fix these rows and choose the file again
               {check.errorCount ? ` (${check.errorCount} problems, showing the first ${check.errors.length})` : ''}:
             </p>
-            <ul className="max-h-48 space-y-1 overflow-y-auto text-xs text-red-700">
+            <ul className="max-h-48 space-y-1 overflow-y-auto text-xs text-error">
               {check.errors.map((e, i) => (
                 <li key={i}>Row {e.row}: {e.message}</li>
               ))}
@@ -146,9 +146,9 @@ export function ImportTransactionsModal({
         )}
 
         {preview.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
+          <div className="overflow-x-auto rounded-lg border border-base-300">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500">
+              <thead className="bg-base-200 text-base-content/60">
                 <tr>
                   <th className="px-3 py-2">Date</th>
                   <th className="px-3 py-2">Type</th>
@@ -159,7 +159,7 @@ export function ImportTransactionsModal({
               </thead>
               <tbody>
                 {preview.map((r) => (
-                  <tr key={r.row} className="border-t border-slate-100">
+                  <tr key={r.row} className="border-t border-base-200">
                     <td className="px-3 py-2">{r.date.slice(0, 10)}</td>
                     <td className="px-3 py-2">{r.type}</td>
                     <td className="px-3 py-2">{r.amount.toFixed(2)}</td>
@@ -169,7 +169,7 @@ export function ImportTransactionsModal({
                 ))}
               </tbody>
             </table>
-            <p className="border-t border-slate-100 px-3 py-2 text-xs text-slate-400">First {preview.length} rows</p>
+            <p className="border-t border-base-200 px-3 py-2 text-xs text-base-content/50">First {preview.length} rows</p>
           </div>
         )}
       </div>

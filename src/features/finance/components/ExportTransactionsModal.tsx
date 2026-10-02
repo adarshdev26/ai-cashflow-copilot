@@ -71,7 +71,7 @@ export function ExportTransactionsModal({ open, onClose, workspaceId, initialFil
           {accounts?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
         </Select>
         <Input aria-label="Search description" placeholder="Search description" value={filters.search ?? ''} onChange={(e) => set('search', e.target.value)} />
-        {invalidRange && <p className="text-xs text-red-600 md:col-span-2">&quot;From&quot; date must be on or before the &quot;To&quot; date.</p>}
+        {invalidRange && <p className="text-xs text-error md:col-span-2">&quot;From&quot; date must be on or before the &quot;To&quot; date.</p>}
       </div>
     </Modal>
   );

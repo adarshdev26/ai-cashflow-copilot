@@ -51,8 +51,8 @@ export default function TemplatesPage() {
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Templates</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-bold tracking-tight text-base-content">Templates</h1>
+          <p className="text-sm text-base-content/60">
             Reusable transactions you can apply in a couple of clicks.
           </p>
         </div>
@@ -60,13 +60,13 @@ export default function TemplatesPage() {
       </div>
 
       {isError ? (
-        <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
+        <div className="rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error">
           {error instanceof Error ? error.message : 'Failed to load templates'}
         </div>
       ) : showEmpty ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
-          <p className="text-sm font-semibold text-slate-900">No templates yet</p>
-          <p className="mt-1 text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-12 text-center">
+          <p className="text-sm font-semibold text-base-content">No templates yet</p>
+          <p className="mt-1 text-sm text-base-content/60">
             Save things you enter often, like coffee, rent or fuel, and reuse them from the
             Transactions page.
           </p>

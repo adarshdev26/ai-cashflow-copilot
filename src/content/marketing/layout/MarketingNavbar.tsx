@@ -3,7 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { Container } from '../../../components/marketing/primitives/Container';
 import { CTAButton } from '../../../components/marketing/primitives/CTAButton';
 import { MobileMenu } from './MobileMenu';
-import { ThemeToggle } from '@/components/marketing/ThemeToggle';
+import { ThemeMenu } from '@/components/ui/ThemePicker';
 import { getSession } from '@/lib/auth';
 import { NAV_LINKS, SITE } from '@/content/marketing/site';
 
@@ -27,7 +27,7 @@ export async function MarketingNavbar() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <ThemeToggle />
+          <ThemeMenu />
           {isLoggedIn ? (
             <CTAButton href="/dashboard" className="gap-1.5">
               Open {SITE.name}

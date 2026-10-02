@@ -80,7 +80,7 @@ export function Modal({
       className={cn(
         "backdrop:bg-slate-900/40 backdrop:backdrop-blur-sm",
         "fixed inset-0 m-auto h-fit max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto",
-        "rounded-xl border border-slate-200 bg-white p-0 shadow-xl",
+        "rounded-xl border border-base-300 bg-base-100 p-0 shadow-xl",
         "animate-in fade-in zoom-in-95 duration-200",
         sizeClasses[size]
       )}
@@ -88,8 +88,8 @@ export function Modal({
     >
       <div className="p-6 space-y-4">
         <div>
-          <h3 id="modal-title" className="text-lg font-semibold text-slate-900">{title}</h3>
-          {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+          <h3 id="modal-title" className="text-lg font-semibold text-base-content">{title}</h3>
+          {description && <p className="mt-1 text-sm text-base-content/60">{description}</p>}
         </div>
 
         <div>{children}</div>

@@ -43,8 +43,8 @@ export function formatScheduleDate(iso: string): string {
 }
 
 const selectClass =
-  'block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 ' +
-  'focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500';
+  'block w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content ' +
+  'focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
 
 export function RecurringModal({ isOpen, onClose, editing }: Props) {
   const [description, setDescription] = useState(editing?.description ?? '');
@@ -120,7 +120,7 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
     >
       <div className="min-h-96 space-y-4">
         {/* Type toggle */}
-        <div className="grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
+        <div className="grid grid-cols-2 gap-2 rounded-lg bg-base-200 p-1">
           {(['DEBIT', 'CREDIT'] as const).map((t) => (
             <button
               key={t}
@@ -128,9 +128,9 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
               onClick={() => changeType(t)}
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${type === t
                 ? t === 'DEBIT'
-                  ? 'bg-white text-red-600 shadow-sm'
-                  : 'bg-white text-emerald-600 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-base-100 text-error shadow-sm'
+                  : 'bg-base-100 text-success shadow-sm'
+                : 'text-base-content/60 hover:text-base-content/80'
                 }`}
             >
               {t === 'DEBIT' ? 'Expense' : 'Income'}
@@ -139,7 +139,7 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
         </div>
 
         <div>
-          <label htmlFor="rec-description" className="mb-1 block text-sm font-medium text-slate-700">
+          <label htmlFor="rec-description" className="mb-1 block text-sm font-medium text-base-content/80">
             Description
           </label>
           <Input
@@ -153,7 +153,7 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="rec-amount" className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="rec-amount" className="mb-1 block text-sm font-medium text-base-content/80">
               Amount (₹)
             </label>
             <Input
@@ -166,7 +166,7 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
             />
           </div>
           <div>
-            <label htmlFor="rec-frequency" className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="rec-frequency" className="mb-1 block text-sm font-medium text-base-content/80">
               Repeats
             </label>
             <select
@@ -186,11 +186,11 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Account</label>
+            <label className="mb-1 block text-sm font-medium text-base-content/80">Account</label>
             <AccountSelect value={accountId || null} onChange={(id) => setAccountId(id ?? '')} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
+            <label className="mb-1 block text-sm font-medium text-base-content/80">Category</label>
             <CategorySelect
               value={categoryId}
               onChange={(id) => setCategoryId(id ?? '')}
@@ -201,7 +201,7 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="rec-start" className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="rec-start" className="mb-1 block text-sm font-medium text-base-content/80">
               Start date
             </label>
             <Input
@@ -212,8 +212,8 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
             />
           </div>
           <div>
-            <label htmlFor="rec-end" className="mb-1 block text-sm font-medium text-slate-700">
-              End date <span className="font-normal text-slate-400">(optional)</span>
+            <label htmlFor="rec-end" className="mb-1 block text-sm font-medium text-base-content/80">
+              End date <span className="font-normal text-base-content/50">(optional)</span>
             </label>
             <Input
               id="rec-end"
@@ -226,15 +226,15 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
         </div>
 
         {editing && (
-          <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+          <p className="rounded-lg bg-base-200 px-3 py-2 text-sm text-base-content/70">
             Next occurrence:{' '}
-            <span className="font-medium text-slate-900">{formatScheduleDate(editing.nextRunAt)}</span>
+            <span className="font-medium text-base-content">{formatScheduleDate(editing.nextRunAt)}</span>
             . Changing the start date or frequency recalculates it. Transactions already created are
             not changed.
           </p>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
       </div>
     </Modal>
   );

@@ -66,8 +66,8 @@ export default function BudgetsPage() {
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Budgets</h1>
-          <p className="text-sm text-slate-500">Track and control your spending.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-base-content">Budgets</h1>
+          <p className="text-sm text-base-content/60">Track and control your spending.</p>
         </div>
         {canManage && (
           <Button onClick={openCreate} disabled={isPast}>
@@ -80,14 +80,14 @@ export default function BudgetsPage() {
         <Button variant="secondary" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="min-w-36 text-center text-sm font-semibold text-slate-900">
+        <span className="min-w-36 text-center text-sm font-semibold text-base-content">
           {monthLabel(cursor.year, cursor.month)}
         </span>
         <Button variant="secondary" aria-label="Next month" onClick={() => shiftMonth(1)}>
           <ChevronRight className="h-4 w-4" />
         </Button>
         {isPast && (
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-base-content/60">
             Past month: new budgets can only be created for the current or a future month.
           </span>
         )}
@@ -96,50 +96,50 @@ export default function BudgetsPage() {
       {totals && budgets.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
           {/* Total budgeted */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Wallet className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-900">Total budgeted</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-sm font-semibold text-base-content">Total budgeted</p>
+                <p className="text-xs text-base-content/60">
                   {budgets.length} {budgets.length === 1 ? 'budget' : 'budgets'} this month
                 </p>
               </div>
             </div>
             <div className="mt-4">
-              <p className="text-xs text-slate-500">Monthly limit</p>
-              <p className="text-2xl font-bold tracking-tight text-slate-900">
+              <p className="text-xs text-base-content/60">Monthly limit</p>
+              <p className="text-2xl font-bold tracking-tight text-base-content">
                 {formatINR(totals.budgeted)}
               </p>
             </div>
           </div>
 
           {/* Total spent */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${totals.isOverBudget ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${totals.isOverBudget ? 'bg-error/10 text-error' : 'bg-warning/10 text-warning'
                     }`}
                 >
                   <TrendingDown className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-900">Total spent</p>
-                  <p className="text-xs text-slate-500">Across budgeted categories</p>
+                  <p className="text-sm font-semibold text-base-content">Total spent</p>
+                  <p className="text-xs text-base-content/60">Across budgeted categories</p>
                 </div>
               </div>
               {totals.isOverBudget && (
-                <span className="shrink-0 rounded-full border border-red-100 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">
+                <span className="shrink-0 rounded-full border border-error/30 bg-error/10 px-2 py-0.5 text-xs font-medium text-error">
                   Over budget
                 </span>
               )}
             </div>
             <div className="mt-4">
-              <p className="text-xs text-slate-500">Spent</p>
-              <p className="text-2xl font-bold tracking-tight text-slate-900">
+              <p className="text-xs text-base-content/60">Spent</p>
+              <p className="text-2xl font-bold tracking-tight text-base-content">
                 {formatINR(totals.spent)}
               </p>
             </div>
@@ -147,10 +147,10 @@ export default function BudgetsPage() {
           </div>
 
           {/* Remaining / Over by */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
             <div className="flex items-center gap-3">
               <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${totals.remaining < 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${totals.remaining < 0 ? 'bg-error/10 text-error' : 'bg-success/10 text-success'
                   }`}
               >
                 {totals.remaining < 0 ? (
@@ -160,20 +160,20 @@ export default function BudgetsPage() {
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-base-content">
                   {totals.remaining >= 0 ? 'Remaining' : 'Over by'}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-base-content/60">
                   {totals.remaining >= 0 ? 'Still available to spend' : 'Above your total limit'}
                 </p>
               </div>
             </div>
             <div className="mt-4">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-base-content/60">
                 {totals.remaining >= 0 ? 'Left this month' : 'Overspent'}
               </p>
               <p
-                className={`text-2xl font-bold tracking-tight ${totals.remaining < 0 ? 'text-red-600' : 'text-emerald-600'
+                className={`text-2xl font-bold tracking-tight ${totals.remaining < 0 ? 'text-error' : 'text-success'
                   }`}
               >
                 {formatINR(Math.abs(totals.remaining))}
@@ -184,13 +184,13 @@ export default function BudgetsPage() {
       )}
 
       {isError ? (
-        <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
+        <div className="rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error">
           {error instanceof Error ? error.message : 'Failed to load budgets'}
         </div>
       ) : showEmpty ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
-          <p className="text-sm font-semibold text-slate-900">No budgets for this month</p>
-          <p className="mt-1 text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-12 text-center">
+          <p className="text-sm font-semibold text-base-content">No budgets for this month</p>
+          <p className="mt-1 text-sm text-base-content/60">
             {isPast
               ? 'Budgets cannot be created for past months.'
               : 'Set a monthly limit for a spending category.'}

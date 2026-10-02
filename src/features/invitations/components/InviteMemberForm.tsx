@@ -41,7 +41,7 @@ export function InviteMemberForm({ workspaceId, onCreated }: Props) {
   return (
     <form onSubmit={handleSubmit} className="flex gap-4 max-w-2xl items-end">
       <div className="flex-1 space-y-1">
-        <label htmlFor={emailId} className="text-xs font-medium text-slate-700">
+        <label htmlFor={emailId} className="text-xs font-medium text-base-content/80">
           Email Address
         </label>
         <input
@@ -50,13 +50,13 @@ export function InviteMemberForm({ workspaceId, onCreated }: Props) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isPending}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-slate-50"
+          className="w-full rounded-md border border-base-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-base-200"
           placeholder="colleague@example.com"
           required
         />
       </div>
       <div className="w-32 space-y-1">
-        <label htmlFor={roleId} className="text-xs font-medium text-slate-700">
+        <label htmlFor={roleId} className="text-xs font-medium text-base-content/80">
           Role
         </label>
         <select
@@ -64,7 +64,7 @@ export function InviteMemberForm({ workspaceId, onCreated }: Props) {
           value={role}
           onChange={(e) => setRole(e.target.value as InvitableRole)}
           disabled={isPending}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
+          className="w-full rounded-md border border-base-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-base-100"
         >
           {INVITABLE_ROLES.map((r) => (
             <option key={r} value={r}>
@@ -76,7 +76,7 @@ export function InviteMemberForm({ workspaceId, onCreated }: Props) {
       <button
         type="submit"
         disabled={isPending || !email.trim()}
-        className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-content hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending ? 'Inviting...' : 'Invite Member'}
       </button>

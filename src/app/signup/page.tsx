@@ -7,6 +7,10 @@ import { PrimaryButton } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { notify, getErrorMessage } from '@/lib/toast'
 import { getSafeNextPath } from '@/lib/safe-redirect'
+import { AuthShell } from '@/components/auth/AuthShell'
+
+const inputCls =
+  'w-full rounded-lg bg-base-100 border border-base-300 px-4 py-2.5 text-base-content focus:border-primary focus:outline-none';
 
 export default function SignupPage() {
   return (
@@ -60,52 +64,38 @@ function SignupForm() {
   )
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
-      <div className="w-full max-w-md rounded-xl bg-gray-900 p-8 border border-gray-800 shadow-2xl">
+    <AuthShell>
+      <div className="w-full max-w-md rounded-xl bg-base-100 p-8 border border-base-300 shadow-2xl">
         <h2 className="text-2xl font-bold tracking-tight mb-6">Create Account</h2>
-        {error && <div className="mb-4 rounded bg-red-500/10 p-3 text-sm text-red-400 border border-red-500/20">{error}</div>}
+        {error && (
+          <div className="mb-4 rounded bg-error/10 p-3 text-sm text-error border border-error/20">{error}</div>
+        )}
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none"
-            />
+            <label className="block text-sm font-medium text-base-content/70 mb-1">Name</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none"
-            />
+            <label className="block text-sm font-medium text-base-content/70 mb-1">Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">Password</label>
+            <label className="block text-sm font-medium text-base-content/70 mb-1">Password</label>
             <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
               required
-              className="w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none"
+              className={inputCls}
             />
           </div>
-          <PrimaryButton type="submit" loading={loading} className="w-full">
-            Sign Up
-          </PrimaryButton>
+          <PrimaryButton type="submit" loading={loading} className="w-full">Sign Up</PrimaryButton>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-400">
+        <p className="mt-4 text-center text-sm text-base-content/60">
           Already have an account?{' '}
-          <Link href={loginHref} className="text-indigo-400 hover:underline">
-            Log in
-          </Link>
+          <Link href={loginHref} className="text-primary hover:underline">Log in</Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   )
 }

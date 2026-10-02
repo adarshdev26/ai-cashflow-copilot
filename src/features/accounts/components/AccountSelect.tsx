@@ -52,9 +52,9 @@ export function AccountSelect({ value, onChange, currentAccount, disabled, id }:
           </option>
         ))}
       </Select>
-      {error && <p className="mt-1 text-xs text-red-500">Failed to load accounts</p>}
+      {error && <p className="mt-1 text-xs text-error">Failed to load accounts</p>}
       {!isLoading && !error && options.length === 0 && (
-        <p className="mt-1 text-xs text-slate-500">No active accounts. Add one on the Accounts page.</p>
+        <p className="mt-1 text-xs text-base-content/60">No active accounts. Add one on the Accounts page.</p>
       )}
     </div>
   );

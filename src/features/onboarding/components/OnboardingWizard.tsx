@@ -25,12 +25,12 @@ export function OnboardingWizard() {
     if (step === 3) return <StepComplete />;
 
     // Steps 2 and 3 both need the owned workspace.
-    if (isLoading) return <p className="text-sm text-gray-400">Loading your workspace...</p>;
+    if (isLoading) return <p className="text-sm text-base-content/50">Loading your workspace...</p>;
     if (!workspace) {
       return (
         <div className="space-y-4">
           <p className="text-sm text-red-400">We could not find your workspace.</p>
-          <button type="button" onClick={back} className="text-sm text-gray-400 hover:text-white">
+          <button type="button" onClick={back} className="text-sm text-base-content/50 hover:text-white">
             Back
           </button>
         </div>

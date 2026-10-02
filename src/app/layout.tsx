@@ -4,6 +4,7 @@ import "./globals.css";
 import { ReactQueryProvider } from "@/components/providers/ReactQueryProvider";
 import { AppToaster } from "@/components/ui/AppToaster";
 import { SITE } from '@/content/marketing/site';
+import { AppThemeProvider } from '@/components/providers/AppThemeProvider';
 
 const inter = Inter({
   variable: "--font-inter",
@@ -38,12 +39,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      suppressHydrationWarning   
+      suppressHydrationWarning
       className={`${inter.variable} ${dmSans.variable} ${bricolage.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <ReactQueryProvider>{children}</ReactQueryProvider>
-        <AppToaster />
+      <body className="min-h-full flex flex-col bg-base-100 text-base-content">
+        <AppThemeProvider>
+          <ReactQueryProvider>{children}</ReactQueryProvider>
+          <AppToaster />
+        </AppThemeProvider>
       </body>
     </html>
   );

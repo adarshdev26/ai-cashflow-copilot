@@ -15,7 +15,7 @@ type Props = {
 };
 
 const fieldClass =
-  'w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none';
+  'w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-primary focus:outline-none';
 
 export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
   const save = useSaveOnboardingSetup();
@@ -51,19 +51,19 @@ export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <h2 className="text-xl font-bold tracking-tight">Set up your workspace</h2>
-        <p className="mt-1 text-sm text-gray-400">
+        <p className="mt-1 text-sm text-base-content/50">
           Your workspace is where your financial data lives.
         </p>
       </div>
 
       {error && (
-        <div className="rounded border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
+        <div className="rounded border border-error/20 bg-error/10 p-3 text-sm text-red-400">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="ws-name" className="mb-1 block text-sm font-medium text-gray-400">
+        <label htmlFor="ws-name" className="mb-1 block text-sm font-medium text-base-content/50">
           Workspace name
         </label>
         <input
@@ -78,7 +78,7 @@ export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
       </div>
 
       <div>
-        <label htmlFor="ws-currency" className="mb-1 block text-sm font-medium text-gray-400">
+        <label htmlFor="ws-currency" className="mb-1 block text-sm font-medium text-base-content/50">
           Currency
         </label>
         <select id="ws-currency" value="INR" disabled className={cn(fieldClass, 'opacity-70')}>
@@ -87,8 +87,8 @@ export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
       </div>
 
       <div>
-        <p className="mb-2 text-sm font-medium text-gray-400">
-          What do you want to do first? <span className="text-gray-600">(optional)</span>
+        <p className="mb-2 text-sm font-medium text-base-content/50">
+          What do you want to do first? <span className="text-base-content/70">(optional)</span>
         </p>
         <div className="flex flex-wrap gap-2">
           {GOAL_OPTIONS.map((opt) => {
@@ -102,8 +102,8 @@ export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
                 className={cn(
                   'rounded-full border px-3 py-1.5 text-xs transition-colors',
                   selected
-                    ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300'
-                    : 'border-gray-800 text-gray-400 hover:border-gray-600 hover:text-gray-200'
+                    ? 'border-primary bg-primary/10 text-indigo-300'
+                    : 'border-gray-800 text-base-content/50 hover:border-gray-600 hover:text-gray-200'
                 )}
               >
                 {opt.label}
@@ -118,7 +118,7 @@ export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
           type="button"
           onClick={onBack}
           disabled={save.isPending}
-          className="text-sm text-gray-400 hover:text-white disabled:opacity-50"
+          className="text-sm text-base-content/50 hover:text-white disabled:opacity-50"
         >
           Back
         </button>

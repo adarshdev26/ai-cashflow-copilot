@@ -70,13 +70,13 @@ export function InvitationLinkCard({ link, onDismiss }: Props) {
               value={url}
               onFocus={(e) => e.currentTarget.select()}
               aria-label="Invitation link"
-              className="flex-1 min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="flex-1 min-w-0 rounded-md border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content/80 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
             <Button variant="secondary" onClick={handleCopy}>
               {copied ? 'Copied' : 'Copy'}
             </Button>
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-base-content/60">
             Link expires in 48 hours ({new Date(link.expiresAt).toLocaleString()}).
           </p>
         </div>

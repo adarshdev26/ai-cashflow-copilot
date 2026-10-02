@@ -14,9 +14,9 @@ export function ActiveAccountSwitcher() {
 
   return (
     <div className="flex items-center gap-2" data-tour="account-switcher">
-      <Landmark className="h-4 w-4 shrink-0 text-slate-400" />
+      <Landmark className="h-4 w-4 shrink-0 text-base-content/50" />
       <select
-        className="cursor-pointer border-none bg-transparent p-0 text-sm font-semibold text-slate-700 focus:ring-0"
+        className="cursor-pointer border-none bg-transparent p-0 text-sm font-semibold text-base-content/80 focus:ring-0"
         value={activeAccountId ?? ''}
         onChange={(e) => setActiveAccountId(e.target.value || null)}
         disabled={isLoading}
@@ -33,8 +33,8 @@ export function ActiveAccountSwitcher() {
         <span
           className={`hidden rounded-full border px-2 py-0.5 text-xs font-medium lg:inline ${
             selected.balance < 0
-              ? 'border-red-100 bg-red-50 text-red-600'
-              : 'border-slate-200 bg-slate-100 text-slate-600'
+              ? 'border-error/30 bg-error/10 text-error'
+              : 'border-base-300 bg-base-200 text-base-content/70'
           }`}
         >
           {formatMoney(selected.balance, selected.currency)}

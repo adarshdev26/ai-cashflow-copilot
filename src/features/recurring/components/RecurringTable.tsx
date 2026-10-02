@@ -24,9 +24,9 @@ const FREQUENCY_LABEL = { WEEKLY: 'Weekly', MONTHLY: 'Monthly', YEARLY: 'Yearly'
 function StatusBadge({ item }: { item: RecurringTransactionDTO }) {
   const status = getRecurringStatus(item);
   const styles = {
-    ACTIVE: 'bg-emerald-50 text-emerald-700',
-    PAUSED: 'bg-amber-50 text-amber-700',
-    ENDED: 'bg-slate-100 text-slate-600',
+    ACTIVE: 'bg-success/10 text-success',
+    PAUSED: 'bg-warning/10 text-warning',
+    ENDED: 'bg-base-200 text-base-content/70',
   }[status];
   const label = { ACTIVE: 'Active', PAUSED: 'Paused', ENDED: 'Ended' }[status];
 
@@ -40,7 +40,7 @@ function StatusBadge({ item }: { item: RecurringTransactionDTO }) {
       {item.lastError && (
         <span
           title={item.lastError}
-          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700"
+          className="inline-flex items-center gap-1 rounded-full bg-error/10 px-2 py-0.5 text-xs font-medium text-error"
         >
           <AlertTriangle className="h-3 w-3" />
           Needs attention
@@ -69,17 +69,17 @@ export const RecurringTable = memo(function RecurringTable({
           const r = row.original;
           const isIncome = r.type === 'CREDIT';
           return (
-            <div className="flex items-center gap-3 font-medium text-slate-900">
+            <div className="flex items-center gap-3 font-medium text-base-content">
               <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                  isIncome ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'
+                  isIncome ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
                 }`}
               >
                 <Repeat className="h-4 w-4" />
               </div>
               <div className="min-w-0">
                 <p className="truncate">{r.description || 'Untitled'}</p>
-                <p className="text-xs font-normal text-slate-400">{FREQUENCY_LABEL[r.frequency]}</p>
+                <p className="text-xs font-normal text-base-content/50">{FREQUENCY_LABEL[r.frequency]}</p>
               </div>
             </div>
           );
@@ -92,7 +92,7 @@ export const RecurringTable = memo(function RecurringTable({
           const r = row.original;
           const isIncome = r.type === 'CREDIT';
           return (
-            <span className={`font-semibold ${isIncome ? 'text-emerald-600' : 'text-slate-900'}`}>
+            <span className={`font-semibold ${isIncome ? 'text-success' : 'text-base-content'}`}>
               {isIncome ? '+' : '-'}
               {formatINR(r.amount)}
             </span>
@@ -103,7 +103,7 @@ export const RecurringTable = memo(function RecurringTable({
         id: 'account',
         header: 'Account',
         accessorFn: (row) => row.account.name,
-        cell: ({ row }) => <span className="text-slate-700">{row.original.account.name}</span>,
+        cell: ({ row }) => <span className="text-base-content/80">{row.original.account.name}</span>,
       },
       {
         id: 'status',
@@ -116,9 +116,9 @@ export const RecurringTable = memo(function RecurringTable({
         header: 'Next',
         cell: ({ row }) => {
           const r = row.original;
-          if (getRecurringStatus(r) === 'ENDED') return <span className="text-slate-400">-</span>;
+          if (getRecurringStatus(r) === 'ENDED') return <span className="text-base-content/50">-</span>;
           return (
-            <span className={r.isActive ? 'text-slate-700' : 'text-slate-400'}>
+            <span className={r.isActive ? 'text-base-content/80' : 'text-base-content/50'}>
               {formatScheduleDate(r.nextRunAt)}
             </span>
           );
@@ -129,9 +129,9 @@ export const RecurringTable = memo(function RecurringTable({
         header: 'Ends',
         cell: ({ row }) =>
           row.original.endDate ? (
-            <span className="text-slate-700">{formatScheduleDate(row.original.endDate)}</span>
+            <span className="text-base-content/80">{formatScheduleDate(row.original.endDate)}</span>
           ) : (
-            <span className="text-slate-400">No end date</span>
+            <span className="text-base-content/50">No end date</span>
           ),
       },
     ];
@@ -156,17 +156,17 @@ export const RecurringTable = memo(function RecurringTable({
                   onClick={() => onToggle(r)}
                 >
                   {r.isActive ? (
-                    <Pause className="h-4 w-4 text-amber-600" />
+                    <Pause className="h-4 w-4 text-warning" />
                   ) : (
-                    <Play className="h-4 w-4 text-emerald-600" />
+                    <Play className="h-4 w-4 text-success" />
                   )}
                 </Button>
               )}
               <Button variant="ghost" size="sm" aria-label="Edit schedule" onClick={() => onEdit(r)}>
-                <Pencil className="h-4 w-4 text-blue-500" />
+                <Pencil className="h-4 w-4 text-primary" />
               </Button>
               <Button variant="ghost" size="sm" aria-label="Delete schedule" onClick={() => onDelete(r)}>
-                <Trash2 className="h-4 w-4 text-red-600" />
+                <Trash2 className="h-4 w-4 text-error" />
               </Button>
             </div>
           );

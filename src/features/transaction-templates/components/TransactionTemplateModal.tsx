@@ -112,7 +112,7 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
     >
       <div className="min-h-96 space-y-4">
         {/* Type toggle */}
-        <div className="grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
+        <div className="grid grid-cols-2 gap-2 rounded-lg bg-base-200 p-1">
           {(['DEBIT', 'CREDIT'] as const).map((t) => (
             <button
               key={t}
@@ -121,9 +121,9 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 type === t
                   ? t === 'DEBIT'
-                    ? 'bg-white text-red-600 shadow-sm'
-                    : 'bg-white text-emerald-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                    ? 'bg-base-100 text-error shadow-sm'
+                    : 'bg-base-100 text-success shadow-sm'
+                  : 'text-base-content/60 hover:text-base-content/80'
               }`}
             >
               {t === 'DEBIT' ? 'Expense' : 'Income'}
@@ -132,7 +132,7 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
         </div>
 
         <div>
-          <label htmlFor="tpl-name" className="mb-1 block text-sm font-medium text-slate-700">
+          <label htmlFor="tpl-name" className="mb-1 block text-sm font-medium text-base-content/80">
             Template name
           </label>
           <Input
@@ -145,8 +145,8 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
         </div>
 
         <div>
-          <label htmlFor="tpl-description" className="mb-1 block text-sm font-medium text-slate-700">
-            Description <span className="font-normal text-slate-400">(optional)</span>
+          <label htmlFor="tpl-description" className="mb-1 block text-sm font-medium text-base-content/80">
+            Description <span className="font-normal text-base-content/50">(optional)</span>
           </label>
           <Input
             id="tpl-description"
@@ -159,8 +159,8 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="tpl-amount" className="mb-1 block text-sm font-medium text-slate-700">
-              Amount (₹) <span className="font-normal text-slate-400">(optional)</span>
+            <label htmlFor="tpl-amount" className="mb-1 block text-sm font-medium text-base-content/80">
+              Amount (₹) <span className="font-normal text-base-content/50">(optional)</span>
             </label>
             <Input
               id="tpl-amount"
@@ -174,14 +174,14 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label className="block text-sm font-medium text-slate-700">
-                Account <span className="font-normal text-slate-400">(optional)</span>
+              <label className="block text-sm font-medium text-base-content/80">
+                Account <span className="font-normal text-base-content/50">(optional)</span>
               </label>
               {accountId && (
                 <button
                   type="button"
                   onClick={() => setAccountId('')}
-                  className="text-xs text-slate-500 hover:text-slate-700"
+                  className="text-xs text-base-content/60 hover:text-base-content/80"
                 >
                   Clear
                 </button>
@@ -196,8 +196,8 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Category <span className="font-normal text-slate-400">(optional)</span>
+          <label className="mb-1 block text-sm font-medium text-base-content/80">
+            Category <span className="font-normal text-base-content/50">(optional)</span>
           </label>
           <CategorySelect
             value={categoryId}
@@ -207,15 +207,15 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
         </div>
 
         <div>
-          <p className="mb-1 block text-sm font-medium text-slate-700">Date</p>
+          <p className="mb-1 block text-sm font-medium text-base-content/80">Date</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {DATE_MODES.map((m) => (
               <label
                 key={m.value}
                 className={`cursor-pointer rounded-lg border p-3 text-sm transition-colors ${
                   dateMode === m.value
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-slate-200 hover:bg-slate-50'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-base-300 hover:bg-base-200'
                 }`}
               >
                 <input
@@ -225,8 +225,8 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
                   checked={dateMode === m.value}
                   onChange={() => changeDateMode(m.value)}
                 />
-                <span className="block font-medium text-slate-900">{m.title}</span>
-                <span className="block text-xs text-slate-500">{m.hint}</span>
+                <span className="block font-medium text-base-content">{m.title}</span>
+                <span className="block text-xs text-base-content/60">{m.hint}</span>
               </label>
             ))}
           </div>
@@ -243,7 +243,7 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
           )}
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
       </div>
     </Modal>
   );

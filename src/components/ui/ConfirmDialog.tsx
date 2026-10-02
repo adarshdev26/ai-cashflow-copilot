@@ -48,7 +48,7 @@ export function ConfirmDialog({
       }
     >
       {error && (
-        <div className="mt-2 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
+        <div className="mt-2 rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error">
           {error}
         </div>
       )}

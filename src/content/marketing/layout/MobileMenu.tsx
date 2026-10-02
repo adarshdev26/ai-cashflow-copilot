@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { ThemeToggle } from '@/components/marketing/ThemeToggle';
 import { SITE } from '@/content/marketing/site';
+import { ThemeMenu } from '@/components/ui/ThemePicker';
 
 export function MobileMenu({
   links,
@@ -27,7 +27,7 @@ export function MobileMenu({
 
   return (
     <div className="flex items-center gap-1 md:hidden">
-      <ThemeToggle />
+      <ThemeMenu />
       <button
         type="button"
         aria-label={open ? 'Close menu' : 'Open menu'}

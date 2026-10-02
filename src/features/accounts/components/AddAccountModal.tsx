@@ -65,11 +65,11 @@ export function AddAccountModal({ open, onClose, onSubmit, isSubmitting, error, 
     >
       <form id="account-form" onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">{error}</div>
+          <div className="rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error">{error}</div>
         )}
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-700">Name</label>
+          <label className="mb-1 block text-xs font-medium text-base-content/80">Name</label>
           <Input
             type="text"
             value={name}
@@ -78,11 +78,11 @@ export function AddAccountModal({ open, onClose, onSubmit, isSubmitting, error, 
             maxLength={100}
             autoFocus
           />
-          {touched && nameError && <p className="mt-1 text-xs text-red-600">{nameError}</p>}
+          {touched && nameError && <p className="mt-1 text-xs text-error">{nameError}</p>}
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-700">Type</label>
+          <label className="mb-1 block text-xs font-medium text-base-content/80">Type</label>
           <Select value={type} onChange={(e) => setType(e.target.value as AccountType)}>
             {ACCOUNT_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -93,7 +93,7 @@ export function AddAccountModal({ open, onClose, onSubmit, isSubmitting, error, 
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-700">Opening balance</label>
+          <label className="mb-1 block text-xs font-medium text-base-content/80">Opening balance</label>
           <Input
             type="number"
             step="0.01"
@@ -101,10 +101,10 @@ export function AddAccountModal({ open, onClose, onSubmit, isSubmitting, error, 
             onChange={(e) => setOpeningBalance(e.target.value)}
             placeholder="0.00"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-base-content/60">
             Use a negative amount for a credit card that starts with debt.
           </p>
-          {balanceInvalid && <p className="mt-1 text-xs text-red-600">Enter a valid amount</p>}
+          {balanceInvalid && <p className="mt-1 text-xs text-error">Enter a valid amount</p>}
         </div>
       </form>
     </Modal>

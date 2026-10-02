@@ -66,12 +66,12 @@ export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props
     >
       <div className={editing ? 'space-y-4' : 'min-h-80 space-y-4'}>
         {editing ? (
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-base-content/80">
             Category: <span className="font-medium">{editing.category.name}</span>
           </p>
         ) : (
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
+            <label className="mb-1 block text-sm font-medium text-base-content/80">Category</label>
             <CategorySelect
               value={categoryId}
               onChange={(id) => setCategoryId(id ?? '')}
@@ -81,7 +81,7 @@ export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props
         )}
 
         <div>
-          <label htmlFor="budget-amount" className="mb-1 block text-sm font-medium text-slate-700">
+          <label htmlFor="budget-amount" className="mb-1 block text-sm font-medium text-base-content/80">
             Monthly amount (₹)
           </label>
           <Input
@@ -94,7 +94,7 @@ export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
       </div>
     </Modal>
   );
