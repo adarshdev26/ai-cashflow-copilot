@@ -6,9 +6,7 @@ import { PasswordInput } from '@/components/ui/PasswordInput';
 import { useChangePassword } from '@/features/auth/hooks/use-change-password';
 import { validatePassword } from '@/lib/validations/auth';
 import { notify, getErrorMessage } from '@/lib/toast';
-
-const inputCls =
-  'w-full rounded-md border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
+import { settingsInputCls } from '@/components/ui/inputs';
 
 export function ChangePasswordSection() {
   const [current, setCurrent] = useState('');
@@ -50,39 +48,42 @@ export function ChangePasswordSection() {
       </div>
 
       {error && (
-        <div className="rounded bg-error/10 p-3 text-sm text-error border border-error/20">{error}</div>
+        <div role="alert" className="rounded bg-error/10 p-3 text-sm text-error border border-error/20">{error}</div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-base-content/70">Current password</label>
+            <label htmlFor="current-password" className="mb-1 block text-sm font-medium text-base-content/70">Current password</label>
             <PasswordInput
               value={current}
               onChange={(e) => setCurrent(e.target.value)}
               autoComplete="current-password"
               required
-              className={inputCls}
+              id="current-password"
+              className={settingsInputCls}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-base-content/70">New password</label>
+            <label htmlFor="new-password" className="mb-1 block text-sm font-medium text-base-content/70">New password</label>
             <PasswordInput
               value={next}
               onChange={(e) => setNext(e.target.value)}
               autoComplete="new-password"
               required
-              className={inputCls}
+              id="new-password"
+              className={settingsInputCls}
             />
           </div>
           <div className="sm:col-span-2 md:col-span-1">
-            <label className="mb-1 block text-sm font-medium text-base-content/70">Confirm new password</label>
+            <label htmlFor="confirm-password" className="mb-1 block text-sm font-medium text-base-content/70">Confirm new password</label>
             <PasswordInput
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               autoComplete="new-password"
               required
-              className={inputCls}
+              id="confirm-password"
+              className={settingsInputCls}
             />
           </div>
         </div>

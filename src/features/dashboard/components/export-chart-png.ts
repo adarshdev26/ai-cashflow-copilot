@@ -5,8 +5,21 @@ export function slugify(text: string) {
 }
 
 export async function exportElementAsPng(node: HTMLElement, fileName: string) {
+  const rootStyles = getComputedStyle(document.documentElement);
+  const bodyStyles = getComputedStyle(document.body);
+  const themeVariables = [
+    '--color-primary',
+    '--color-success',
+    '--color-error',
+    '--color-base-300',
+    '--color-base-content',
+  ];
+
   const dataUrl = await toPng(node, {
-    backgroundColor: '#ffffff', // the card is white, but a transparent PNG looks broken in some viewers
+    backgroundColor: bodyStyles.backgroundColor,
+    style: Object.fromEntries(
+      themeVariables.map((name) => [name, rootStyles.getPropertyValue(name).trim()])
+    ) as Partial<CSSStyleDeclaration>,
     pixelRatio: 2,              // sharper image, about 2x the on-screen size
     cacheBust: true,
     // Leave out anything marked data-export-ignore (the range dropdown and the export button)

@@ -5,10 +5,9 @@ import { useCurrentUser } from '@/features/auth';
 import { useUpdateProfile } from '@/features/auth/hooks/use-update-profile';
 import { notify, getErrorMessage } from '@/lib/toast';
 import { ChangePasswordSection } from './ChangePasswordSection';
+import { settingsInputCls } from '@/components/ui/inputs';
 
 const card = 'bg-base-100 rounded-xl shadow-sm border border-base-300 p-4 sm:p-6 space-y-4';
-const inputCls =
-  'w-full rounded-md border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-base-200 disabled:text-base-content/60';
 
 export function ProfileTab() {
   const { data: user, isLoading } = useCurrentUser();
@@ -54,19 +53,20 @@ function ProfileForm({ initialName, email }: { initialName: string; email: strin
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm font-medium text-base-content/70">Name</label>
+          <label htmlFor="profile-name" className="mb-1 block text-sm font-medium text-base-content/70">Name</label>
           <input
+            id="profile-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={60}
             disabled={isPending}
-            className={inputCls}
+            className={settingsInputCls}
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-base-content/70">Email</label>
-          <input type="email" value={email} disabled className={inputCls} />
+          <label htmlFor="profile-email" className="mb-1 block text-sm font-medium text-base-content/70">Email</label>
+          <input id="profile-email" type="email" value={email} disabled className={settingsInputCls} />
           <p className="mt-1 text-xs text-base-content/50">Email can&apos;t be changed yet.</p>
         </div>
       </div>

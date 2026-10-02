@@ -49,10 +49,10 @@ export function CategoryDonutChart() {
     const top = sorted.slice(0, 5).map((c) => ({
       name: c.name,
       value: c.expense,
-      color: c.color ?? '#94a3b8',
+      color: c.color ?? 'var(--color-base-300)',
     }));
     const rest = sorted.slice(5).reduce((sum, c) => sum + c.expense, 0);
-    if (rest > 0) top.push({ name: 'Other', value: rest, color: '#cbd5e1' });
+    if (rest > 0) top.push({ name: 'Other', value: rest, color: 'var(--color-base-content)' });
     return top;
   }, [data]);
 

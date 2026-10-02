@@ -57,12 +57,12 @@ export function RolesPermissionsSection() {
                 {ROLES.map((role) => {
                   const allowed = ROLE_PERMISSIONS[role].includes(action);
                   return (
-                    <td key={role} className={`px-4 py-2.5 ${role === active.role ? 'bg-indigo-50/40' : ''}`}>
+                    <td key={role} className={`px-4 py-2.5 ${role === active.role ? 'bg-primary/10' : ''}`}>
                       {allowed ? (
                         <Check className="h-4 w-4 text-success" aria-label="Allowed" />
                       ) : (
                         <X className="h-4 w-4 text-base-content/40" aria-label="Not allowed" />
-                      )}
+                      )} 
                     </td>
                   );
                 })}

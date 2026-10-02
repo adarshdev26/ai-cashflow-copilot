@@ -29,8 +29,8 @@ export function OnboardingWizard() {
     if (!workspace) {
       return (
         <div className="space-y-4">
-          <p className="text-sm text-red-400">We could not find your workspace.</p>
-          <button type="button" onClick={back} className="text-sm text-base-content/50 hover:text-white">
+          <p className="text-sm text-error">We could not find your workspace.</p>
+          <button type="button" onClick={back} className="text-sm text-base-content/50 hover:text-base-content">
             Back
           </button>
         </div>
@@ -42,7 +42,7 @@ export function OnboardingWizard() {
   };
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900 p-8 shadow-2xl">
+    <div className="rounded-xl border border-base-300 bg-base-100 p-8 shadow-2xl">
       <WizardProgress steps={WIZARD_STEPS} current={step} />
       <div className="mt-8">{renderStep()}</div>
     </div>

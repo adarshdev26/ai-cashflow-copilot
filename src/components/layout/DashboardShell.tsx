@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useCallback, useEffect, useSyncExternalStore, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, WalletCards, Landmark, CheckSquare, FileText, Settings, LogOut, Plus,
+  LayoutDashboard, WalletCards, Landmark, Settings, LogOut, Plus,
   Menu, X, ChevronsLeft, ChevronsRight, Compass, Tags, Repeat, LayoutTemplate
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -65,7 +65,7 @@ function CreateWorkspaceModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={handleClose}
     >
       <div
@@ -267,7 +267,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-30 bg-slate-900/40 md:hidden"
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
           onClick={closeMobile}
           aria-hidden="true"
         />

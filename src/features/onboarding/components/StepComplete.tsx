@@ -24,7 +24,7 @@ export function StepComplete() {
 
   return (
     <div className="text-center">
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-indigo-400">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
         <Check className="h-6 w-6" />
       </span>
       <h2 className="mt-4 text-2xl font-bold tracking-tight">You&apos;re all set!</h2>

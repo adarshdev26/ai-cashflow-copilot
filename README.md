@@ -4,7 +4,7 @@ Personal cash-flow app for signing in, recording income and expenses, and review
 
 ## Overview
 
-The app is a [Next.js](https://nextjs.org) 16 App Router project. Authenticated users land on a dashboard. Transactions belong to a workspace owned by the user. Categories are a shared catalog, not owned by a workspace.
+The app is a [Next.js](https://nextjs.org) 16 App Router project. Authenticated users land on a dashboard. Transactions and custom categories belong to a workspace, which is available to users through workspace access. Default categories are shared across workspaces.
 
 Money is stored as `CREDIT` (income) and `DEBIT` (expense). Display formatting uses Indian rupees (`en-IN`).
 
@@ -15,13 +15,14 @@ What works today:
 - Create, list, update, and delete transactions
 - Finance summary cards and a per-category breakdown
 - Dashboard charts for income vs expense, spending by category, and balance trend
+- Workspace switching and member access management
+- Workspace-specific category management alongside shared default categories
 - Habit count and note count on the dashboard (the habit “streak” is a placeholder)
 
 What is not a working product surface yet:
 
 - Habits, notes, and settings pages render “Coming Soon”
 - There are no habit or note API routes
-- There is no workspace switcher and no category management UI
 - `User.role` (`USER` | `ADMIN`) is stored and unused by the app
 
 ## Tech Stack
@@ -72,7 +73,7 @@ Login / signup page
       → login sets an HTTP-only JWT cookie
 ```
 
-Signup creates a `User` and returns `201`. It does not set a session and does not create a workspace. The login page is the next step.
+Signup creates a `User`, a `Personal` workspace, its `OWNER` access entry, and a default `General` account in one transaction, then returns `201`. It does not set a session; the user must log in next.
 
 The sidebar reads the session through `useCurrentUser` → `GET /api/auth/me`.
 
@@ -84,10 +85,10 @@ The sidebar reads the session through `useCurrentUser` → `GET /api/auth/me`.
     → src/features/finance/api/finance-api.ts
       → /api/finance/transactions
         → validateTransactionData
-          → Prisma Transaction, scoped with workspace.userId
+          → Prisma Transaction, scoped to a workspace after access validation
 ```
 
-The signed-in user’s id comes from the JWT. The client does not send `userId` or `workspaceId`. On create, the handler uses the user’s first workspace, or creates one named `Personal Workspace`.
+The signed-in user’s id comes from the JWT. The client sends the selected workspace in the `X-Workspace-Id` header; each handler checks that the user has the required access role before reading or writing workspace data.
 
 ### Dashboard
 
@@ -106,7 +107,7 @@ Charts are loaded with `next/dynamic` and `ssr: false`.
 CategorySelect / filters / CategoryStatsTooltip / CategoryDonutChart
   → useCategories or useCategorySummary
     → /api/categories or /api/categories/summary
-      → Prisma Category (global rows)
+      → Prisma Category (shared defaults + workspace-specific categories)
 ```
 
 ### Habits and notes
@@ -177,15 +178,13 @@ features/
 
 `finance/lib/validate-transaction.ts` is called by route handlers, so it must stay free of browser-only APIs.
 
-Do not put shared buttons or the Prisma singleton here. Feature code that more than one product area needs (categories) lives in `src/resources/`.
+Do not put shared buttons or the Prisma singleton here. Shared category catalog helpers live in `src/resources/`; workspace category management lives in `src/features/categories/`.
 
 Barrel files: `src/features/auth/index.ts`, `src/features/dashboard/index.ts`, `src/features/finance/index.ts`. `useFinanceSummary` is not exported from the finance barrel; `FinanceStats` imports it from the hook file.
 
 ### `src/resources/`
 
-Shared category catalog: types, `categories-api.ts`, hooks, `CategorySelect`, `CategoryBadge`, and `CategoryStats`.
-
-Categories are global. They are not a workspace feature module.
+Shared category reads: types, API helper, hooks, `CategorySelect`, `CategoryBadge`, and `CategoryStats`. Workspace-specific create, update, and delete UI and hooks live in `src/features/categories/`. The API returns shared defaults plus categories belonging to the selected workspace.
 
 ### `src/components/`
 
@@ -219,7 +218,7 @@ Schema, SQL migrations, category seed, and an optional transaction seed script.
 | Feature | UI | Client hook | Client fetch | Route | Database |
 | --- | --- | --- | --- | --- | --- |
 | Log in | `src/app/login/page.tsx` | local `useState` | `fetch` | `POST /api/auth/login` | `User` |
-| Sign up | `src/app/signup/page.tsx` | local `useState` | `fetch` | `POST /api/auth/signup` | `User` |
+| Sign up | `src/app/signup/page.tsx` | local `useState` | `fetch` | `POST /api/auth/signup` | `User`, `Personal` workspace, `OWNER` access, `General` account |
 | Current user | `DashboardShell` | `useCurrentUser` | `apiFetch` | `GET /api/auth/me` | `User` |
 | Sign out | `DashboardShell` | — | `fetch` | `POST /api/auth/logout` | clears cookie |
 | Transactions | `dashboard/finance/page.tsx` | `useTransactions` and mutations | `apiFetch` | `/api/finance/transactions` | `Transaction` |
@@ -263,7 +262,7 @@ Rules in `validateTransactionData`:
 - `categoryId` must be a string or it is stored as `null`
 - Route handlers also check that the category id exists
 
-List query parameters: `page`, `limit` (default 20, max 100), `sortBy` (`createdAt`, `amount`, `description`, `type`), `sortDir`, `type`, `categoryId`, `search` (case-insensitive description match), `dateFrom`, `dateTo` (`YYYY-MM-DD`). Rows are limited to workspaces whose `userId` is the session user. Update and delete return 404 when that check fails.
+List query parameters: `page`, `limit` (default 20, max 100), `sortBy` (`createdAt`, `amount`, `description`, `type`), `sortDir`, `type`, `categoryId`, `search` (case-insensitive description match), `dateFrom`, `dateTo` (`YYYY-MM-DD`). Rows are scoped to the selected workspace after the handler verifies membership. Update and delete return 404 when the transaction is outside that workspace.
 
 The finance page keeps list state in `useListQueryState` (in-memory, not the URL).
 
@@ -298,9 +297,9 @@ Not yet implemented as features.
 
 ### Workspace
 
-Schema and ownership exist. There is no workspace feature module.
+`src/features/workspaces` provides the workspace selector, active-workspace context, access roles, and related hooks. Users can create workspaces, switch among workspaces they own or have joined, manage access according to their role, and invite members.
 
-A user can own many workspaces. The app always uses `findFirst` and never lets the user pick one. The create-on-demand name is `Personal Workspace`. The transaction seed script uses `Personal` when it has to create a workspace.
+Signup creates a `Personal` workspace with the new user as `OWNER` and a `General` account. Workspace-scoped API handlers take the selected workspace from `X-Workspace-Id` or the route and verify membership and role before proceeding.
 
 ## Database Architecture
 
@@ -315,13 +314,14 @@ User
 └── Note
 ```
 
-`Category` is global. It is not a child of `User` or `Workspace`.
+Categories can be shared defaults (`workspaceId` is null) or custom to one workspace. A workspace can read shared defaults and its own custom categories; only custom categories in that workspace can be edited or deleted.
 
 | Model | Notes |
 | --- | --- |
 | `User` | `id` UUID, unique `email`, hashed `password`, optional `name`, `role` default `USER` |
-| `Workspace` | `name`, `userId`. Delete cascades from the user |
-| `Category` | unique `name`, optional `color` |
+| `Workspace` | `name`, `ownerId`, slug and currency. Owner deletion is restricted |
+| `WorkspaceAccess` | unique workspace/user membership with a workspace role |
+| `Category` | `name`, optional `color`, type and active state; nullable `workspaceId` distinguishes shared defaults from custom categories |
 | `Transaction` | `amount` float, `type` default `DEBIT`, optional `description`, required `workspaceId`, optional `categoryId` |
 | `Habit` | `title`, `userId`. No API yet |
 | `HabitLog` | `completed` default false, `date`, `habitId`. No API yet |
@@ -331,9 +331,9 @@ Enums: `Role` (`USER`, `ADMIN`), `TransactionType` (`CREDIT`, `DEBIT`).
 
 Constraints and indexes:
 
-- Unique: `User.email`, `Category.name`
+- Unique: `User.email`, workspace slug, workspace/user access pair, and category name within a workspace
 - Indexes: `Transaction.workspaceId`, `Transaction.categoryId`
-- `Workspace.user` and `Habit.user` and `Note.user`: `onDelete: Cascade`
+- `Workspace.owner` uses `onDelete: Restrict`; workspace access and invitation relations are workspace-scoped
 - `Transaction.workspace`: `onDelete: Cascade`
 - `Transaction.category`: `onDelete: SetNull`
 - `HabitLog.habit`: `onDelete: Cascade`
@@ -358,9 +358,9 @@ Session: JWT in the `token` cookie. `getSession` returns `{ userId, email }` or 
 | `GET /api/auth/me` | session required |
 | `/api/finance/*`, `/api/categories/*`, `/api/dashboard/*` | session required |
 
-Transaction queries always add `workspace: { userId }`. The handler does not trust an id from the body for ownership.
+Workspace-scoped handlers read the selected workspace id from the header or route, then verify membership and the minimum role using the signed-in user id from the JWT. They do not trust a workspace id in the request body.
 
-`Role.ADMIN` is not checked anywhere. Any signed-in user can read every category. Category rows are global.
+Workspace roles are `OWNER`, `ADMIN`, `MEMBER`, and `VIEWER`, with action checks in `src/features/workspaces/permissions.ts`. Category reads are limited to shared defaults and categories in the selected workspace.
 
 Middleware only tests cookie presence, so a garbage `token` value still passes the page gate. API routes then return `401`.
 
@@ -393,7 +393,8 @@ JSON in and out. Errors are `{ error: string }` with `400`, `401`, `404`, or `50
 | PATCH | `/api/finance/transactions/[id]` | Update transaction |
 | DELETE | `/api/finance/transactions/[id]` | Delete transaction |
 | GET | `/api/finance/summary` | Totals for all time, this month, last month |
-| GET | `/api/categories` | Category catalog |
+| GET / POST | `/api/categories` | List visible categories / create a workspace category |
+| PATCH / DELETE | `/api/categories/[id]` | Update or delete a workspace category |
 | GET | `/api/categories/summary` | Per-category income, expense, net, count |
 | GET | `/api/dashboard/metrics` | Habit streak placeholder and note count |
 | GET | `/api/dashboard/cashflow` | Monthly income and expense |
@@ -401,7 +402,7 @@ JSON in and out. Errors are `{ error: string }` with `400`, `401`, `404`, or `50
 
 Month boundaries for `/api/finance/summary` are `lastMonthStart`, `thisMonthStart`, and `nextMonthStart`, sent by the browser so “this month” follows the user’s timezone. The route rejects an inverted range. If the query params are omitted, it falls back to server-local month boundaries.
 
-There is no route to create or edit categories, habits, notes, or workspaces.
+Workspace and category routes support their current create, read, update, and delete operations. There are no routes for habits or notes.
 
 ## Shared Components
 
@@ -446,7 +447,7 @@ Shared hooks:
 
 ## Environment Variables
 
-There is no `.env.example`. `.gitignore` ignores `.env*`. Create a local `.env` yourself. Do not commit it.
+`.env.example` lists the required server variables and the public site URL without secret values. `.gitignore` ignores `.env*`; create a local `.env` yourself and do not commit it.
 
 | Variable | Required | Scope | Used for |
 | --- | --- | --- | --- |
@@ -455,7 +456,7 @@ There is no `.env.example`. `.gitignore` ignores `.env*`. Create a local `.env` 
 | `NODE_ENV` | Set by Next.js / Node | Server | `secure` cookie flag; Prisma client caching |
 | `SEED_USER_EMAIL` | No | Seed script only | Default user for `prisma/seed-transactions.ts` when no email argument is passed |
 
-Nothing in the app uses a `NEXT_PUBLIC_` variable. `JWT_SECRET` and `DATABASE_URL` must not be exposed to the client.
+`NEXT_PUBLIC_SITE_URL` supplies the canonical site URL for marketing links. `JWT_SECRET` and `DATABASE_URL` must not be exposed to the client.
 
 `prisma.config.ts` and both seed files import `dotenv/config`. `dotenv` is not listed in `package.json`. It is installed transitively through Prisma (`@prisma/config` → `c12` → `dotenv`). If a seed script fails to resolve that module, install `dotenv` as a dev dependency.
 
@@ -531,7 +532,7 @@ These match how the code is organized today.
 - Add a product area under `src/features/<name>` with `components`, `hooks`, `api`, and `types` when it owns its own screens.
 - Put cross-feature UI in `src/components`. Put the category catalog in `src/resources`.
 - Keep route handlers in `src/app/api`. Call Prisma there or through a shared validator. Do not import `src/lib/prisma.ts` into client components.
-- Read the user id from `requireUserId()`. Scope transactions with `workspace: { userId }`.
+- Read the user id from `requireUserId()`. Validate selected workspace access, then scope workspace data to that workspace id.
 - Validate amounts, types, dates, and sort fields before writing. Return `{ error }` and a 4xx status.
 - Use TanStack Query for data that already flows through hooks. Invalidate `['transactions']` or `['dashboard-metrics']` when those caches must refresh.
 - Client pages that use hooks declare `'use client'`. Layouts and route handlers stay server-side.
@@ -545,11 +546,10 @@ Conventions that are inconsistent:
 - Feature files are mostly kebab-case (`use-finance.ts`, `finance-api.ts`). Shared hooks are camelCase (`useDebounce.ts`). React components are PascalCase.
 - Some hooks return data through `apiFetch`; dashboard hooks use raw `fetch`.
 - `src/app/api/auth/signup/route.ts` imports Prisma with a relative path. Other routes use `@/lib/prisma`.
-- Signup’s comment says a default workspace is created. The handler only creates a `User`.
+- Signup creates the user, their `Personal` workspace, `OWNER` access, and a `General` account in one transaction.
 
 Recommended follow-ups, not current rules enforced by tooling:
 
-- Add `.env.example` with the variable names and no secret values.
 - Add a `test` script or remove that step from the CI workflow.
 - Move `github/workflows/ci.yml` to `.github/workflows/ci.yml` if GitHub Actions should run.
 - Fix the `DateRange` mismatch that fails `next build` (see Known Issues).
@@ -620,8 +620,8 @@ Labeled from placeholders, unused schema, and comments in the code. These are no
 - Habit tracking and habit logs (schema and nav only; streak is a constant)
 - Notes (schema, count, and nav only)
 - Settings (nav and page shell only)
-- Workspace selection (schema only; one implicit workspace)
-- Category create/edit API and UI
+- Workspace selection, workspace access, and invitations
+- Workspace-specific category management (shared default categories are read-only)
 - Admin behavior for `User.role`
 - Activity feed (`ActivityItem` type only)
 - Font switching: `globals.css` defines `html[data-font]` for Inter, DM Sans, and Bricolage Grotesque. Nothing sets `data-font`. The active font variable defaults to DM Sans. The comment in that file says the default is Inter.
@@ -629,8 +629,6 @@ Labeled from placeholders, unused schema, and comments in the code. These are no
 - A GitHub Actions workflow that actually sits in `.github/workflows/`
 
 ## Troubleshooting
-
-**Build fails in `CategoryDonutChart.tsx` (`dateFrom` does not exist on `DateRange`).** `DateRange` in `src/resources/types/index.ts` is `{ gte?: string; lt?: string }`. `useCategorySummary` and `GET /api/categories/summary` read `gte` and `lt`. `buildRange` in the donut chart assigns `dateFrom` and `dateTo`. `next build` type-checks this file and fails. Period filters on that chart do not match the API query contract.
 
 **Redirect loop or unexpected login redirect.** Middleware treats any `token` cookie as logged-in for `/login` and `/signup`, and any missing cookie as logged-out for `/` and `/dashboard`. API calls still verify the signature.
 
@@ -644,16 +642,14 @@ Labeled from placeholders, unused schema, and comments in the code. These are no
 
 ## Known Issues / Areas for Improvement
 
-- Production build is currently broken by the `DateRange` field names in `CategoryDonutChart`.
+- The earlier documented `DateRange` mismatch in `CategoryDonutChart` is fixed; the chart now sends `gte` and `lt`.
 - Donut-chart comment in `use-categories.ts` mentions `GET /api/finance/categories/summary`. The implemented route is `GET /api/categories/summary`.
 - CI workflow path is `github/workflows/ci.yml`, so Actions will not see it, and the test step has no script.
 - Root metadata in `src/app/layout.tsx` is still the create-next-app title: “Create Next App”.
-- Signup does not create the workspace the comment describes.
+- Signup creates a `Personal` workspace, an `OWNER` access entry, and a `General` account with the user.
 - Middleware does not verify JWTs.
 - `Role` is unused.
-- Two different default workspace names (`Personal Workspace` vs `Personal`).
 - `public/` still has the unused `file.svg`, `window.svg`, and `vercel.svg` assets from the Next.js starter.
-- No `.env.example`.
 
 ## Contributing
 
@@ -667,4 +663,4 @@ npm run typecheck
 npm run build
 ```
 
-`build` is the check that currently fails on the category donut types. Fix that before treating the branch as mergeable.
+`build` type-checks the application. This cleanup did not run it.

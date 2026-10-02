@@ -21,8 +21,8 @@ function Shell({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4 text-white">
-      <div className="w-full max-w-md space-y-6 rounded-xl border border-gray-800 bg-gray-900 p-8 shadow-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-base-100 px-4 text-base-content">
+      <div className="w-full max-w-md space-y-6 rounded-xl border border-base-300 bg-base-200 p-8 shadow-2xl">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-base-content/50">{subtitle}</p>}
@@ -65,7 +65,7 @@ export function InviteLanding({ token }: { token: string }) {
   if (isLoading) {
     return (
       <Shell title="Loading invitation...">
-        <div className="h-10 animate-pulse rounded-lg bg-gray-800" />
+        <div className="h-10 animate-pulse rounded-lg bg-base-300" />
       </Shell>
     );
   }
@@ -79,7 +79,7 @@ export function InviteLanding({ token }: { token: string }) {
         subtitle={getErrorMessage(error, 'We could not load this invitation.')}
       >
         {final ? (
-          <Link href="/login" className="text-sm text-indigo-400 hover:underline">
+          <Link href="/login" className="text-sm text-primary hover:underline">
             Go to sign in
           </Link>
         ) : (

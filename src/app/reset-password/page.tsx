@@ -8,9 +8,7 @@ import { PrimaryButton } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { notify, getErrorMessage } from '@/lib/toast'
 import { validatePassword } from '@/lib/validations/auth'
-
-const inputCls =
-  'w-full rounded-lg bg-base-100 border border-base-300 px-4 py-2.5 text-base-content focus:border-primary focus:outline-none'
+import { authInputCls } from '@/components/ui/inputs'
 
 export default function ResetPasswordPage() {
   return (
@@ -79,7 +77,7 @@ function ResetPasswordForm() {
       <div className="w-full max-w-md rounded-xl bg-base-100 p-8 border border-base-300 shadow-2xl">
         <h2 className="text-2xl font-bold tracking-tight mb-6">Set a new password</h2>
         {error && (
-          <div className="mb-4 rounded bg-error/10 p-3 text-sm text-error border border-error/20">
+          <div role="alert" className="mb-4 rounded bg-error/10 p-3 text-sm text-error border border-error/20">
             {error}
             {error.includes('invalid or has expired') && (
               <>
@@ -93,24 +91,26 @@ function ResetPasswordForm() {
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-base-content/70 mb-1">New password</label>
+            <label htmlFor="reset-password" className="block text-sm font-medium text-base-content/70 mb-1">New password</label>
             <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
               required
-              className={inputCls}
+              id="reset-password"
+              className={authInputCls}
             />
             <p className="mt-1 text-xs text-base-content/50">At least 8 characters.</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-base-content/70 mb-1">Confirm password</label>
+            <label htmlFor="reset-confirm-password" className="block text-sm font-medium text-base-content/70 mb-1">Confirm password</label>
             <PasswordInput
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               autoComplete="new-password"
               required
-              className={inputCls}
+              id="reset-confirm-password"
+              className={authInputCls}
             />
           </div>
           <PrimaryButton type="submit" loading={loading} className="w-full">

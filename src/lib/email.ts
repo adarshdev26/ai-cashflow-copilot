@@ -6,17 +6,23 @@ type PasswordResetEmail = {
 };
 
 export async function sendPasswordResetEmail(input: PasswordResetEmail): Promise<void> {
-  // TODO: swap for Resend / SES / SMTP later. Keep this signature.
-  console.log(
-    [
-      '',
-      '──────── PASSWORD RESET (dev stub, no email sent) ────────',
-      `To:      ${input.to}`,
-      `Name:    ${input.name ?? '-'}`,
-      `Link:    ${input.resetUrl}`,
-      `Expires: ${input.expiresInMinutes} minutes`,
-      '───────────────────────────────────────────────────────────',
-      '',
-    ].join('\n')
-  );
+  if (process.env.NODE_ENV !== 'production') {
+    // TODO: swap for Resend / SES / SMTP later. Keep this signature.
+    console.log(
+      [
+        '',
+        '──────── PASSWORD RESET (dev stub, no email sent) ────────',
+        `To:      ${input.to}`,
+        `Name:    ${input.name ?? '-'}`,
+        `Link:    ${input.resetUrl}`,
+        `Expires: ${input.expiresInMinutes} minutes`,
+        '────────────────────────────────────────────────────────',
+        '',
+      ].join('\n')
+    );
+    return;
+  }
+
+  console.log(`Password reset requested for ${input.to}`);
+  // TODO: configure a real email provider
 }

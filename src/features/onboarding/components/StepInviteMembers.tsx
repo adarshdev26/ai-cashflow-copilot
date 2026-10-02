@@ -20,7 +20,7 @@ type Props = {
 };
 
 const fieldClass =
-  'w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-primary focus:outline-none disabled:opacity-60';
+  'w-full rounded-lg bg-base-100 border border-base-300 px-4 py-2.5 text-base-content focus:border-primary focus:outline-none disabled:opacity-60';
 
 export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
   const { mutate: createInvite, isPending } = useCreateInvitation();
@@ -71,7 +71,7 @@ export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
         </div>
 
         {error && (
-          <div className="rounded border border-error/20 bg-error/10 p-3 text-sm text-red-400">
+          <div className="rounded border border-error/20 bg-error/10 p-3 text-sm text-error">
             {error}
           </div>
         )}
@@ -126,7 +126,7 @@ export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
             type="button"
             onClick={onBack}
             disabled={isPending}
-            className="text-sm text-base-content/50 hover:text-white disabled:opacity-50"
+            className="text-sm text-base-content/50 hover:text-base-content disabled:opacity-50"
           >
             Back
           </button>
@@ -140,7 +140,7 @@ export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
               type="button"
               onClick={onNext}
               disabled={isPending}
-              className="text-sm text-base-content/50 hover:text-white disabled:opacity-50"
+              className="text-sm text-base-content/50 hover:text-base-content disabled:opacity-50"
             >
               I&apos;ll do this later
             </button>

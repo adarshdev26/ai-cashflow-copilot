@@ -9,9 +9,7 @@ import {
   useDeleteTransaction,
   FinanceHeader,
   TransactionTable,
-  TransactionModal,
   FinanceStats,
-  type TransactionInitialValues,
 } from '@/features/finance';
 import {
   templateToInitialValues,
@@ -19,9 +17,6 @@ import {
 } from '@/features/transaction-templates';
 import { useListQueryState } from '@/hooks/list/useListQueryState';
 import { useCategories } from '@/resources/hooks/use-categories';
-import { Select } from '@/components/ui/Select';
-import { Input } from '@/components/ui/Input';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   CreateTransactionInput,
   Transaction,
@@ -34,13 +29,8 @@ import { CategoryStatsTooltip } from "@/resources/components/CategoryStats";
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
 import { notify, getErrorMessage } from '@/lib/toast';
 import { useAccounts } from '@/features/accounts';
-import { ExportTransactionsModal } from "@/features/finance";
-import { ImportTransactionsModal } from "@/features/finance";
-
-type FormState =
-  | { mode: 'create'; initialValues?: TransactionInitialValues; templateId?: string }
-  | { mode: 'edit'; transaction: Transaction }
-  | null;
+import { TransactionFilters as TransactionFiltersBar } from '@/features/finance/components/TransactionFilters';
+import { TransactionDialogs, type TransactionFormState } from '@/features/finance/components/TransactionDialogs';
 
 const defaultTransactionFilters: TransactionFilters = {
   search: undefined,
@@ -98,7 +88,7 @@ export default function TransactionsPage() {
   const { mutate: updateTx, isPending: isUpdating } = useUpdateTransaction(workspaceId);
   const { mutate: deleteTx, isPending: isDeleting } = useDeleteTransaction(workspaceId);
 
-  const [formState, setFormState] = useState<FormState>(null);
+  const [formState, setFormState] = useState<TransactionFormState>(null);
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -165,8 +155,6 @@ export default function TransactionsPage() {
   const openEditModal = useCallback((tx: Transaction) => setFormState({ mode: 'edit', transaction: tx }), []);
   const openDeleteTarget = useCallback((tx: Transaction) => setDeleteTarget(tx), []);
   const closeDeleteTarget = useCallback(() => setDeleteTarget(null), []);
-
-  const handleSubmit = formState?.mode === 'create' ? handleCreateTransaction : handleUpdateTransaction;
 
   const pagination: PaginationState = useMemo(
     () => ({ pageIndex: page - 1, pageSize }),
@@ -239,34 +227,19 @@ export default function TransactionsPage() {
 
       <CategoryStatsTooltip />
 
-      <div className="grid gap-4 rounded-xl border border-base-300 bg-base-100 p-4 md:grid-cols-5">
-        <Select aria-label="Filter by transaction type" value={filters.type ?? ''} onChange={(event) => handleTypeChange(event.target.value as TransactionType | '')}>
-          <option value="">All types</option>
-          <option value="CREDIT">Credit</option>
-          <option value="DEBIT">Debit</option>
-        </Select>
-        <Select aria-label="Filter by account" value={filters.accountId ?? ''} onChange={(event) => handleAccountChange(event.target.value)} disabled={accountsLoading}>
-          <option value="">All accounts</option>
-          {accounts?.map((account) => (
-            <option key={account.id} value={account.id}>
-              {account.name}{account.isActive ? '' : ' (inactive)'}
-            </option>
-          ))}
-        </Select>
-        <Select aria-label="Filter by category" value={filters.categoryId ?? ''} onChange={(event) => handleCategoryChange(event.target.value)} disabled={categoriesLoading}>
-          <option value="">All categories</option>
-          {categories?.map((category) => (
-            <option key={category.id} value={category.id}>{category.name}</option>
-          ))}
-        </Select>
-        <Input aria-label="Filter transactions from date" type="date" value={filters.dateFrom ?? ''} onChange={(event) => handleDateFromChange(event.target.value)} />
-        <Input aria-label="Filter transactions to date" type="date" min={filters.dateFrom} value={filters.dateTo ?? ''} onChange={(event) => handleDateToChange(event.target.value)} />
-        {isInvalidDateRange && (
-          <p className="text-xs text-error md:col-span-5">
-            &quot;From&quot; date must be on or before the &quot;To&quot; date.
-          </p>
-        )}
-      </div>
+      <TransactionFiltersBar
+        filters={filters}
+        categories={categories}
+        accounts={accounts}
+        categoriesLoading={categoriesLoading}
+        accountsLoading={accountsLoading}
+        isInvalidDateRange={isInvalidDateRange}
+        onTypeChange={handleTypeChange}
+        onAccountChange={handleAccountChange}
+        onCategoryChange={handleCategoryChange}
+        onDateFromChange={handleDateFromChange}
+        onDateToChange={handleDateToChange}
+      />
 
       <TransactionTable
         transactions={transactionResponse?.data}
@@ -284,49 +257,28 @@ export default function TransactionsPage() {
         isFetching={isFetching}
       />
 
-      {formState && (formState.mode === 'create' ? canCreate : canUpdate) && (
-        <TransactionModal
-          key={formState.mode === 'edit' ? formState.transaction.id : `new-${formState.templateId ?? ''}`}
-          open={true}
-          onClose={closeModal}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          transaction={formState.mode === 'edit' ? formState.transaction : null}
-          initialValues={formState.mode === 'create' ? formState.initialValues : undefined}
-        />
-      )}
-
-      {deleteTarget && canDelete && (
-        <ConfirmDialog
-          isOpen={true}
-          title="Delete transaction"
-          description={`Are you sure you want to delete this transaction for ${deleteTarget.amount}? This action cannot be undone.`}
-          confirmText="Delete"
-          variant="danger"
-          onConfirm={handleDeleteTransaction}
-          onClose={closeDeleteTarget}
-          loading={isDeleting}
-        />
-      )}
-
-      {exportOpen && workspaceId && (
-        <ExportTransactionsModal
-          open={true}
-          onClose={() => setExportOpen(false)}
-          workspaceId={workspaceId}
-          initialFilters={{ ...filters, accountId: activeAccountId ?? filters.accountId }}
-        />
-      )}
-
-      {importOpen && workspaceId && canCreate && (
-        <ImportTransactionsModal
-          open={true}
-          onClose={() => setImportOpen(false)}
-          workspaceId={workspaceId}
-          activeAccountId={activeAccountId ?? null}
-          activeAccountName={accounts?.find((a) => a.id === activeAccountId)?.name}
-        />
-      )}
+      <TransactionDialogs
+        formState={formState}
+        deleteTarget={deleteTarget}
+        exportOpen={exportOpen}
+        importOpen={importOpen}
+        workspaceId={workspaceId}
+        activeAccountId={activeAccountId ?? null}
+        activeAccountName={accounts?.find((a) => a.id === activeAccountId)?.name}
+        filters={filters}
+        canCreate={canCreate}
+        canUpdate={canUpdate}
+        canDelete={canDelete}
+        isSubmitting={isSubmitting}
+        isDeleting={isDeleting}
+        onCloseForm={closeModal}
+        onCreate={handleCreateTransaction}
+        onUpdate={handleUpdateTransaction}
+        onDelete={handleDeleteTransaction}
+        onCloseDelete={closeDeleteTarget}
+        onCloseExport={() => setExportOpen(false)}
+        onCloseImport={() => setImportOpen(false)}
+      />
     </div>
   );
 }

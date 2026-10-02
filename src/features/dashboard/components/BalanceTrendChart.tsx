@@ -40,20 +40,21 @@ export function BalanceTrendChart() {
           <AreaChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="balanceFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-base-300)" />
             <XAxis
               dataKey="date"
               tickFormatter={(value) => formatDay(String(value), showYear)}
               tickLine={false}
               axisLine={false}
+              tick={{ fill: 'var(--color-base-content)' }}
               fontSize={12}
               minTickGap={40}
             />
-            <YAxis tickFormatter={formatCompact} tickLine={false} axisLine={false} fontSize={12} width={56} />
+            <YAxis tickFormatter={formatCompact} tickLine={false} axisLine={false} tick={{ fill: 'var(--color-base-content)' }} fontSize={12} width={56} />
             <Tooltip
               labelFormatter={(label) => formatDay(String(label), true)}
               formatter={(value) => [formatCurrency(Number(value)), 'Balance']}
@@ -61,7 +62,7 @@ export function BalanceTrendChart() {
             <Area
               type="monotone"
               dataKey="balance"
-              stroke="#4f46e5"
+              stroke="var(--color-primary)"
               strokeWidth={2}
               fill="url(#balanceFill)"
               isAnimationActive={false}
