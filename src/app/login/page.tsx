@@ -8,9 +8,7 @@ import { PasswordInput } from '@/components/ui/PasswordInput'
 import { notify, getErrorMessage } from '@/lib/toast'
 import { getSafeNextPath } from '@/lib/safe-redirect'
 import { AuthShell } from '@/components/auth/AuthShell'
-
-const inputCls =
-  'w-full rounded-lg bg-base-100 border border-base-300 px-4 py-2.5 text-base-content focus:border-primary focus:outline-none';
+import { authInputCls } from '@/components/ui/inputs'
 
 export default function LoginPage() {
   return (
@@ -66,21 +64,27 @@ function LoginForm() {
       <div className="w-full max-w-md rounded-xl bg-base-100 p-8 border border-base-300 shadow-2xl">
         <h2 className="text-2xl font-bold tracking-tight mb-6">Welcome Back</h2>
         {error && (
-          <div className="mb-4 rounded bg-error/10 p-3 text-sm text-error border border-error/20">{error}</div>
+          <div role="alert" className="mb-4 rounded bg-error/10 p-3 text-sm text-error border border-error/20">{error}</div>
         )}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-base-content/70 mb-1">Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputCls} />
+            <label htmlFor="login-email" className="block text-sm font-medium text-base-content/70 mb-1">Email</label>
+            <input id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={authInputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-base-content/70 mb-1">Password</label>
+            <div className="mb-1 flex items-center justify-between">
+              <label htmlFor="login-password" className="block text-sm font-medium text-base-content/70">Password</label>
+              <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
-              className={inputCls}
+              id="login-password"
+              className={authInputCls}
             />
           </div>
           <PrimaryButton type="submit" loading={loading} className="w-full">Log In</PrimaryButton>

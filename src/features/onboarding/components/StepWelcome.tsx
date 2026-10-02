@@ -35,7 +35,7 @@ export function StepWelcome({ onNext }: { onNext: () => void }) {
         type="button"
         onClick={handleSkip}
         disabled={complete.isPending}
-        className="mt-4 text-sm text-base-content/50 hover:text-white disabled:opacity-50"
+        className="mt-4 text-sm text-base-content/50 hover:text-base-content disabled:opacity-50"
       >
         {complete.isPending ? 'Skipping...' : 'Skip setup'}
       </button>

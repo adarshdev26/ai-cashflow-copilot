@@ -6,6 +6,10 @@ export function hashPassword(password: string) {
   return bcrypt.hash(password, 10)
 }
 
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
 /** Same writes as signup: user + "Personal" workspace + OWNER access + default account. Must run inside a transaction. */
 export async function createUserWithPersonalWorkspaceTx(
   tx: TxClient,

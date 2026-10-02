@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useWorkspaces } from '@/features/workspaces/hooks/use-workspaces';
 import { recurringApi } from '../api/recurring-api';
 import type { RecurringInput, RecurringPatch } from '../types';
+import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
 
 export function useRecurring() {
   // Get the data array and rename it to workspaces to avoid conflicts
@@ -24,6 +25,7 @@ function useInvalidate() {
     qc.invalidateQueries({ queryKey: ['dashboard-metrics'] });
     qc.invalidateQueries({ queryKey: ['accounts'] });
     qc.invalidateQueries({ queryKey: ['budgets'] });
+    invalidateReports(qc);
   };
 }
 

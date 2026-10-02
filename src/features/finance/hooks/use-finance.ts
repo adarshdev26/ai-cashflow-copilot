@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { getTransactions, createTransaction, updateTransaction, deleteTransaction } from '../api/finance-api';
 import { CreateTransactionInput, TransactionListParams, UpdateTransactionInput } from '../types';
+import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
 
 export const financeKeys = {
   list: (workspaceId: string, params: TransactionListParams) =>
@@ -32,6 +33,7 @@ export function useCreateTransaction(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+      invalidateReports(queryClient);
     },
   });
 }
@@ -46,6 +48,7 @@ export function useUpdateTransaction(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+      invalidateReports(queryClient);
     },
   });
 }
@@ -59,6 +62,7 @@ export function useDeleteTransaction(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
       queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+      invalidateReports(queryClient);
     },
   });
 }

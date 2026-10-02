@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "node api.js && next dev",
+    "build": "node api.js && next build",
+    "start": "node api.js && next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "cron:test": "node --env-file=.env -e \"setInterval(async()=>{try{const r=await fetch('http://localhost:3000/api/cron/recurring',{headers:{authorization:'Bearer '+process.env.CRON_SECRET}});console.log(new Date().toLocaleTimeString(),await r.text())}catch(e){console.log(e.message)}},5000)\""
@@ -16,6 +16,7 @@
     "@prisma/client": "^7.10.0",
     "@prisma/client-runtime-utils": "^7.10.0",
     "@tanstack/react-query": "^5.102.8",
+    "@tanstack/react-query-devtools": "^5.104.0",
     "@tanstack/react-table": "^8.21.3",
     "bcryptjs": "^3.0.3",
     "driver.js": "^1.8.0",

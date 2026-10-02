@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { processSchedule } from "@/lib/create-recurring-occurrence"
+import { processSchedule } from '@/lib/create-recurring-occurrence';
+import { cleanupResetTokens } from '@/lib/cleanup';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -18,7 +19,9 @@ async function handle(request: Request) {
     take: 200,
   });
 
-  let generated = 0, skipped = 0, failed = 0;
+  let generated = 0,
+    skipped = 0,
+    failed = 0;
   for (const s of due) {
     try {
       const r = await processSchedule(s, now);
@@ -32,8 +35,23 @@ async function handle(request: Request) {
         .catch((err) => console.error('recurring: failed to persist lastError', s.id, err));
     }
   }
-  return NextResponse.json({ processed: due.length, generated, skipped, failed });
+
+  // Housekeeping runs last and never fails the recurring run.
+  let resetTokensDeleted = 0;
+  try {
+    resetTokensDeleted = await cleanupResetTokens();
+  } catch (e) {
+    console.error('cron cleanup failed', e);
+  }
+
+  return NextResponse.json({
+    processed: due.length,
+    generated,
+    skipped,
+    failed,
+    resetTokensDeleted,
+  });
 }
 
-export const GET = handle;  // Vercel Cron sends GET
+export const GET = handle; // Vercel Cron sends GET
 export const POST = handle; // for manual/other schedulers
