@@ -53,8 +53,6 @@ model User {
   ownedWorkspaces       Workspace[]           @relation("WorkspaceOwner") // workspaces I own
   workspaceAccess       WorkspaceAccess[] // every workspace I can access (owned + shared)
   sentInvitations       WorkspaceInvitation[] @relation("InvitationInviter") // invites I created
-  Habit                 Habit[]
-  Note                  Note[]
   updatedAt             DateTime              @updatedAt
   role                  Role                  @default(USER)
   onboardingCompletedAt DateTime? // null = still needs onboarding
@@ -87,8 +85,6 @@ model Workspace {
   categories            Category[]
   transactions          Transaction[]
   accounts              FinancialAccount[]
-  habits                Habit[]
-  notes                 Note[]
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   budgets               Budget[]
@@ -210,46 +206,6 @@ model Transaction {
 enum TransactionType {
   CREDIT
   DEBIT
-}
-
-model Habit {
-  id          String     @id @default(uuid())
-  title       String
-  userId      String // creator
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspaceId String
-  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  logs        HabitLog[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  @@index([workspaceId])
-  @@index([userId])
-}
-
-model HabitLog {
-  id        String   @id @default(uuid())
-  completed Boolean  @default(false)
-  date      DateTime @default(now())
-  habitId   String
-  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
-
-  @@index([habitId, date])
-}
-
-model Note {
-  id          String    @id @default(uuid())
-  title       String
-  content     String?
-  userId      String // creator
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([workspaceId, createdAt])
-  @@index([userId])
 }
 
 enum BudgetPeriod {

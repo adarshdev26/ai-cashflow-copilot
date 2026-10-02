@@ -25,8 +25,6 @@ const navigation = [
   { name: 'Budgets', href: '/dashboard/budgets', icon: WalletCards },
   { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
   { name: 'Categories', href: '/dashboard/categories', icon: Tags },
-  { name: 'Habits', href: '/dashboard/habits', icon: CheckSquare },
-  { name: 'Notes', href: '/dashboard/notes', icon: FileText },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
