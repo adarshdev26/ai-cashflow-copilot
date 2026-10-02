@@ -74,7 +74,7 @@ export default function RecurringPage() {
           <h1 className="text-2xl font-bold tracking-tight text-base-content">Recurring Transactions</h1>
           <p className="text-sm text-base-content/60">Manage your scheduled income and expenses.</p>
         </div>
-        {canManage && <Button onClick={openCreate}>+ Add Recurring</Button>}
+        {canManage && <Button data-tour="recurring-add-btn" onClick={openCreate}>+ Add Recurring</Button>}
       </div>
 
       {items.length > 0 && (
@@ -141,15 +141,17 @@ export default function RecurringPage() {
           )}
         </div>
       ) : (
-        <RecurringTable
-          items={items}
-          canManage={canManage}
-          onEdit={openEdit}
-          onToggle={toggle}
-          onDelete={setRemoving}
-          isLoading={isLoading}
-          isFetching={isFetching}
-        />
+        <div data-tour="recurring-list">
+          <RecurringTable
+            items={items}
+            canManage={canManage}
+            onEdit={openEdit}
+            onToggle={toggle}
+            onDelete={setRemoving}
+            isLoading={isLoading}
+            isFetching={isFetching}
+          />
+        </div>
       )}
 
       {formOpen && (

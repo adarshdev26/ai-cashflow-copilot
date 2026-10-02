@@ -25,6 +25,8 @@ export function CashflowChart() {
 
   return (
     <ChartCard
+      tourId="overview-cashflow"
+      exportTourId="overview-cashflow-png"
       title="Income vs Expense"
       description="Monthly totals"
       action={<RangeSelect label="Cashflow range" value={months} options={OPTIONS} onChange={setMonths} />}

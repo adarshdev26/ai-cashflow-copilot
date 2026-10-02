@@ -152,7 +152,7 @@ function WorkspaceSelector() {
       ) : (
         <h2 className="text-sm font-semibold text-base-content/80 tracking-wide">{active.name}</h2>
       )}
-      <span className="px-2 py-0.5 text-xs font-medium bg-base-200 text-base-content/70 rounded-full border border-base-300">
+        <span data-tour="workspace-role" className="px-2 py-0.5 text-xs font-medium bg-base-200 text-base-content/70 rounded-full border border-base-300">
         {active.role}
       </span>
 
@@ -320,7 +320,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="p-4 border-t border-base-200">
-          <div className={`mb-3 flex items-center gap-3 px-3 py-2 ${collapsed ? 'md:justify-center md:px-0' : ''}`}>
+          <div data-tour={isUserLoading ? undefined : 'signed-in-user'} className={`mb-3 flex items-center gap-3 px-3 py-2 ${collapsed ? 'md:justify-center md:px-0' : ''}`}>
             {isUserLoading ? (
               <>
                 <div className="h-9 w-9 shrink-0 rounded-full bg-base-200 animate-pulse" />
@@ -343,6 +343,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={openSignOutDialog}
+            data-tour="sign-out"
             title={collapsed ? 'Sign Out' : undefined}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-error hover:bg-error/10 transition-colors ${collapsed ? 'md:justify-center' : ''}`}
           >
@@ -377,7 +378,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2">
             <ThemeMenu />
-            <button type="button" onClick={startTour} className="btn btn-outline btn-sm gap-1.5">
+            <button type="button" data-tour="take-tour" onClick={startTour} className="btn btn-outline btn-sm gap-1.5">
               <Compass className="h-4 w-4" />
               <span className="hidden sm:inline">Take a tour</span>
             </button>

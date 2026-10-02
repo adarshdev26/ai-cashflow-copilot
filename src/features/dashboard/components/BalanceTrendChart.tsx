@@ -27,6 +27,8 @@ export function BalanceTrendChart() {
 
   return (
     <ChartCard
+      tourId="overview-balance-trend"
+      exportTourId="overview-balance-png"
       title="Balance trend"
       description={days === 'all' ? 'Running balance (up to the last 2 years)' : 'Running balance'}
       action={<RangeSelect label="Balance trend range" value={days} options={OPTIONS} onChange={setDays} />}

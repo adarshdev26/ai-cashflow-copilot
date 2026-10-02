@@ -157,13 +157,14 @@ function ReportsPageContent() {
         </div>
 
         <PrimaryButton
+          data-tour={isLoading || !data || empty ? undefined : 'reports-export'}
           onClick={handleExport} leftIcon={<Download className="h-4 w-4" />} loading={exporting} disabled={isLoading || !data || empty}
         >
           Export CSV
         </PrimaryButton>
       </div>
 
-      <div className={card}>
+      <div className={card} data-tour="reports-filters">
         <ReportFilters value={filters} onChange={handleChange} options={data?.options} />
       </div>
 
@@ -178,10 +179,10 @@ function ReportsPageContent() {
               </button>
             </div>
             <div className="grid gap-6 lg:grid-cols-5">
-              <div className="lg:col-span-3">
+              <div className="lg:col-span-3" data-tour="reports-income-expense">
                 <ChartCard title="Income vs Expense" isError onRetry={() => refetch()} ariaLabel={incomeExpenseLabel} />
               </div>
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2" data-tour="reports-category-chart">
                 <ChartCard title="Spending by Category" isError onRetry={() => refetch()} ariaLabel={categoryLabel} />
               </div>
             </div>
@@ -190,10 +191,10 @@ function ReportsPageContent() {
           <>
             <SummaryCardsSkeleton />
             <div className="grid gap-6 lg:grid-cols-5">
-              <div className="lg:col-span-3">
+              <div className="lg:col-span-3" data-tour="reports-income-expense">
                 <ChartCard title="Income vs Expense" isLoading ariaLabel={incomeExpenseLabel} />
               </div>
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2" data-tour="reports-category-chart">
                 <ChartCard title="Spending by Category" isLoading ariaLabel={categoryLabel} />
               </div>
             </div>
@@ -219,11 +220,13 @@ function ReportsPageContent() {
               </div>
             )}
 
-            <SummaryCards
-              summary={data.summary}
-              mixedCurrency={data.mixedCurrency}
-              totalsByCurrency={data.totalsByCurrency}
-            />
+            <div data-tour="reports-summary">
+              <SummaryCards
+                summary={data.summary}
+                mixedCurrency={data.mixedCurrency}
+                totalsByCurrency={data.totalsByCurrency}
+              />
+            </div>
 
             {empty ? (
               <div className={`${card} py-12 text-center`}>
@@ -235,7 +238,7 @@ function ReportsPageContent() {
             ) : (
               <>
                 <div className="grid gap-6 lg:grid-cols-5">
-                  <div className="lg:col-span-3">
+                  <div className="lg:col-span-3" data-tour="reports-income-expense">
                     <ChartCard
                       title="Income vs Expense"
                       ariaLabel={incomeExpenseLabel}
@@ -244,6 +247,7 @@ function ReportsPageContent() {
                       isEmpty={data.series.every((point) => point.income === 0 && point.expense === 0)}
                       emptyMessage="No income or expenses in this period."
                       filename={`${slugify(active.slug)}-${slugify('income-vs-expense')}-${rangeFilename}`}
+                      exportTourId="reports-income-png"
                     >
                       <IncomeExpenseChart
                         data={data.series}
@@ -252,7 +256,7 @@ function ReportsPageContent() {
                       />
                     </ChartCard>
                   </div>
-                  <div className="lg:col-span-2">
+                  <div className="lg:col-span-2" data-tour="reports-category-chart">
                     <ChartCard
                       title="Spending by Category"
                       ariaLabel={categoryLabel}
@@ -261,6 +265,7 @@ function ReportsPageContent() {
                       isEmpty={data.categories.length === 0}
                       emptyMessage="No spending in this period."
                       filename={`${slugify(active.slug)}-${slugify('spending-by-category')}-${rangeFilename}`}
+                      exportTourId="reports-category-png"
                     >
                       <CategorySpending rows={data.categories} ariaLabel={categoryLabel} />
                     </ChartCard>
@@ -280,9 +285,11 @@ function ReportsPageContent() {
                   </Section>
                 </div>
 
-                <Section title="Budget Performance">
-                  <BudgetPerformance budget={data.budget} />
-                </Section>
+                <div data-tour="reports-budget-performance">
+                  <Section title="Budget Performance">
+                    <BudgetPerformance budget={data.budget} />
+                  </Section>
+                </div>
               </>
             )}
           </div>

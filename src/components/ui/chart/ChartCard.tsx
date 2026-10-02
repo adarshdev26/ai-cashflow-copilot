@@ -16,6 +16,8 @@ export interface ChartCardProps {
   children?: ReactNode;
   downloadable?: boolean;
   filename?: string;
+  tourId?: string;
+  exportTourId?: string;
   onRetry?: () => void;
   ariaLabel?: string;
 }
@@ -31,6 +33,8 @@ export function ChartCard({
   children,
   downloadable = true,
   filename,
+  tourId,
+  exportTourId,
   onRetry,
   ariaLabel,
 }: ChartCardProps) {
@@ -55,6 +59,7 @@ export function ChartCard({
   return (
     <div
       ref={cardRef}
+      data-tour={tourId}
       role="group"
       aria-label={ariaLabel ?? title}
       className="rounded-xl border border-base-300 bg-base-100 p-6 shadow-sm"
@@ -69,6 +74,7 @@ export function ChartCard({
           {canExport && (
             <button
               type="button"
+              data-tour={exportTourId}
               onClick={handleExport}
               disabled={exporting}
               aria-label={`Export ${title} as PNG`}

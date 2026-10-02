@@ -102,14 +102,14 @@ export default function AccountsPage() {
           <p className="text-sm text-base-content/60">Bank accounts, cards, cash and wallets for this workspace.</p>
         </div>
         {canCreate && (
-          <PrimaryButton onClick={() => setFormState({ mode: 'create' })} leftIcon={<Plus className="h-4 w-4" />}>
+          <PrimaryButton data-tour="accounts-add-btn" onClick={() => setFormState({ mode: 'create' })} leftIcon={<Plus className="h-4 w-4" />}>
             Add Account
           </PrimaryButton>
         )}
       </div>
 
       {isLoading ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-tour="accounts-list">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-4 rounded-xl border border-base-300 bg-base-100 p-5">
               <div className="flex items-center gap-3">

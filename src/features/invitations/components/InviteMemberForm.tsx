@@ -39,7 +39,7 @@ export function InviteMemberForm({ workspaceId, onCreated }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-4 max-w-2xl items-end">
+    <form onSubmit={handleSubmit} className="flex gap-4 max-w-2xl items-end" data-tour="settings-invite-form">
       <div className="flex-1 space-y-1">
         <label htmlFor={emailId} className="text-xs font-medium text-base-content/80">
           Email Address

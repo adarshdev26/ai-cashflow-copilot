@@ -56,7 +56,7 @@ export default function TemplatesPage() {
             Reusable transactions you can apply in a couple of clicks.
           </p>
         </div>
-        {canManage && <Button onClick={openCreate}>+ Add Template</Button>}
+        {canManage && <Button data-tour="templates-add-btn" onClick={openCreate}>+ Add Template</Button>}
       </div>
 
       {isError ? (
@@ -77,14 +77,16 @@ export default function TemplatesPage() {
           )}
         </div>
       ) : (
-        <TransactionTemplateTable
-          items={items}
-          canManage={canManage}
-          onEdit={openEdit}
-          onDelete={setRemoving}
-          isLoading={isLoading}
-          isFetching={isFetching}
-        />
+        <div data-tour="templates-list">
+          <TransactionTemplateTable
+            items={items}
+            canManage={canManage}
+            onEdit={openEdit}
+            onDelete={setRemoving}
+            isLoading={isLoading}
+            isFetching={isFetching}
+          />
+        </div>
       )}
 
       {formOpen && (

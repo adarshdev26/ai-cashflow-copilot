@@ -48,13 +48,13 @@ export default function CategoriesPage() {
           <p className="text-sm text-base-content/60">Default categories are shared. Custom ones belong to this workspace only.</p>
         </div>
         {canCreate && (
-          <PrimaryButton onClick={() => setForm({ category: null })} leftIcon={<Plus className="h-4 w-4" />}>
+          <PrimaryButton data-tour="categories-add-btn" onClick={() => setForm({ category: null })} leftIcon={<Plus className="h-4 w-4" />}>
             Add category
           </PrimaryButton>
         )}
       </div>
 
-      <section className="rounded-xl border border-base-300 bg-base-100">
+      <section className="rounded-xl border border-base-300 bg-base-100" data-tour="categories-list">
         <h2 className="border-b border-base-200 px-4 py-3 text-sm font-semibold text-base-content">
           Custom categories
         </h2>
@@ -63,7 +63,7 @@ export default function CategoriesPage() {
         ) : custom.length === 0 ? (
           <p className="px-4 py-6 text-sm text-base-content/60">No custom categories yet.</p>
         ) : (
-          <ul className="divide-y divide-base-200">
+          <ul className="divide-y divide-base-200" data-tour="categories-actions">
             {custom.map((c) => (
               <li key={c.id} className="flex items-center justify-between px-4 py-3">
                 <span className={`flex items-center gap-3 text-sm ${c.isActive ? 'text-base-content' : 'text-base-content/50'}`}>
@@ -111,7 +111,7 @@ export default function CategoriesPage() {
         )}
       </section>
 
-      <section className="rounded-xl border border-base-300 bg-base-100">
+      <section className="rounded-xl border border-base-300 bg-base-100" data-tour="categories-defaults">
         <h2 className="border-b border-base-200 px-4 py-3 text-sm font-semibold text-base-content">
           Default categories <span className="ml-2 text-xs font-normal text-base-content/50">read-only</span>
         </h2>
