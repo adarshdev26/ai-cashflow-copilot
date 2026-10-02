@@ -19,10 +19,10 @@ function MonthBreakdown({ income, expense }: Pick<PeriodTotals, 'income' | 'expe
   return (
     <div className="flex items-center justify-between">
       <span>
-        In <span className="font-medium text-emerald-600">{currency.format(income)}</span>
+        In <span className="font-medium text-success">{currency.format(income)}</span>
       </span>
       <span>
-        Out <span className="font-medium text-red-600">{currency.format(expense)}</span>
+        Out <span className="font-medium text-error">{currency.format(expense)}</span>
       </span>
     </div>
   );
@@ -62,7 +62,7 @@ export function FinanceStats({
   }
 
   if (isError || !data) {
-    return <div className="text-sm text-red-600">Couldn&apos;t load the summary.</div>;
+    return <div className="text-sm text-error">Couldn&apos;t load the summary.</div>;
   }
 
   const { allTime, thisMonth, lastMonth } = data;

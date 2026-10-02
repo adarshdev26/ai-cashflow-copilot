@@ -63,7 +63,7 @@ export function CategoryFormModal({ open, onClose, workspaceId, category, defaul
     >
       <div className="space-y-4">
         <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700" htmlFor="category-name">Name</label>
+          <label className="text-sm font-medium text-base-content/80" htmlFor="category-name">Name</label>
           <Input
             id="category-name"
             value={name}
@@ -76,7 +76,7 @@ export function CategoryFormModal({ open, onClose, workspaceId, category, defaul
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700" htmlFor="category-kind">Used for</label>
+          <label className="text-sm font-medium text-base-content/80" htmlFor="category-kind">Used for</label>
           <Select id="category-kind" value={kind} onChange={(e) => setKind(e.target.value as CategoryKind)}>
             <option value="BOTH">Income and expenses</option>
             <option value="DEBIT">Expenses only</option>
@@ -85,7 +85,7 @@ export function CategoryFormModal({ open, onClose, workspaceId, category, defaul
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium text-slate-700">Color</p>
+          <p className="text-sm font-medium text-base-content/80">Color</p>
           <div className="flex flex-wrap gap-2">
             {CATEGORY_COLORS.map((c) => (
               <button
@@ -100,7 +100,7 @@ export function CategoryFormModal({ open, onClose, workspaceId, category, defaul
           </div>
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
       </div>
     </Modal>
   );

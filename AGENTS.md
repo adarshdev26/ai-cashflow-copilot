@@ -8,7 +8,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# CashFlow Copilot agent instructions
+# Cashflow Copilot agent instructions
 
 Follow the code that is already in the repo. Do not add a service layer, repository layer, Zod, React Hook Form, or a component library. Do not treat habits, notes, settings, admin role, or workspace switching as implemented features.
 

@@ -18,7 +18,7 @@ function Dot({ color }: { color: string | null }) {
 
 function TypeBadge({ type }: { type: CategoryItem['type'] }) {
   return (
-    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
+    <span className="rounded-full bg-base-200 px-2 py-0.5 text-xs text-base-content/60">
       {TYPE_LABEL[type] ?? 'Both'}
     </span>
   );
@@ -44,8 +44,8 @@ export default function CategoriesPage() {
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Categories</h1>
-          <p className="text-sm text-slate-500">Default categories are shared. Custom ones belong to this workspace only.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-base-content">Categories</h1>
+          <p className="text-sm text-base-content/60">Default categories are shared. Custom ones belong to this workspace only.</p>
         </div>
         {canCreate && (
           <PrimaryButton onClick={() => setForm({ category: null })} leftIcon={<Plus className="h-4 w-4" />}>
@@ -54,19 +54,19 @@ export default function CategoriesPage() {
         )}
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white">
-        <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-900">
+      <section className="rounded-xl border border-base-300 bg-base-100">
+        <h2 className="border-b border-base-200 px-4 py-3 text-sm font-semibold text-base-content">
           Custom categories
         </h2>
         {isLoading ? (
-          <div className="h-24 animate-pulse bg-slate-50" />
+          <div className="h-24 animate-pulse bg-base-200" />
         ) : custom.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-slate-500">No custom categories yet.</p>
+          <p className="px-4 py-6 text-sm text-base-content/60">No custom categories yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-base-200">
             {custom.map((c) => (
               <li key={c.id} className="flex items-center justify-between px-4 py-3">
-                <span className={`flex items-center gap-3 text-sm ${c.isActive ? 'text-slate-800' : 'text-slate-400'}`}>
+                <span className={`flex items-center gap-3 text-sm ${c.isActive ? 'text-base-content' : 'text-base-content/50'}`}>
                   <Dot color={c.color} />
                   {c.name}
                   <TypeBadge type={c.type} />
@@ -87,20 +87,20 @@ export default function CategoriesPage() {
                           }
                         )
                       }
-                      className="rounded p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                      className="rounded p-2 text-base-content/60 hover:bg-base-200 hover:text-base-content/80"
                     >
                       {c.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   )}
                   {canUpdate && (
                     <button type="button" aria-label={`Edit ${c.name}`} onClick={() => setForm({ category: c })}
-                      className="rounded p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-700">
+                      className="rounded p-2 text-base-content/60 hover:bg-base-200 hover:text-base-content/80">
                       <Pencil className="h-4 w-4" />
                     </button>
                   )}
                   {canDelete && (
                     <button type="button" aria-label={`Delete ${c.name}`} onClick={() => setDeleteTarget(c)}
-                      className="rounded p-2 text-slate-500 hover:bg-red-50 hover:text-red-600">
+                      className="rounded p-2 text-base-content/60 hover:bg-error/10 hover:text-error">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   )}
@@ -111,13 +111,13 @@ export default function CategoriesPage() {
         )}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white">
-        <h2 className="border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-900">
-          Default categories <span className="ml-2 text-xs font-normal text-slate-400">read-only</span>
+      <section className="rounded-xl border border-base-300 bg-base-100">
+        <h2 className="border-b border-base-200 px-4 py-3 text-sm font-semibold text-base-content">
+          Default categories <span className="ml-2 text-xs font-normal text-base-content/50">read-only</span>
         </h2>
         <ul className="grid gap-x-6 px-4 py-3 sm:grid-cols-2">
           {global.map((c) => (
-            <li key={c.id} className="flex items-center gap-3 py-1.5 text-sm text-slate-700">
+            <li key={c.id} className="flex items-center gap-3 py-1.5 text-sm text-base-content/80">
               <Dot color={c.color} />
               {c.name}
               <TypeBadge type={c.type} />

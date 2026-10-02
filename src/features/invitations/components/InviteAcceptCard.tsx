@@ -34,11 +34,11 @@ export function InviteAcceptCard({ token, email }: Props) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-400">
+      <p className="text-sm text-base-content/50">
         You are signed in as <span className="text-white">{email}</span>.
       </p>
       {error && (
-        <div className="rounded bg-red-500/10 p-3 text-sm text-red-400 border border-red-500/20">
+        <div className="rounded bg-error/10 p-3 text-sm text-red-400 border border-error/20">
           {error.message}
           {error.code === 'ALREADY_MEMBER' && (
             <>

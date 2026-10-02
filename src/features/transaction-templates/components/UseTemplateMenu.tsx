@@ -44,18 +44,18 @@ export function UseTemplateMenu({ onSelect }: Props) {
       </Button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+        <div className="absolute right-0 z-20 mt-2 w-80 overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-lg">
           <div className="max-h-72 overflow-y-auto">
             {isLoading ? (
-              <p className="p-4 text-sm text-slate-500">Loading templates...</p>
+              <p className="p-4 text-sm text-base-content/60">Loading templates...</p>
             ) : isError ? (
-              <p className="p-4 text-sm text-red-600">Failed to load templates.</p>
+              <p className="p-4 text-sm text-error">Failed to load templates.</p>
             ) : items.length === 0 ? (
-              <div className="p-4 text-sm text-slate-500">
+              <div className="p-4 text-sm text-base-content/60">
                 <p>No templates yet.</p>
                 <Link
                   href="/dashboard/templates"
-                  className="mt-1 inline-block font-medium text-indigo-600 hover:text-indigo-700"
+                  className="mt-1 inline-block font-medium text-primary hover:text-primary"
                   onClick={() => setOpen(false)}
                 >
                   Create your first template
@@ -73,18 +73,18 @@ export function UseTemplateMenu({ onSelect }: Props) {
                       setOpen(false);
                       onSelect(t);
                     }}
-                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-slate-50"
+                    className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-base-200"
                   >
                     <span className="min-w-0">
                       <span className="flex items-center gap-1.5">
-                        <span className="truncate text-sm font-medium text-slate-900">{t.name}</span>
+                        <span className="truncate text-sm font-medium text-base-content">{t.name}</span>
                         {needsAttention && (
                           <span title="Its account or category is inactive. You will pick another.">
-                            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" />
                           </span>
                         )}
                       </span>
-                      <span className="block truncate text-xs text-slate-500">
+                      <span className="block truncate text-xs text-base-content/60">
                         {t.type === 'CREDIT' ? 'Income' : 'Expense'}
                         {t.account ? ` · ${t.account.name}` : ''}
                       </span>
@@ -92,10 +92,10 @@ export function UseTemplateMenu({ onSelect }: Props) {
                     <span
                       className={`shrink-0 text-xs font-semibold ${
                         t.amount == null
-                          ? 'italic text-slate-400'
+                          ? 'italic text-base-content/50'
                           : t.type === 'CREDIT'
-                            ? 'text-emerald-600'
-                            : 'text-slate-900'
+                            ? 'text-success'
+                            : 'text-base-content'
                       }`}
                     >
                       {t.amount == null ? 'Ask each time' : formatINR(t.amount)}
@@ -105,10 +105,10 @@ export function UseTemplateMenu({ onSelect }: Props) {
               })
             )}
           </div>
-          <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-2">
+          <div className="border-t border-base-200 bg-base-200/50 px-4 py-2">
             <Link
               href="/dashboard/templates"
-              className="text-xs font-medium text-slate-600 hover:text-slate-900"
+              className="text-xs font-medium text-base-content/70 hover:text-base-content"
               onClick={() => setOpen(false)}
             >
               Manage templates

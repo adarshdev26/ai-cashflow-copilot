@@ -24,12 +24,12 @@ export function StepComplete() {
 
   return (
     <div className="text-center">
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-400">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-indigo-400">
         <Check className="h-6 w-6" />
       </span>
       <h2 className="mt-4 text-2xl font-bold tracking-tight">You&apos;re all set!</h2>
-      <p className="mx-auto mt-3 max-w-sm text-sm text-gray-400">
-        Your CashFlow Copilot workspace is ready. Start adding transactions and we&apos;ll help you
+      <p className="mx-auto mt-3 max-w-sm text-sm text-base-content/50">
+        Your Cashflow Copilot workspace is ready. Start adding transactions and we&apos;ll help you
         understand your financial activity.
       </p>
 

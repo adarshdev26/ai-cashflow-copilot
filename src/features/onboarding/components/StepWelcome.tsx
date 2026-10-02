@@ -21,8 +21,8 @@ export function StepWelcome({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="text-center">
-      <h1 className="text-2xl font-bold tracking-tight">Welcome to CashFlow Copilot</h1>
-      <p className="mx-auto mt-3 max-w-sm text-sm text-gray-400">
+      <h1 className="text-2xl font-bold tracking-tight">Welcome to Cashflow Copilot</h1>
+      <p className="mx-auto mt-3 max-w-sm text-sm text-base-content/50">
         Take control of your money with a smarter way to track, understand and manage your
         finances. Setup takes about a minute.
       </p>
@@ -35,7 +35,7 @@ export function StepWelcome({ onNext }: { onNext: () => void }) {
         type="button"
         onClick={handleSkip}
         disabled={complete.isPending}
-        className="mt-4 text-sm text-gray-400 hover:text-white disabled:opacity-50"
+        className="mt-4 text-sm text-base-content/50 hover:text-white disabled:opacity-50"
       >
         {complete.isPending ? 'Skipping...' : 'Skip setup'}
       </button>

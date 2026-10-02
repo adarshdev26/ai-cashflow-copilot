@@ -19,8 +19,8 @@ export const FinanceHeader = memo(function FinanceHeader({ onOpenModal, onOpenEx
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Financial Ledger</h1>
-        <p className="text-sm text-slate-500">Track and manage your income, expenses, and cash flow items.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-base-content">Financial Ledger</h1>
+        <p className="text-sm text-base-content/60">Track and manage your income, expenses, and cash flow items.</p>
       </div>
       <div className="flex items-center gap-2">
         {onOpenExport && (

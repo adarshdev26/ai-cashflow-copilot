@@ -220,8 +220,8 @@ export default function TransactionsPage() {
     }
   }, [page, pageSize, setPage, setPageSize]);
 
-  // if (isLoading) return <div className="text-sm text-slate-500 animate-pulse p-8">Loading finance ledger...</div>;
-  if (error) return <div className="text-sm text-red-600 p-8">Failed to load transactions.</div>;
+  // if (isLoading) return <div className="text-sm text-base-content/60 animate-pulse p-8">Loading finance ledger...</div>;
+  if (error) return <div className="text-sm text-error p-8">Failed to load transactions.</div>;
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -239,7 +239,7 @@ export default function TransactionsPage() {
 
       <CategoryStatsTooltip />
 
-      <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-5">
+      <div className="grid gap-4 rounded-xl border border-base-300 bg-base-100 p-4 md:grid-cols-5">
         <Select aria-label="Filter by transaction type" value={filters.type ?? ''} onChange={(event) => handleTypeChange(event.target.value as TransactionType | '')}>
           <option value="">All types</option>
           <option value="CREDIT">Credit</option>
@@ -262,7 +262,7 @@ export default function TransactionsPage() {
         <Input aria-label="Filter transactions from date" type="date" value={filters.dateFrom ?? ''} onChange={(event) => handleDateFromChange(event.target.value)} />
         <Input aria-label="Filter transactions to date" type="date" min={filters.dateFrom} value={filters.dateTo ?? ''} onChange={(event) => handleDateToChange(event.target.value)} />
         {isInvalidDateRange && (
-          <p className="text-xs text-red-600 md:col-span-5">
+          <p className="text-xs text-error md:col-span-5">
             &quot;From&quot; date must be on or before the &quot;To&quot; date.
           </p>
         )}

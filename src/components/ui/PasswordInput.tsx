@@ -23,7 +23,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, Props>(function Passwo
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? 'Hide password' : 'Show password'}
         aria-pressed={visible}
-        className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-300 focus:outline-none focus-visible:text-indigo-400"
+        className="absolute inset-y-0 right-0 flex items-center px-3 text-base-content/60 hover:text-base-content/40 focus:outline-none focus-visible:text-indigo-400"
       >
         {visible ? (
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>

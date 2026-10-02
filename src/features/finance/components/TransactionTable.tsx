@@ -75,14 +75,14 @@ export const TransactionTable = memo(function TransactionTable({
         cell: ({ row }) => {
           const tx = row.original;
           return (
-            <div className="font-medium text-slate-900 flex items-center gap-3">
-              <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${tx.type === 'CREDIT' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+            <div className="font-medium text-base-content flex items-center gap-3">
+              <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${tx.type === 'CREDIT' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
                 }`}>
                 {tx.type === 'CREDIT' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownLeft className="h-4 w-4" />}
               </div>
               {tx.description || 'Untitled Transaction'}
               {(tx.recurringTransactionId || tx.occurrenceDate) && (
-                <Repeat className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-label="Recurring" />
+                <Repeat className="h-3.5 w-3.5 shrink-0 text-base-content/50" aria-label="Recurring" />
               )}
             </div>
           );
@@ -94,11 +94,11 @@ export const TransactionTable = memo(function TransactionTable({
         enableSorting: false,
         cell: ({ row }) => {
           const account = row.original.account;
-          if (!account) return <span className="text-slate-400">None</span>;
+          if (!account) return <span className="text-base-content/50">None</span>;
           return (
-            <span className="text-slate-700">
+            <span className="text-base-content/80">
               {account.name}
-              {!account.isActive && <span className="ml-1 text-xs text-slate-400">(inactive)</span>}
+              {!account.isActive && <span className="ml-1 text-xs text-base-content/50">(inactive)</span>}
             </span>
           );
         },
@@ -117,7 +117,7 @@ export const TransactionTable = memo(function TransactionTable({
         cell: ({ row }) => {
           const type = row.getValue('type') as string;
           return (
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${type === 'CREDIT' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${type === 'CREDIT' ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
               }`}>
               {type}
             </span>
@@ -128,7 +128,7 @@ export const TransactionTable = memo(function TransactionTable({
         accessorKey: 'createdAt',
         header: 'Date',
         cell: ({ row }) => (
-          <span className="text-slate-500">
+          <span className="text-base-content/60">
             {new Date(row.getValue('createdAt') as string).toLocaleDateString()}
           </span>
         ),
@@ -139,7 +139,7 @@ export const TransactionTable = memo(function TransactionTable({
         cell: ({ row }) => {
           const tx = row.original;
           return (
-            <div className={`text-right font-semibold ${tx.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-700'
+            <div className={`text-right font-semibold ${tx.type === 'CREDIT' ? 'text-success' : 'text-error'
               }`}>
               {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toLocaleString()}
             </div>
@@ -167,17 +167,17 @@ export const TransactionTable = memo(function TransactionTable({
                   onClick={() => handleSaveAsTemplate(tx)}
                   disabled={isCreatingTemplate}
                 >
-                  <LayoutTemplate className="h-4 w-4 text-indigo-500" />
+                  <LayoutTemplate className="h-4 w-4 text-primary" />
                 </Button>
               )}
               {canEdit && (
                 <Button variant="ghost" size="sm" aria-label="Edit transaction" onClick={() => handleEdit(tx)}>
-                  <Pencil className="h-4 w-4 text-blue-500" />
+                  <Pencil className="h-4 w-4 text-primary" />
                 </Button>
               )}
               {canDelete && (
                 <Button variant="ghost" size="sm" aria-label="Delete transaction" onClick={() => handleDelete(tx)}>
-                  <Trash2 className="h-4 w-4 text-red-600" />
+                  <Trash2 className="h-4 w-4 text-error" />
                 </Button>
               )}
             </div>

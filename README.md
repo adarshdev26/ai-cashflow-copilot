@@ -1,4 +1,4 @@
-# CashFlow Copilot
+# Cashflow Copilot
 
 Personal cash-flow app for signing in, recording income and expenses, and reviewing monthly totals, category spending, and a running balance. Habits, notes, and settings are present in the navigation and in the database, and are not implemented as product features yet.
 

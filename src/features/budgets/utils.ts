@@ -20,9 +20,9 @@ export function monthLabel(year: number, month: number) {
 }
 
 export function usageTone(percentUsed: number) {
-  if (percentUsed > 100) return { bar: 'bg-red-500', text: 'text-red-600' };
-  if (percentUsed >= 80) return { bar: 'bg-amber-500', text: 'text-amber-600' };
-  return { bar: 'bg-emerald-500', text: 'text-emerald-600' };
+  if (percentUsed > 100) return { bar: 'bg-error', text: 'text-error' };
+  if (percentUsed >= 80) return { bar: 'bg-warning', text: 'text-warning' };
+  return { bar: 'bg-success', text: 'text-success' };
 }
 
 export function isPastMonth(year: number, month: number): boolean {

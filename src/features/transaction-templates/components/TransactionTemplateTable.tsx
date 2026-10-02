@@ -28,7 +28,7 @@ function formatFixedDate(iso: string): string {
 
 function Inactive() {
   return (
-    <span className="ml-1.5 inline-flex items-center gap-1 text-xs font-medium text-amber-600">
+    <span className="ml-1.5 inline-flex items-center gap-1 text-xs font-medium text-warning">
       <AlertTriangle className="h-3 w-3" />
       inactive
     </span>
@@ -52,17 +52,17 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
           const t = row.original;
           const isIncome = t.type === 'CREDIT';
           return (
-            <div className="flex items-center gap-3 font-medium text-slate-900">
+            <div className="flex items-center gap-3 font-medium text-base-content">
               <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                  isIncome ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'
+                  isIncome ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
                 }`}
               >
                 <FileText className="h-4 w-4" />
               </div>
               <div className="min-w-0">
                 <p className="truncate">{t.name}</p>
-                <p className="truncate text-xs font-normal text-slate-400">
+                <p className="truncate text-xs font-normal text-base-content/50">
                   {isIncome ? 'Income' : 'Expense'}
                   {t.description ? ` · ${t.description}` : ''}
                 </p>
@@ -77,11 +77,11 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
         cell: ({ row }) => {
           const t = row.original;
           if (t.amount == null) {
-            return <span className="text-slate-400 italic">Ask each time</span>;
+            return <span className="text-base-content/50 italic">Ask each time</span>;
           }
           const isIncome = t.type === 'CREDIT';
           return (
-            <span className={`font-semibold ${isIncome ? 'text-emerald-600' : 'text-slate-900'}`}>
+            <span className={`font-semibold ${isIncome ? 'text-success' : 'text-base-content'}`}>
               {isIncome ? '+' : '-'}
               {formatINR(t.amount)}
             </span>
@@ -94,9 +94,9 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
         accessorFn: (row) => row.account?.name ?? '',
         cell: ({ row }) => {
           const a = row.original.account;
-          if (!a) return <span className="text-slate-400">-</span>;
+          if (!a) return <span className="text-base-content/50">-</span>;
           return (
-            <span className="text-slate-700">
+            <span className="text-base-content/80">
               {a.name}
               {!a.isActive && <Inactive />}
             </span>
@@ -109,9 +109,9 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
         accessorFn: (row) => row.category?.name ?? '',
         cell: ({ row }) => {
           const c = row.original.category;
-          if (!c) return <span className="text-slate-400">-</span>;
+          if (!c) return <span className="text-base-content/50">-</span>;
           return (
-            <span className="inline-flex items-center gap-2 text-slate-700">
+            <span className="inline-flex items-center gap-2 text-base-content/80">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
               {c.name}
               {c.isActive === false && <Inactive />}
@@ -126,9 +126,9 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
         cell: ({ row }) => {
           const t = row.original;
           return t.dateMode === 'FIXED' && t.fixedDate ? (
-            <span className="text-slate-700">{formatFixedDate(t.fixedDate)}</span>
+            <span className="text-base-content/80">{formatFixedDate(t.fixedDate)}</span>
           ) : (
-            <span className="text-slate-500">Date of use</span>
+            <span className="text-base-content/60">Date of use</span>
           );
         },
       },
@@ -146,10 +146,10 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
           return (
             <div className="flex items-center justify-end gap-1">
               <Button variant="ghost" size="sm" aria-label="Edit template" onClick={() => onEdit(t)}>
-                <Pencil className="h-4 w-4 text-blue-500" />
+                <Pencil className="h-4 w-4 text-primary" />
               </Button>
               <Button variant="ghost" size="sm" aria-label="Delete template" onClick={() => onDelete(t)}>
-                <Trash2 className="h-4 w-4 text-red-600" />
+                <Trash2 className="h-4 w-4 text-error" />
               </Button>
             </div>
           );

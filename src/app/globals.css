@@ -1,4 +1,76 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+  themes: all;
+}
+
+/* ---------- DEFAULT THEMES ---------- */
+@plugin "daisyui/theme" {
+  name: "cashflow";
+  default: true;
+  color-scheme: light;
+  --color-base-100: #ffffff;
+  --color-base-200: #f8fafc;
+  --color-base-300: #e2e8f0;
+  --color-base-content: #0f172a;
+  --color-primary: #4f46e5;
+  --color-primary-content: #ffffff;
+  --color-secondary: #0ea5e9;
+  --color-secondary-content: #ffffff;
+  --color-accent: #22d3ee;
+  --color-accent-content: #083344;
+  --color-neutral: #1e293b;
+  --color-neutral-content: #f8fafc;
+  --color-info: #0ea5e9;
+  --color-info-content: #ffffff;
+  --color-success: #16a34a;
+  --color-success-content: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-content: #451a03;
+  --color-error: #dc2626;
+  --color-error-content: #ffffff;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "cashflow-dark";
+  prefersdark: true;
+  color-scheme: dark;
+  --color-base-100: #0b0d14;
+  --color-base-200: #12151f;
+  --color-base-300: #242840;
+  --color-base-content: #e8eaf2;
+  --color-primary: #6366f1;
+  --color-primary-content: #ffffff;
+  --color-secondary: #38bdf8;
+  --color-secondary-content: #082f49;
+  --color-accent: #22d3ee;
+  --color-accent-content: #083344;
+  --color-neutral: #1e2235;
+  --color-neutral-content: #e8eaf2;
+  --color-info: #38bdf8;
+  --color-info-content: #082f49;
+  --color-success: #22c55e;
+  --color-success-content: #052e16;
+  --color-warning: #fbbf24;
+  --color-warning-content: #451a03;
+  --color-error: #f87171;
+  --color-error-content: #450a0a;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
 
 @layer base {
   dialog {
@@ -7,24 +79,14 @@
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-
-  /* Active font — default to Inter. Overridden by [data-font] below. */
+  --background: var(--color-base-100);
+  --foreground: var(--color-base-content);
   --font-active: var(--font-dm-sans);
 }
 
-html[data-font="inter"] {
-  --font-active: var(--font-inter);
-}
-
-html[data-font="dm-sans"] {
-  --font-active: var(--font-dm-sans);
-}
-
-html[data-font="bricolage"] {
-  --font-active: var(--font-bricolage);
-}
+html[data-font="inter"] { --font-active: var(--font-inter); }
+html[data-font="dm-sans"] { --font-active: var(--font-dm-sans); }
+html[data-font="bricolage"] { --font-active: var(--font-bricolage); }
 
 @theme inline {
   --color-background: var(--background);
@@ -32,31 +94,26 @@ html[data-font="bricolage"] {
   --font-sans: var(--font-active);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-base-100);
+  color: var(--color-base-content);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+.Toastify {
+  --toastify-color-light: var(--color-base-100);
+  --toastify-text-color-light: var(--color-base-content);
+}
+
+/* ---------- MARKETING: now driven by the active DaisyUI theme ---------- */
 .marketing {
-  --mk-brand: #6366f1;
-  /* indigo-500, buttons, icons, eyebrows */
-  --mk-brand-fg: #ffffff;
-  --mk-bg: #0b0d14;
-  /* page */
-  --mk-surface: #12151f;
-  /* alt sections, cards-on-bg, footer */
-  --mk-fg: #e8eaf2;
-  --mk-muted: #9aa3b8;
-  --mk-line: #242840;
-  color-scheme: dark;
+  --mk-brand: var(--color-primary);
+  --mk-brand-fg: var(--color-primary-content);
+  --mk-bg: var(--color-base-100);
+  --mk-surface: var(--color-base-200);
+  --mk-fg: var(--color-base-content);
+  --mk-muted: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+  --mk-line: var(--color-base-300);
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
@@ -75,10 +132,6 @@ body {
   letter-spacing: -0.02em;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 .mk-grid {
   background-image:
     linear-gradient(to right, color-mix(in oklab, var(--mk-fg) 7%, transparent) 1px, transparent 1px),
@@ -91,4 +144,82 @@ html {
   background-image: radial-gradient(color-mix(in oklab, var(--mk-fg) 14%, transparent) 1px, transparent 1px);
   background-size: 22px 22px;
   mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 100%);
+}
+
+/* ---- Fade-up reveal ---- */
+.mk-pre {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) var(--mk-delay, 0ms),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) var(--mk-delay, 0ms);
+}
+.mk-pre.mk-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .mk-pre { opacity: 1; transform: none; transition: none; }
+}
+
+.mk-pre[data-reveal="scale"]:not(.mk-in) { transform: translateY(20px) scale(0.97); }
+.mk-pre[data-reveal="left"]:not(.mk-in)  { transform: translateX(-28px); }
+.mk-pre[data-reveal="right"]:not(.mk-in) { transform: translateX(28px); }
+
+@keyframes mk-enter { from { opacity: 0; transform: translateY(18px); } }
+.mk-enter { animation: mk-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: var(--mk-delay, 0ms); }
+
+/* ---- Aurora ---- */
+.mk-aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.mk-aurora::before,
+.mk-aurora::after { content: ""; position: absolute; border-radius: 9999px; filter: blur(90px); opacity: 0.3; }
+.mk-aurora::before {
+  width: 42rem; height: 42rem; left: -10rem; top: -16rem;
+  background: color-mix(in oklab, var(--mk-brand) 45%, transparent);
+  animation: mk-float 14s ease-in-out infinite alternate;
+}
+.mk-aurora::after {
+  width: 34rem; height: 34rem; right: -8rem; top: -8rem;
+  background: color-mix(in oklab, var(--color-accent) 28%, transparent);
+  animation: mk-float 18s ease-in-out infinite alternate-reverse;
+}
+@keyframes mk-float { to { transform: translate3d(3rem, 2rem, 0) scale(1.1); } }
+
+.mk-gradient-text {
+  background-image: linear-gradient(135deg, var(--mk-fg) 25%, color-mix(in oklab, var(--mk-brand) 75%, var(--mk-fg)) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+.mk-card {
+  position: relative;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+.mk-card::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(420px circle at 50% 0%, color-mix(in oklab, var(--mk-brand) 14%, transparent), transparent 60%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.mk-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--mk-brand) 50%, var(--mk-line));
+  box-shadow: 0 16px 40px -16px color-mix(in oklab, var(--mk-brand) 40%, transparent);
+}
+.mk-card:hover::before { opacity: 1; }
+
+.mk-fade-bottom { mask-image: linear-gradient(to bottom, #000 55%, transparent 100%); }
+
+/* ---- Theme-aware screenshots + stronger aurora on dark themes ---- */
+.mk-img-dark { display: none; }
+
+html:is(
+  [data-theme="cashflow-dark"], [data-theme="synthwave"], [data-theme="halloween"],
+  [data-theme="forest"], [data-theme="black"], [data-theme="luxury"], [data-theme="dracula"],
+  [data-theme="business"], [data-theme="night"], [data-theme="coffee"], [data-theme="dim"],
+  [data-theme="sunset"], [data-theme="abyss"]
+) {
+  .mk-aurora::before, .mk-aurora::after { opacity: 0.5; }
+  .mk-img-light { display: none; }
+  .mk-img-dark { display: block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-enter, .mk-aurora::before, .mk-aurora::after { animation: none; }
+  .mk-card, .mk-card:hover { transform: none; }
 }

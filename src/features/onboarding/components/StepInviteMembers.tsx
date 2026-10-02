@@ -20,7 +20,7 @@ type Props = {
 };
 
 const fieldClass =
-  'w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-indigo-500 focus:outline-none disabled:opacity-60';
+  'w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-primary focus:outline-none disabled:opacity-60';
 
 export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
   const { mutate: createInvite, isPending } = useCreateInvitation();
@@ -65,19 +65,19 @@ export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <h2 className="text-xl font-bold tracking-tight">Invite your team</h2>
-          <p className="mt-1 text-sm text-gray-400">
+          <p className="mt-1 text-sm text-base-content/50">
             You can invite people to collaborate with you. This step is optional.
           </p>
         </div>
 
         {error && (
-          <div className="rounded border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
+          <div className="rounded border border-error/20 bg-error/10 p-3 text-sm text-red-400">
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="invite-email" className="mb-1 block text-sm font-medium text-gray-400">
+          <label htmlFor="invite-email" className="mb-1 block text-sm font-medium text-base-content/50">
             Email address
           </label>
           <input
@@ -92,7 +92,7 @@ export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
         </div>
 
         <div>
-          <label htmlFor="invite-role" className="mb-1 block text-sm font-medium text-gray-400">
+          <label htmlFor="invite-role" className="mb-1 block text-sm font-medium text-base-content/50">
             Role
           </label>
           <select
@@ -108,7 +108,7 @@ export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-gray-500">{ROLE_DESCRIPTIONS[role]}</p>
+          <p className="mt-1 text-xs text-base-content/60">{ROLE_DESCRIPTIONS[role]}</p>
         </div>
 
         <PrimaryButton type="submit" loading={isPending} className="w-full">
@@ -116,7 +116,7 @@ export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
         </PrimaryButton>
 
         {sentCount > 0 && (
-          <p className="text-center text-xs text-gray-400">
+          <p className="text-center text-xs text-base-content/50">
             {sentCount} invitation{sentCount > 1 ? 's' : ''} created. You can add more, or continue.
           </p>
         )}
@@ -126,7 +126,7 @@ export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
             type="button"
             onClick={onBack}
             disabled={isPending}
-            className="text-sm text-gray-400 hover:text-white disabled:opacity-50"
+            className="text-sm text-base-content/50 hover:text-white disabled:opacity-50"
           >
             Back
           </button>
@@ -140,7 +140,7 @@ export function StepInviteMembers({ workspaceId, onBack, onNext }: Props) {
               type="button"
               onClick={onNext}
               disabled={isPending}
-              className="text-sm text-gray-400 hover:text-white disabled:opacity-50"
+              className="text-sm text-base-content/50 hover:text-white disabled:opacity-50"
             >
               I&apos;ll do this later
             </button>

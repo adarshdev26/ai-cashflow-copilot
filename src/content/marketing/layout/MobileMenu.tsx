@@ -4,8 +4,16 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { SITE } from '@/content/marketing/site';
+import { ThemeMenu } from '@/components/ui/ThemePicker';
 
-export function MobileMenu({ links }: { links: { href: string; label: string }[] }) {
+export function MobileMenu({
+  links,
+  isLoggedIn = false,
+}: {
+  links: { href: string; label: string }[];
+  isLoggedIn?: boolean;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -18,7 +26,8 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
   }
 
   return (
-    <div className="md:hidden">
+    <div className="flex items-center gap-1 md:hidden">
+      <ThemeMenu />
       <button
         type="button"
         aria-label={open ? 'Close menu' : 'Open menu'}
@@ -42,14 +51,24 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
               </Link>
             ))}
           </nav>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <Link href="/login" className="rounded-lg border border-mk-line py-3 text-center font-semibold">
-              Log in
+
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className="mt-4 block rounded-lg bg-mk-brand py-3 text-center font-semibold text-mk-brand-fg"
+            >
+              Open {SITE.name}
             </Link>
-            <Link href="/signup" className="rounded-lg bg-mk-brand py-3 text-center font-semibold text-mk-brand-fg">
-              Get started
-            </Link>
-          </div>
+          ) : (
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Link href="/login" className="rounded-lg border border-mk-line py-3 text-center font-semibold">
+                Log in
+              </Link>
+              <Link href="/signup" className="rounded-lg bg-mk-brand py-3 text-center font-semibold text-mk-brand-fg">
+                Get started
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>

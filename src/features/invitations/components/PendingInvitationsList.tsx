@@ -69,9 +69,9 @@ export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }
 
   return (
     <>
-      <div className="border border-slate-200 rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-slate-200 text-sm text-left">
-          <thead className="bg-slate-50 text-slate-500">
+      <div className="border border-base-300 rounded-lg overflow-hidden">
+        <table className="min-w-full divide-y divide-base-300 text-sm text-left">
+          <thead className="bg-base-200 text-base-content/60">
             <tr>
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Role</th>
@@ -79,22 +79,22 @@ export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }
               <th className="px-4 py-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 bg-white">
+          <tbody className="divide-y divide-base-300 bg-base-100">
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-500 animate-pulse">
+                <td colSpan={4} className="px-4 py-8 text-center text-base-content/60 animate-pulse">
                   Loading invitations...
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-red-600">
+                <td colSpan={4} className="px-4 py-8 text-center text-error">
                   {getErrorMessage(error, 'Failed to load invitations')}
                 </td>
               </tr>
             ) : !invitations || invitations.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={4} className="px-4 py-8 text-center text-base-content/60">
                   No pending invitations.
                 </td>
               </tr>
@@ -106,10 +106,10 @@ export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }
                   resend.isPending && resend.variables?.invitationId === inv.id;
                 return (
                   <tr key={inv.id}>
-                    <td className="px-4 py-3 text-slate-900">{inv.email}</td>
-                    <td className="px-4 py-3 text-slate-700">{ROLE_LABELS[inv.role]}</td>
+                    <td className="px-4 py-3 text-base-content">{inv.email}</td>
+                    <td className="px-4 py-3 text-base-content/80">{ROLE_LABELS[inv.role]}</td>
                     <td
-                      className={`px-4 py-3 ${expired ? 'text-red-600 font-medium' : 'text-slate-600'}`}
+                      className={`px-4 py-3 ${expired ? 'text-error font-medium' : 'text-base-content/70'}`}
                     >
                       {timeLeft}
                     </td>
@@ -118,7 +118,7 @@ export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }
                         type="button"
                         onClick={() => handleResend(inv)}
                         disabled={resending}
-                        className="text-indigo-600 hover:text-indigo-700 font-medium text-sm disabled:opacity-50"
+                        className="text-primary hover:text-primary font-medium text-sm disabled:opacity-50"
                       >
                         {resending ? 'Resending...' : 'Resend'}
                       </button>
@@ -128,7 +128,7 @@ export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }
                           setCancelError(undefined);
                           setCancelTarget(inv);
                         }}
-                        className="text-red-600 hover:text-red-700 font-medium text-sm"
+                        className="text-error hover:text-error font-medium text-sm"
                       >
                         Cancel
                       </button>

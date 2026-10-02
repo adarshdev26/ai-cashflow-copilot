@@ -71,53 +71,53 @@ export default function RecurringPage() {
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Recurring Transactions</h1>
-          <p className="text-sm text-slate-500">Manage your scheduled income and expenses.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-base-content">Recurring Transactions</h1>
+          <p className="text-sm text-base-content/60">Manage your scheduled income and expenses.</p>
         </div>
         {canManage && <Button onClick={openCreate}>+ Add Recurring</Button>}
       </div>
 
       {items.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Repeat className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-900">Active schedules</p>
-                <p className="text-xs text-slate-500">{items.length} in total</p>
+                <p className="text-sm font-semibold text-base-content">Active schedules</p>
+                <p className="text-xs text-base-content/60">{items.length} in total</p>
               </div>
             </div>
-            <p className="mt-4 text-2xl font-bold tracking-tight text-slate-900">{stats.activeCount}</p>
+            <p className="mt-4 text-2xl font-bold tracking-tight text-base-content">{stats.activeCount}</p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success">
                 <TrendingUp className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-900">Monthly income</p>
-                <p className="text-xs text-slate-500">Average, from active schedules</p>
+                <p className="text-sm font-semibold text-base-content">Monthly income</p>
+                <p className="text-xs text-base-content/60">Average, from active schedules</p>
               </div>
             </div>
-            <p className="mt-4 text-2xl font-bold tracking-tight text-emerald-600">
+            <p className="mt-4 text-2xl font-bold tracking-tight text-success">
               {formatINR(stats.income)}
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning/10 text-warning">
                 <TrendingDown className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-900">Monthly expenses</p>
-                <p className="text-xs text-slate-500">Average, from active schedules</p>
+                <p className="text-sm font-semibold text-base-content">Monthly expenses</p>
+                <p className="text-xs text-base-content/60">Average, from active schedules</p>
               </div>
             </div>
-            <p className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
+            <p className="mt-4 text-2xl font-bold tracking-tight text-base-content">
               {formatINR(stats.expense)}
             </p>
           </div>
@@ -125,13 +125,13 @@ export default function RecurringPage() {
       )}
 
       {isError ? (
-        <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
+        <div className="rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error">
           {error instanceof Error ? error.message : 'Failed to load recurring transactions'}
         </div>
       ) : showEmpty ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
-          <p className="text-sm font-semibold text-slate-900">No recurring transactions yet</p>
-          <p className="mt-1 text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-12 text-center">
+          <p className="text-sm font-semibold text-base-content">No recurring transactions yet</p>
+          <p className="mt-1 text-sm text-base-content/60">
             Add rent, salary or subscriptions once and they will be recorded automatically.
           </p>
           {canManage && (

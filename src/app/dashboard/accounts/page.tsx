@@ -98,8 +98,8 @@ export default function AccountsPage() {
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Accounts</h1>
-          <p className="text-sm text-slate-500">Bank accounts, cards, cash and wallets for this workspace.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-base-content">Accounts</h1>
+          <p className="text-sm text-base-content/60">Bank accounts, cards, cash and wallets for this workspace.</p>
         </div>
         {canCreate && (
           <PrimaryButton onClick={() => setFormState({ mode: 'create' })} leftIcon={<Plus className="h-4 w-4" />}>
@@ -111,34 +111,34 @@ export default function AccountsPage() {
       {isLoading ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
+            <div key={i} className="space-y-4 rounded-xl border border-base-300 bg-base-100 p-5">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 animate-pulse rounded-lg bg-slate-100" />
+                <div className="h-10 w-10 animate-pulse rounded-lg bg-base-200" />
                 <div className="space-y-2">
-                  <div className="h-3 w-28 animate-pulse rounded bg-slate-100" />
-                  <div className="h-3 w-16 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-28 animate-pulse rounded bg-base-200" />
+                  <div className="h-3 w-16 animate-pulse rounded bg-base-200" />
                 </div>
               </div>
-              <div className="h-7 w-32 animate-pulse rounded bg-slate-100" />
+              <div className="h-7 w-32 animate-pulse rounded bg-base-200" />
             </div>
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-red-100 bg-red-50 p-6 text-center">
-          <p className="text-sm text-red-600">{getErrorMessage(error, 'Failed to load accounts.')}</p>
+        <div className="rounded-xl border border-error/30 bg-error/10 p-6 text-center">
+          <p className="text-sm text-error">{getErrorMessage(error, 'Failed to load accounts.')}</p>
           <button
             type="button"
             onClick={() => refetch()}
-            className="mt-3 rounded-md border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+            className="mt-3 rounded-md border border-error/30 px-3 py-1.5 text-xs font-medium text-error hover:bg-error/10"
           >
             Try again
           </button>
         </div>
       ) : !accounts || accounts.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
-          <Landmark className="mx-auto h-8 w-8 text-slate-300" />
-          <p className="mt-3 text-sm font-medium text-slate-900">No accounts yet</p>
-          <p className="mt-1 text-sm text-slate-500">Add an account to start tracking where your money lives.</p>
+        <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-10 text-center">
+          <Landmark className="mx-auto h-8 w-8 text-base-content/40" />
+          <p className="mt-3 text-sm font-medium text-base-content">No accounts yet</p>
+          <p className="mt-1 text-sm text-base-content/60">Add an account to start tracking where your money lives.</p>
           {canCreate && (
             <div className="mt-4 flex justify-center">
               <PrimaryButton onClick={() => setFormState({ mode: 'create' })} leftIcon={<Plus className="h-4 w-4" />}>

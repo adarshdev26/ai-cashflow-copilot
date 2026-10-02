@@ -46,11 +46,11 @@ export function ChartCard({
   };
 
   return (
-    <div ref={cardRef} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div ref={cardRef} className="rounded-xl border border-base-300 bg-base-100 p-6 shadow-sm">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-          {description && <p className="text-xs text-slate-500">{description}</p>}
+          <h3 className="text-sm font-semibold text-base-content">{title}</h3>
+          {description && <p className="text-xs text-base-content/60">{description}</p>}
         </div>
         <div className="flex items-center gap-2" data-export-ignore>
           {action}
@@ -61,7 +61,7 @@ export function ChartCard({
               disabled={exporting}
               aria-label={`Export ${title} as PNG`}
               title="Export as PNG"
-              className="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50"
+              className="rounded-lg border border-base-300 p-2 text-base-content/60 hover:bg-base-200 hover:text-base-content/80 disabled:opacity-50"
             >
               <ImageDown className="h-4 w-4" />
             </button>
@@ -72,13 +72,13 @@ export function ChartCard({
       {/* Fixed height: ResponsiveContainer needs a parent with a real height */}
       <div className="h-72">
         {isLoading ? (
-          <div className="h-full animate-pulse rounded-lg bg-slate-50" aria-hidden="true" />
+          <div className="h-full animate-pulse rounded-lg bg-base-200" aria-hidden="true" />
         ) : isError ? (
-          <div className="flex h-full items-center justify-center text-sm text-red-600">
+          <div className="flex h-full items-center justify-center text-sm text-error">
             Couldn&apos;t load this chart.
           </div>
         ) : isEmpty ? (
-          <div className="flex h-full items-center justify-center text-sm text-slate-500">{emptyMessage}</div>
+          <div className="flex h-full items-center justify-center text-sm text-base-content/60">{emptyMessage}</div>
         ) : (
           children
         )}
