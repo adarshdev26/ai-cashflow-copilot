@@ -24,7 +24,7 @@ export function IncomeExpenseChart({
 }) {
   const rows = data.map((p) => ({ ...p, name: formatReportBucket(p.key, granularity) }));
   return (
-    <>
+    <div className="relative h-full w-full overflow-hidden">
       <div className="h-full w-full" role="img" aria-label={ariaLabel}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -48,25 +48,27 @@ export function IncomeExpenseChart({
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <table className="sr-only">
-        <caption>{ariaLabel}</caption>
-        <thead>
-          <tr>
-            <th scope="col">Period</th>
-            <th scope="col">Income</th>
-            <th scope="col">Expense</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.key}>
-              <th scope="row">{row.name}</th>
-              <td>{formatINR(row.income)}</td>
-              <td>{formatINR(row.expense)}</td>
+      <div className="sr-only">
+        <table>
+          <caption>{ariaLabel}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Period</th>
+              <th scope="col">Income</th>
+              <th scope="col">Expense</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.key}>
+                <th scope="row">{row.name}</th>
+                <td>{formatINR(row.income)}</td>
+                <td>{formatINR(row.expense)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
