@@ -1,8 +1,10 @@
 import {
   Layers, ReceiptText, LayoutTemplate, BarChart3, Target, NotebookPen, Users,
   ShieldCheck, Lock, UserCheck, Eye, Sparkles, Wallet, HeartHandshake,
+  Landmark, Repeat, PiggyBank, Tags,
   type LucideIcon,
 } from 'lucide-react';
+import type { Shot } from '@/components/marketing/primitives/BrowserFrame';
 
 export type Feature = { icon: LucideIcon; title: string; description: string };
 
@@ -46,28 +48,49 @@ export const FEATURES: Feature[] = [
 ];
 
 export type FeatureDetail = {
+  id?: string;
   icon: LucideIcon;
   eyebrow: string;
   title: string;
   description: string;
   bullets: string[];
+  image?: Shot;
 };
 
+// TODO: verify every claim here matches what you actually ship.
 export const FEATURE_DETAILS: FeatureDetail[] = [
   {
+    id: 'workspaces',
     icon: Layers,
     eyebrow: 'Workspaces',
     title: 'One workspace for every part of your life',
     description:
-      'Everything you add lives inside a workspace. Switch between them in a click and keep household spending, business expenses, and side-project income in separate, clearly labeled spaces. Each workspace has its own ledger, members, habits, notes, and totals.',
+      'Everything you add lives inside a workspace. Switch between them in a click and keep household spending, business expenses, and side-project income in separate, clearly labeled spaces. Each workspace has its own accounts, ledger, budgets, categories, members, habits, notes, and totals.',
     bullets: [
-      'Create as many workspaces as you need for home, work, projects, or clients',
+      'Create as many workspaces as your plan allows for home, work, projects, or clients',
       'Switch instantly from the top bar without losing your place',
-      'Each workspace keeps its own members, transactions, habits, and numbers',
+      'Each workspace keeps its own accounts, members, transactions, and numbers',
       'Invite only the people who should see that part of your finances',
     ],
+    // image: { src: '/marketing/workspaces-light.png', srcDark: '/marketing/workspaces-dark.png', alt: 'Workspaces' },
   },
   {
+    id: 'accounts',
+    icon: Landmark,
+    eyebrow: 'Accounts',
+    title: 'Every account, side by side in one workspace',
+    description:
+      'Add the accounts you actually use, such as cash, a bank account, or a card, and keep them together in a single workspace. Record each transaction against the account it belongs to, so your numbers match what is really happening.',
+    bullets: [
+      'Add multiple financial accounts inside the same workspace',
+      'Record each transaction against the right account',
+      'See the full picture across accounts without switching apps',
+      'Keep personal and business accounts in separate workspaces',
+    ],
+    image: { src: '/marketing/accounts-light.png', srcDark: '/marketing/accounts-light.png', alt: 'Accounts' },
+  },
+  {
+    id: 'transactions',
     icon: ReceiptText,
     eyebrow: 'Transactions',
     title: 'A ledger that is quick to fill and easy to read',
@@ -79,8 +102,70 @@ export const FEATURE_DETAILS: FeatureDetail[] = [
       'Save any transaction as a template for next time',
       'Keep a clean history you can revisit when you need detail',
     ],
+    image: { src: '/marketing/transactions-light.png', srcDark: '/marketing/transactions-light.png', alt: 'Transactions' },
   },
   {
+    id: 'templates',
+    icon: LayoutTemplate,
+    eyebrow: 'Templates',
+    title: 'Turn any entry into a one-click template',
+    description:
+      'Rent, subscriptions, invoices, the weekly shop: if you enter it again and again, save it once. Next time, pick the template and the form is filled in for you.',
+    bullets: [
+      'Save any transaction as a reusable template',
+      'Create, edit, and delete templates whenever you like',
+      'Choose a fixed date or use the date you add the entry',
+      'Cut a full form down to a single click',
+    ],
+    image: { src: '/marketing/templates-light.png', srcDark: '/marketing/templates-light.png', alt: 'Templates' },
+  },
+  {
+    id: 'recurring',
+    icon: Repeat,
+    eyebrow: 'Recurring',
+    title: 'Set it once and let it repeat',
+    description:
+      'Salary, rent, and subscriptions come around on a schedule, so your ledger can keep up on its own. Set up a recurring transaction once and stop re-entering the same numbers every month.',
+    bullets: [
+      'Schedule income and expenses that repeat automatically',
+      'Keep your ledger complete even on busy weeks',
+      'Review and manage all recurring entries in one place',
+      'Pair them with templates so setup takes seconds',
+    ],
+    image: { src: '/marketing/recurring-light.png', srcDark: '/marketing/recurring-light.png', alt: 'Recurring' },
+  },
+  {
+    id: 'categories',
+    icon: Tags,
+    eyebrow: 'Categories',
+    title: 'Categories that match how you actually spend',
+    description:
+      'Create your own categories for each workspace instead of squeezing life into a fixed list. Groceries and school fees for the family, software and travel for the business, all labeled the way you think about them.',
+    bullets: [
+      'Create custom categories for every transaction',
+      'Keep a separate set of categories in each workspace',
+      'Rename and reorganize as your needs change',
+      'Filter and review your ledger by category',
+    ],
+    image: { src: '/marketing/categories-light.png', srcDark: '/marketing/categories-light.png', alt: 'Categories' },
+  },
+  {
+    id: 'budgets',
+    icon: PiggyBank,
+    eyebrow: 'Budgets',
+    title: 'Budgets that follow your real spending',
+    description:
+      'Set a monthly budget and watch it fill up as you add transactions. Progress is worked out from the entries already in your ledger, so there is nothing extra to maintain.',
+    bullets: [
+      'Set monthly budgets for the categories that matter',
+      'See spent versus remaining, calculated from your transactions',
+      'Keep a separate set of budgets in each workspace',
+      'Spot overspending early instead of at month end',
+    ],
+    image: { src: '/marketing/budgets-light.png', srcDark: '/marketing/budgets-light.png', alt: 'Budgets' },
+  },
+  {
+    id: 'habits',
     icon: Target,
     eyebrow: 'Habits & notes',
     title: 'Build the habits behind the numbers',
@@ -94,19 +179,25 @@ export const FEATURE_DETAILS: FeatureDetail[] = [
     ],
   },
   {
+    id: 'together',
     icon: Users,
     eyebrow: 'Together',
     title: 'Manage money with the people who share it',
     description:
       'Invite family members, partners, or teammates into a workspace and manage access from settings. Everyone sees the same up-to-date picture, while each workspace stays limited to the people you choose.',
     bullets: [
-      'Invite people by email in a few steps',
+      'Invite multiple people into the same workspace by email',
       'Manage members and pending invitations from settings',
       'Only people you invite can see a workspace',
       'Keep shared money organized without shared spreadsheets',
     ],
   },
 ];
+
+/** Pick details by id, in the order you list them. Unknown ids are ignored. */
+export function pickDetails(ids: string[]): FeatureDetail[] {
+  return ids.flatMap((id) => FEATURE_DETAILS.find((d) => d.id === id) ?? []);
+}
 
 export const EXTRAS: Feature[] = [
   {

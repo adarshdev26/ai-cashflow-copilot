@@ -29,7 +29,7 @@ export function StepComplete() {
       </span>
       <h2 className="mt-4 text-2xl font-bold tracking-tight">You&apos;re all set!</h2>
       <p className="mx-auto mt-3 max-w-sm text-sm text-gray-400">
-        Your CashFlow Copilot workspace is ready. Start adding transactions and we&apos;ll help you
+        Your Cashflow Co workspace is ready. Start adding transactions and we&apos;ll help you
         understand your financial activity.
       </p>
 

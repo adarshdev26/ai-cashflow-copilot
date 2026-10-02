@@ -21,7 +21,7 @@ export function StepWelcome({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="text-center">
-      <h1 className="text-2xl font-bold tracking-tight">Welcome to CashFlow Copilot</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Welcome to Cashflow Co</h1>
       <p className="mx-auto mt-3 max-w-sm text-sm text-gray-400">
         Take control of your money with a smarter way to track, understand and manage your
         finances. Setup takes about a minute.

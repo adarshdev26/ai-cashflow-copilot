@@ -284,7 +284,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             A
           </div>
           <span className={`font-semibold text-lg tracking-tight text-slate-900 ${collapsed ? 'md:hidden' : ''}`}>
-            CashFlow Copilot
+            Cashflow Co
           </span>
           <button
             type="button"

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { ThemeToggle } from '@/components/marketing/ThemeToggle';
 
 export function MobileMenu({ links }: { links: { href: string; label: string }[] }) {
   const pathname = usePathname();
@@ -19,6 +20,8 @@ export function MobileMenu({ links }: { links: { href: string; label: string }[]
 
   return (
     <div className="md:hidden">
+      <ThemeToggle />
+
       <button
         type="button"
         aria-label={open ? 'Close menu' : 'Open menu'}

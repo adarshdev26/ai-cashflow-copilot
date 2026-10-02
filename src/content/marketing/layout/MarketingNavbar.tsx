@@ -3,6 +3,7 @@ import { Container } from '../../../components/marketing/primitives/Container';
 import { CTAButton } from '../../../components/marketing/primitives/CTAButton';
 import { MobileMenu } from './MobileMenu';
 import { NAV_LINKS, SITE } from '@/content/marketing/site';
+import { ThemeToggle } from '@/components/marketing/ThemeToggle';
 
 export function MarketingNavbar() {
   return (
@@ -21,6 +22,7 @@ export function MarketingNavbar() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           <CTAButton href="/login" variant="ghost">Log in</CTAButton>
           <CTAButton href="/signup">Get started</CTAButton>
         </div>

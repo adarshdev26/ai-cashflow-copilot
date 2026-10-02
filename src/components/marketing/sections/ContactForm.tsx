@@ -5,7 +5,7 @@ import { useState } from 'react';
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
 const field =
-  'mt-1 w-full rounded-lg border border-mk-line bg-mk-bg px-3 py-2.5 outline-none focus:border-mk-brand';
+  'mt-1.5 w-full rounded-lg border border-mk-line bg-mk-bg px-3.5 py-3 outline-none transition focus:border-mk-brand focus:ring-4 focus:ring-mk-brand/15';
 
 export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle');
@@ -52,7 +52,7 @@ export function ContactForm() {
       </label>
       {/* honeypot: hidden from people, bots fill it */}
       <input name="company" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
-      {status === 'error' && <p className="text-sm text-rose-600">Something went wrong. Please try again.</p>}
+      {status === 'error' && <p className="text-sm text-rose-500">Something went wrong. Please try again.</p>}
       <button
         type="submit"
         disabled={status === 'sending'}

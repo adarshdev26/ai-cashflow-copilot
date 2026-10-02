@@ -75,10 +75,6 @@ body {
   letter-spacing: -0.02em;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 .mk-grid {
   background-image:
     linear-gradient(to right, color-mix(in oklab, var(--mk-fg) 7%, transparent) 1px, transparent 1px),
@@ -91,4 +87,95 @@ html {
   background-image: radial-gradient(color-mix(in oklab, var(--mk-fg) 14%, transparent) 1px, transparent 1px);
   background-size: 22px 22px;
   mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 100%);
+}
+
+/* ---- Marketing light theme ---- */
+html[data-mk-theme="light"] .marketing {
+  --mk-brand: #4f46e5;
+  --mk-brand-fg: #ffffff;
+  --mk-bg: #ffffff;
+  --mk-surface: #f5f6fb;
+  --mk-fg: #0f1220;
+  --mk-muted: #5b6478;
+  --mk-line: #e3e6f0;
+  color-scheme: light;
+}
+
+/* ---- Fade-up reveal ---- */
+.mk-pre {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) var(--mk-delay, 0ms),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) var(--mk-delay, 0ms);
+}
+.mk-pre.mk-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mk-pre { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---- Reveal variants (above .mk-pre.mk-in is not required thanks to :not) ---- */
+.mk-pre[data-reveal="scale"]:not(.mk-in) { transform: translateY(20px) scale(0.97); }
+.mk-pre[data-reveal="left"]:not(.mk-in)  { transform: translateX(-28px); }
+.mk-pre[data-reveal="right"]:not(.mk-in) { transform: translateX(28px); }
+
+/* ---- Above-the-fold entrance (pure CSS, no JS) ---- */
+@keyframes mk-enter { from { opacity: 0; transform: translateY(18px); } }
+.mk-enter { animation: mk-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: var(--mk-delay, 0ms); }
+
+/* ---- Aurora background ---- */
+.mk-aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.mk-aurora::before,
+.mk-aurora::after { content: ""; position: absolute; border-radius: 9999px; filter: blur(90px); opacity: 0.5; }
+.mk-aurora::before {
+  width: 42rem; height: 42rem; left: -10rem; top: -16rem;
+  background: color-mix(in oklab, var(--mk-brand) 45%, transparent);
+  animation: mk-float 14s ease-in-out infinite alternate;
+}
+.mk-aurora::after {
+  width: 34rem; height: 34rem; right: -8rem; top: -8rem;
+  background: color-mix(in oklab, #22d3ee 28%, transparent);
+  animation: mk-float 18s ease-in-out infinite alternate-reverse;
+}
+html[data-mk-theme="light"] .mk-aurora::before,
+html[data-mk-theme="light"] .mk-aurora::after { opacity: 0.3; }
+@keyframes mk-float { to { transform: translate3d(3rem, 2rem, 0) scale(1.1); } }
+
+/* ---- Gradient headline text ---- */
+.mk-gradient-text {
+  background-image: linear-gradient(135deg, var(--mk-fg) 25%, color-mix(in oklab, var(--mk-brand) 75%, var(--mk-fg)) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* ---- Interactive card (hover lift + glow) ---- */
+.mk-card {
+  position: relative;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+.mk-card::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(420px circle at 50% 0%, color-mix(in oklab, var(--mk-brand) 14%, transparent), transparent 60%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.mk-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--mk-brand) 50%, var(--mk-line));
+  box-shadow: 0 16px 40px -16px color-mix(in oklab, var(--mk-brand) 40%, transparent);
+}
+.mk-card:hover::before { opacity: 1; }
+
+/* ---- Fade a frame into the background ---- */
+.mk-fade-bottom { mask-image: linear-gradient(to bottom, #000 55%, transparent 100%); }
+
+/* ---- Theme-aware screenshots ---- */
+.mk-img-light { display: none; }
+html[data-mk-theme="light"] .mk-img-light { display: block; }
+html[data-mk-theme="light"] .mk-img-dark  { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-enter, .mk-aurora::before, .mk-aurora::after { animation: none; }
+  .mk-card, .mk-card:hover { transform: none; }
 }

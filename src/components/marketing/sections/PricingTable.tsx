@@ -57,7 +57,7 @@ export function PricingTable({ title, subtitle, plans, tone = "default" }: Props
 
       <div
         className={cx(
-          "mx-auto mt-12 grid max-w-5xl gap-6",
+          "mx-auto mt-14 grid gap-6",
           plans.length >= 3 ? "lg:grid-cols-3" : plans.length === 2 ? "md:grid-cols-2" : "",
         )}
       >
