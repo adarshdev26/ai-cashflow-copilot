@@ -5,9 +5,8 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
-  const isHome = pathname === '/';
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
-  const isDashboardPage = pathname.startsWith('/dashboard'); // '/' removed: it's public now
+  const isDashboardPage = pathname.startsWith('/dashboard');
   const isOnboardingPage = pathname.startsWith('/onboarding');
 
   // 1. Protected pages without a token -> /login
@@ -20,16 +19,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // 3. OPTIONAL: logged-in users on the landing page -> /dashboard
-  //    (keeps the old behavior of "/"). Delete this block if you want
-  //    logged-in users to be able to view the marketing home page.
-  if (isHome && token) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
+  // Marketing pages (including "/") are public for everyone.
+  // The navbar shows "Open <app>" for logged-in users instead of redirecting them.
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/', '/dashboard/:path*', '/onboarding/:path*', '/login', '/signup'],
+  matcher: ['/dashboard/:path*', '/onboarding/:path*', '/login', '/signup'],
 };
