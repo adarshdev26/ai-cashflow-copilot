@@ -74,7 +74,12 @@ function LoginForm() {
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-base-content/70 mb-1">Password</label>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="block text-sm font-medium text-base-content/70">Password</label>
+              <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
