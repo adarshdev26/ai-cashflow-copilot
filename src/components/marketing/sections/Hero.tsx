@@ -37,7 +37,7 @@ export function Hero({ eyebrow, title, subtitle, primary, secondary, showPreview
 
         <h1
           style={d(80)}
-          className="mk-enter mk-heading mk-gradient-text mx-auto max-w-4xl text-4xl font-extrabold sm:text-6xl lg:text-7xl"
+          className="mk-enter mk-heading mk-gradient-text mx-auto max-w-4xl text-4xl font-extrabold sm:text-6xl lg:text-7xl pb-2"
         >
           {title}
         </h1>

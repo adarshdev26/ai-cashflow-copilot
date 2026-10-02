@@ -1,5 +1,5 @@
 export const SITE = {
-  name: 'Cashflow Co', // TODO: real brand
+  name: 'Cashflow Copilot', // TODO: real brand
   tagline: 'Money, habits and notes, in one shared workspace.',
   description:
     'Track income and expenses, keep family, business and side-project money in separate workspaces, and build better money habits, together.',
