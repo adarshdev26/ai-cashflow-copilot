@@ -1,247 +1,50 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  useWorkspace,
-  useUpdateWorkspace,
-  useDeleteWorkspace,
-  useWorkspaceAccess,
-  useUpdateWorkspaceMember,
-  useRemoveWorkspaceMember,
-} from '@/features/workspaces';
-import {
-  InvitationLinkCard,
-  InviteMemberForm,
-  PendingInvitationsList,
-  type IssuedInvitationLink,
-} from '@/features/invitations';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { usePermission } from '@/features/workspaces';
-import { RolesPermissionsSection } from '@/features/workspaces';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { Suspense } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { User, Building2 } from 'lucide-react';
+import { Tabs, type TabItem } from '@/components/ui/Tabs';
+import { ProfileTab } from './_components/ProfileTab';
+import { WorkspaceTab } from './_components/WorkspaceTab';
 
-// The key remounts the content when the active workspace changes,
-// so local form state (like the name input) always starts fresh.
+type TabId = 'profile' | 'workspace';
+
+const TABS: readonly TabItem<TabId>[] = [
+  { id: 'profile', label: 'Profile', icon: <User className="h-4 w-4" /> },
+  { id: 'workspace', label: 'Workspace', icon: <Building2 className="h-4 w-4" /> },
+];
+
 export default function SettingsPage() {
-  const { active } = useWorkspace();
-  return <SettingsContent key={active.workspaceId} />;
+  return (
+    <Suspense fallback={null}>
+      <SettingsTabs />
+    </Suspense>
+  );
 }
 
-function SettingsContent() {
-  const { active: workspace, workspaces } = useWorkspace();
-  const [name, setName] = useState(workspace.name);
-  const [deleteOpen, setDeleteOpen] = useState(false);
+function SettingsTabs() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // The newest invite link. Memory only: the raw token is never stored anywhere.
-  const [issuedLink, setIssuedLink] = useState<IssuedInvitationLink | null>(null);
-
-  const canViewMembers = usePermission('members.view');
-  const canRename = usePermission('workspace.rename');
-  const canInvite = usePermission('members.invite');
-  const canChangeRoles = usePermission('members.changeRole');
-  const canRemoveMembers = usePermission('members.remove');
-  const canDeleteWorkspace = usePermission('workspace.delete');
-
-  const { data: members, isLoading: loadingMembers } = useWorkspaceAccess(workspace.workspaceId, {
-    enabled: canViewMembers,
-  });
-
-  const { mutate: updateName, isPending: updatingName } = useUpdateWorkspace();
-  const { mutate: deleteWs, isPending: deletingWs } = useDeleteWorkspace();
-  const { mutate: updateMember } = useUpdateWorkspaceMember();
-  const { mutate: removeMember } = useRemoveWorkspaceMember();
-
-  const handleUpdateName = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = name.trim();
-    if (trimmed && trimmed !== workspace.name) {
-      updateName(
-        { workspaceId: workspace.workspaceId, name: trimmed },
-        {
-          onSuccess: () => notify.success('Workspace renamed'),
-          onError: (error) => notify.error(getErrorMessage(error, 'Failed to rename workspace')),
-        }
-      );
-    }
-  };
-
-  const handleDelete = () => {
-    deleteWs(workspace.workspaceId, {
-      onSuccess: () => {
-        setDeleteOpen(false);
-        notify.success('Workspace deleted');
-      },
-      onError: (error) => notify.error(getErrorMessage(error, 'Failed to delete workspace')),
-    });
-  };
+  const active: TabId = searchParams.get('tab') === 'workspace' ? 'workspace' : 'profile';
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-base-content">Workspace Settings</h1>
-        <p className="text-base-content/60 mt-1">Manage your workspace details and members.</p>
+        <h1 className="text-2xl font-bold text-base-content">Settings</h1>
+        <p className="mt-1 text-base-content/60">Manage your account and workspace.</p>
       </div>
 
-      <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-base-content">General</h2>
-        {canRename ? (
-          <form onSubmit={handleUpdateName} className="flex gap-4 max-w-md">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={updatingName}
-              className="flex-1 rounded-md border border-base-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-base-200"
-              placeholder="Workspace Name"
-            />
+      <div data-tour="settings-tabs">
+        <Tabs
+          tabs={TABS}
+          active={active}
+          onChange={(id) => router.replace(`${pathname}?tab=${id}`, { scroll: false })}
+        />
+      </div>
 
-            <button
-              type="submit"
-              disabled={name.trim() === workspace.name || updatingName || !name.trim()}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-content hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {updatingName ? 'Saving...' : 'Save'}
-            </button>
-
-          </form>
-        ) : (
-          <p className="text-sm text-base-content">{workspace.name}</p>
-        )}
-      </section>
-
-      {canViewMembers && (
-        <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-6">
-          <h2 className="text-lg font-semibold text-base-content">Members</h2>
-
-          {canInvite && (
-            <InviteMemberForm
-              workspaceId={workspace.workspaceId}
-              onCreated={setIssuedLink}
-            />
-          )}
-
-          <div className="border border-base-300 rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-base-300 text-sm text-left">
-              <thead className="bg-base-200 text-base-content/60">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Email</th>
-                  <th className="px-4 py-3 font-medium">Role</th>
-                  <th className="px-4 py-3 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-base-300 bg-base-100">
-                {loadingMembers ? (
-                  <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-base-content/60 animate-pulse">
-                      Loading members...
-                    </td>
-                  </tr>
-                ) : (
-                  members?.map((m) => (
-                    <tr key={m.userId}>
-                      <td className="px-4 py-3 text-base-content">{m.user?.email}</td>
-                      <td className="px-4 py-3 text-base-content/80">
-                        {m.role === 'OWNER' ? (
-                          <span className="font-medium text-primary">Owner</span>
-                        ) : (
-                          <select
-                            value={m.role}
-                            onChange={(e) =>
-                              updateMember(
-                                {
-                                  workspaceId: workspace.workspaceId,
-                                  userId: m.userId,
-                                  role: e.target.value,
-                                },
-                                {
-                                  onSuccess: () => notify.success('Role updated'),
-                                  onError: (error) => notify.error(getErrorMessage(error, 'Failed to update role')),
-                                }
-                              )
-                            }
-                            disabled={!canChangeRoles}
-                            className="rounded border-base-300 text-sm py-1 pl-2 pr-8 focus:ring-primary focus:border-primary border-none bg-transparent"
-                          >
-                            <option value="ADMIN">Admin</option>
-                            <option value="MEMBER">Member</option>
-                            <option value="VIEWER">Viewer</option>
-                          </select>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {m.role !== 'OWNER' && canRemoveMembers && (
-                          <button
-                            onClick={() =>
-                              removeMember(
-                                { workspaceId: workspace.workspaceId, userId: m.userId },
-                                {
-                                  onSuccess: () => notify.success('Member removed'),
-                                  onError: (error) => notify.error(getErrorMessage(error, 'Failed to remove member')),
-                                }
-                              )
-                            }
-                            className="text-error hover:text-error font-medium text-sm"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
-      {canInvite && (
-        <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold text-base-content">Pending Invitations</h2>
-            <p className="text-sm text-base-content/60 mt-1">
-              Invitations that have been sent but not yet accepted.
-            </p>
-          </div>
-          <PendingInvitationsList
-            workspaceId={workspace.workspaceId}
-            onLinkReady={setIssuedLink}
-            onCancelled={(email) =>
-              setIssuedLink((current) => (current?.email === email ? null : current))
-            }
-          />
-        </section>
-      )}
-
-      {canDeleteWorkspace && workspaces.length > 1 && (
-        <section className="bg-error/10 rounded-xl border border-error/30 p-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-error">Delete Workspace</h2>
-            <p className="text-error text-sm mt-1">
-              Permanently remove this workspace and all its data. This cannot be undone.
-            </p>
-          </div>
-          <button
-            onClick={() => setDeleteOpen(true)}
-            className="rounded-md bg-error px-4 py-2 text-sm font-medium text-error-content hover:bg-error"
-          >
-            Delete Workspace
-          </button>
-        </section>
-      )}
-
-      <RolesPermissionsSection />
-
-      <ConfirmDialog
-        isOpen={deleteOpen}
-        title="Delete Workspace"
-        description={`Are you sure you want to delete "${workspace.name}"? This will permanently delete all transactions, habits, and notes.`}
-        confirmText={deletingWs ? 'Deleting...' : 'Delete'}
-        variant="danger"
-        onConfirm={handleDelete}
-        onClose={() => setDeleteOpen(false)}
-      />
-      <InvitationLinkCard link={issuedLink} onDismiss={() => setIssuedLink(null)} />
+      {active === 'profile' ? <ProfileTab /> : <WorkspaceTab />}
     </div>
   );
 }

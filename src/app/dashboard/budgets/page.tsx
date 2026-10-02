@@ -70,13 +70,13 @@ export default function BudgetsPage() {
           <p className="text-sm text-base-content/60">Track and control your spending.</p>
         </div>
         {canManage && (
-          <Button onClick={openCreate} disabled={isPast}>
+          <Button data-tour={isPast ? undefined : 'budgets-add-btn'} onClick={openCreate} disabled={isPast}>
             + Create Budget
           </Button>
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3" data-tour="budgets-month-selector">
         <Button variant="secondary" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -202,14 +202,16 @@ export default function BudgetsPage() {
           )}
         </div>
       ) : (
-        <BudgetTable
-          budgets={budgets}
-          canManage={canManage}
-          onEdit={openEdit}
-          onDeactivate={setRemoving}
-          isLoading={isLoading}
-          isFetching={isFetching}
-        />
+        <div data-tour="budgets-list">
+          <BudgetTable
+            budgets={budgets}
+            canManage={canManage}
+            onEdit={openEdit}
+            onDeactivate={setRemoving}
+            isLoading={isLoading}
+            isFetching={isFetching}
+          />
+        </div>
       )}
 
       {formOpen && (

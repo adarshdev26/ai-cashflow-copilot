@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createCategory, updateCategory, deleteCategory } from '../api/categories-crud-api';
 import type { CategoryInput, CategoryUpdate } from '../types';
+import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
 
 function useInvalidateCategories(workspaceId: string) {
   const queryClient = useQueryClient();
@@ -8,6 +9,7 @@ function useInvalidateCategories(workspaceId: string) {
     queryClient.invalidateQueries({ queryKey: ['categories', workspaceId] });
     // category names/colors appear in the ledger, stats and the donut chart
     queryClient.invalidateQueries({ queryKey: ['transactions', workspaceId] });
+    invalidateReports(queryClient);
   };
 }
 

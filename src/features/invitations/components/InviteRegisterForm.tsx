@@ -13,7 +13,7 @@ import { setActiveWorkspaceId } from '../utils';
 type Props = { token: string; email: string };
 
 const inputClass =
-  'w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-primary focus:outline-none';
+  'w-full rounded-lg bg-base-100 border border-base-300 px-4 py-2.5 text-base-content focus:border-primary focus:outline-none';
 
 export function InviteRegisterForm({ token, email }: Props) {
   const router = useRouter();
@@ -57,7 +57,7 @@ export function InviteRegisterForm({ token, email }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="rounded bg-error/10 p-3 text-sm text-red-400 border border-error/20">
+        <div className="rounded bg-error/10 p-3 text-sm text-error border border-error/20">
           {error}
         </div>
       )}

@@ -35,15 +35,15 @@ export function InviteAcceptCard({ token, email }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-base-content/50">
-        You are signed in as <span className="text-white">{email}</span>.
+        You are signed in as <span className="text-base-content">{email}</span>.
       </p>
       {error && (
-        <div className="rounded bg-error/10 p-3 text-sm text-red-400 border border-error/20">
+        <div className="rounded bg-error/10 p-3 text-sm text-error border border-error/20">
           {error.message}
           {error.code === 'ALREADY_MEMBER' && (
             <>
               {' '}
-              <Link href="/dashboard" className="text-indigo-400 hover:underline">
+              <Link href="/dashboard" className="text-primary hover:underline">
                 Go to dashboard
               </Link>
             </>

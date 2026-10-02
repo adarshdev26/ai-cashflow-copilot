@@ -36,6 +36,7 @@ export function UseTemplateMenu({ onSelect }: Props) {
   return (
     <div ref={ref} className="relative">
       <Button
+        data-tour="use-template-btn"
         variant="secondary"
         onClick={() => setOpen((o) => !o)}
         leftIcon={<LayoutTemplate className="h-4 w-4" />}

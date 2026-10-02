@@ -13,7 +13,7 @@ const variants = {
   primary: 'bg-mk-brand text-mk-brand-fg hover:opacity-90',
   secondary: 'border border-mk-line bg-mk-bg text-mk-fg hover:bg-mk-surface',
   ghost: 'text-mk-fg hover:bg-mk-surface',
-  inverse: 'bg-white text-mk-brand hover:bg-white/90',
+  inverse: 'bg-mk-fg text-mk-bg hover:bg-mk-fg/90',
 };
 
 export function CTAButton({ href, variant = 'primary', size = 'md', className, children }: Props) {

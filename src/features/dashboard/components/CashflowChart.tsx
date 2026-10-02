@@ -25,6 +25,8 @@ export function CashflowChart() {
 
   return (
     <ChartCard
+      tourId="overview-cashflow"
+      exportTourId="overview-cashflow-png"
       title="Income vs Expense"
       description="Monthly totals"
       action={<RangeSelect label="Cashflow range" value={months} options={OPTIONS} onChange={setMonths} />}
@@ -36,13 +38,13 @@ export function CashflowChart() {
       <div className={`h-full transition-opacity ${isFetching ? 'opacity-60' : 'opacity-100'}`} aria-busy={isFetching}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} minTickGap={12} />
-            <YAxis tickFormatter={formatCompact} tickLine={false} axisLine={false} fontSize={12} width={56} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-base-300)" />
+            <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: 'var(--color-base-content)' }} fontSize={12} minTickGap={12} />
+            <YAxis tickFormatter={formatCompact} tickLine={false} axisLine={false} tick={{ fill: 'var(--color-base-content)' }} fontSize={12} width={56} />
             <Tooltip formatter={(value) => formatCurrency(Number(value))} />
             <Legend />
-            <Bar dataKey="income" name="Income" fill="#059669" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="expense" name="Expense" fill="#dc2626" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="income" name="Income" fill="var(--color-success)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="expense" name="Expense" fill="var(--color-error)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

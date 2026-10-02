@@ -18,8 +18,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 422 });
   }
 
-  // TODO: send via your email provider (Resend, Postmark, SES) or save to your DB.
-  console.log('[contact]', { name, email, message });
-
   return NextResponse.json({ ok: true });
 }

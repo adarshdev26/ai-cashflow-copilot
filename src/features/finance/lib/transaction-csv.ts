@@ -42,10 +42,22 @@ export function parseTransactionCsv(text: string): { rows: ParsedCsvRow[]; error
     const amount = Number((raw['amount'] ?? '').trim());
     const description = (raw['description'] ?? '').trim();
 
-    if (Number.isNaN(date.getTime())) return errors.push({ row, message: 'Invalid Date (use e.g. 2026-09-30T09:15:00.000Z)' }) as unknown as void;
-    if (type !== 'CREDIT' && type !== 'DEBIT') return errors.push({ row, message: 'Type must be CREDIT or DEBIT' }) as unknown as void;
-    if (!Number.isFinite(amount) || amount <= 0) return errors.push({ row, message: 'Amount must be a positive number' }) as unknown as void;
-    if (description.length > 255) return errors.push({ row, message: 'Description is longer than 255 characters' }) as unknown as void;
+    if (Number.isNaN(date.getTime())) {
+      errors.push({ row, message: 'Invalid Date (use e.g. 2026-09-30T09:15:00.000Z)' });
+      return;
+    }
+    if (type !== 'CREDIT' && type !== 'DEBIT') {
+      errors.push({ row, message: 'Type must be CREDIT or DEBIT' });
+      return;
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      errors.push({ row, message: 'Amount must be a positive number' });
+      return;
+    }
+    if (description.length > 255) {
+      errors.push({ row, message: 'Description is longer than 255 characters' });
+      return;
+    }
 
     rows.push({
       row,

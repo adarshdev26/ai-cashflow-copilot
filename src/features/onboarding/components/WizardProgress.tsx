@@ -27,18 +27,18 @@ export function WizardProgress({
                 className={cn(
                   'flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold transition-colors',
                   done && 'border-primary bg-primary text-primary-content',
-                  active && 'border-primary text-indigo-400',
-                  !done && !active && 'border-gray-700 text-base-content/60'
+                  active && 'border-primary text-primary',
+                  !done && !active && 'border-base-300 text-base-content/60'
                 )}
               >
                 {done ? <Check className="h-3.5 w-3.5" /> : i + 1}
               </span>
-              <span className={cn('text-[11px]', active ? 'text-gray-200' : 'text-base-content/60')}>
+              <span className={cn('text-[11px]', active ? 'text-base-content' : 'text-base-content/60')}>
                 {label}
               </span>
             </div>
             {!isLast && (
-              <div className={cn('mx-2 mb-5 h-px flex-1', done ? 'bg-primary' : 'bg-gray-800')} />
+              <div className={cn('mx-2 mb-5 h-px flex-1', done ? 'bg-primary' : 'bg-base-300')} />
             )}
           </li>
         );

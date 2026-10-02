@@ -15,7 +15,7 @@ type Props = {
 };
 
 const fieldClass =
-  'w-full rounded-lg bg-gray-950 border border-gray-800 px-4 py-2.5 text-white focus:border-primary focus:outline-none';
+  'w-full rounded-lg bg-base-100 border border-base-300 px-4 py-2.5 text-base-content focus:border-primary focus:outline-none';
 
 export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
   const save = useSaveOnboardingSetup();
@@ -57,7 +57,7 @@ export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
       </div>
 
       {error && (
-        <div className="rounded border border-error/20 bg-error/10 p-3 text-sm text-red-400">
+        <div className="rounded border border-error/20 bg-error/10 p-3 text-sm text-error">
           {error}
         </div>
       )}
@@ -102,8 +102,8 @@ export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
                 className={cn(
                   'rounded-full border px-3 py-1.5 text-xs transition-colors',
                   selected
-                    ? 'border-primary bg-primary/10 text-indigo-300'
-                    : 'border-gray-800 text-base-content/50 hover:border-gray-600 hover:text-gray-200'
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-base-300 text-base-content/50 hover:border-base-content/40 hover:text-base-content'
                 )}
               >
                 {opt.label}
@@ -118,7 +118,7 @@ export function StepWorkspaceSetup({ workspace, onBack, onNext }: Props) {
           type="button"
           onClick={onBack}
           disabled={save.isPending}
-          className="text-sm text-base-content/50 hover:text-white disabled:opacity-50"
+          className="text-sm text-base-content/50 hover:text-base-content disabled:opacity-50"
         >
           Back
         </button>

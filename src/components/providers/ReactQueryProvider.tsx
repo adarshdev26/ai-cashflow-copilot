@@ -6,22 +6,20 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState, type ReactNode } from 'react';
 import { ApiError } from '@/lib/api-client';
 
 let redirecting = false;
 
-// Any 401 from any query or mutation ends up here.
 function handleAuthError(error: unknown) {
   if (!(error instanceof ApiError) || error.status !== 401) return;
   if (typeof window === 'undefined' || redirecting) return;
 
-  // A wrong password on the login form is also a 401. Don't redirect from auth pages.
   const path = window.location.pathname;
   if (path.startsWith('/login') || path.startsWith('/signup')) return;
 
-  redirecting = true; // several parallel queries fail together; redirect once
-  // Full page navigation: clears the bad cookie via the route handler AND wipes the in-memory cache
+  redirecting = true;
   window.location.replace('/api/auth/invalid');
 }
 
@@ -33,14 +31,13 @@ export function ReactQueryProvider({ children }: { children: ReactNode }) {
         mutationCache: new MutationCache({ onError: handleAuthError }),
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes
+            staleTime: 1000 * 60 * 5,
             refetchOnWindowFocus: false,
-            // Retrying can't fix "not logged in" or "not allowed", so fail immediately
             retry: (failureCount, error) => {
               if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
                 return false;
               }
-              return failureCount < 3; // React Query's default
+              return failureCount < 3;
             },
           },
         },
@@ -48,6 +45,9 @@ export function ReactQueryProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+    </QueryClientProvider>
   );
 }

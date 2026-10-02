@@ -193,6 +193,9 @@ export const TransactionTable = memo(function TransactionTable({
         columns={columns}
         data={transactions}
         searchKey="description"
+        searchTourId="transaction-search"
+        paginationTourId="transaction-pagination"
+        actionsTourId={transactions.length > 0 && (canEdit || canDelete) ? 'transaction-actions' : undefined}
         searchPlaceholder="Search transactions..."
         pageSize={pagination.pageSize}
         manualPagination

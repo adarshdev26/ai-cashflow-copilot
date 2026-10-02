@@ -22,14 +22,14 @@ export const FinanceHeader = memo(function FinanceHeader({ onOpenModal, onOpenEx
         <h1 className="text-2xl font-bold tracking-tight text-base-content">Financial Ledger</h1>
         <p className="text-sm text-base-content/60">Track and manage your income, expenses, and cash flow items.</p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" data-tour="transactions-import-export">
         {onOpenExport && (
           <Button variant="secondary" onClick={onOpenExport} leftIcon={<Download className="h-4 w-4" />}>
             Export
           </Button>
         )}
         {canCreate && onOpenImport && (
-          <Button variant="secondary" onClick={onOpenImport} leftIcon={<Upload className="h-4 w-4" />}>
+          <Button data-tour="transactions-import" variant="secondary" onClick={onOpenImport} leftIcon={<Upload className="h-4 w-4" />}>
             Import
           </Button>
         )}

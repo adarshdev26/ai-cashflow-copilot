@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAccounts, createAccount, updateAccount, deleteAccount } from '../api/accounts-api';
 import { financeKeys } from '@/features/finance/hooks/use-finance';
 import type { CreateAccountInput, UpdateAccountInput } from '../types';
+import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
 
 export const accountKeys = {
   all: (workspaceId: string) => ['accounts', workspaceId] as const,
@@ -28,6 +29,7 @@ export function useCreateAccount(workspaceId: string) {
     mutationFn: (data: CreateAccountInput) => createAccount(workspaceId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountKeys.all(workspaceId) });
+      invalidateReports(queryClient);
     },
   });
 }
@@ -41,6 +43,7 @@ export function useUpdateAccount(workspaceId: string) {
       queryClient.invalidateQueries({ queryKey: accountKeys.all(workspaceId) });
       // Transaction rows include the account name, so refresh the ledger too.
       queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
+      invalidateReports(queryClient);
     },
   });
 }
@@ -51,6 +54,7 @@ export function useDeleteAccount(workspaceId: string) {
     mutationFn: (id: string) => deleteAccount(workspaceId, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accountKeys.all(workspaceId) });
+      invalidateReports(queryClient);
     },
   });
 }
