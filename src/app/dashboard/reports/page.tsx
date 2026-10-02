@@ -15,6 +15,7 @@ import { BudgetPerformance } from '@/features/reports/components/BudgetPerforman
 import { TopExpenses } from '@/features/reports/components/TopExpenses';
 import { notify, getErrorMessage } from '@/lib/toast';
 import { ChartCard, slugify } from '@/components/ui/chart';
+import { PrimaryButton } from '@/components/ui/Button';
 
 const IncomeExpenseChart = dynamic(
   () => import('@/features/reports/components/IncomeExpenseChart').then((m) => m.IncomeExpenseChart),
@@ -154,141 +155,140 @@ function ReportsPageContent() {
           <h1 className="text-2xl font-bold text-base-content">Reports</h1>
           <p className="mt-1 text-base-content/60">Analyze your income, expenses, and cash flow.</p>
         </div>
-        <button
-          type="button"
-          onClick={handleExport}
-          disabled={exporting || !data || !!empty}
-          className="btn btn-outline btn-sm gap-1.5"
+
+        <PrimaryButton
+          onClick={handleExport} leftIcon={<Download className="h-4 w-4" />} loading={exporting} disabled={isLoading || !data || empty}
         >
-          <Download className="h-4 w-4" />
-          {exporting ? 'Exporting...' : 'Export CSV'}
-        </button>
+          Export CSV
+        </PrimaryButton>
       </div>
 
       <div className={card}>
         <ReportFilters value={filters} onChange={handleChange} options={data?.options} />
       </div>
 
-      {error && !data ? (
-        <div className="space-y-4">
-          <div role="alert" className="rounded-xl border border-error/30 bg-error/10 p-6 text-center">
-            <p className="font-medium text-error">Could not load the report</p>
-            <p className="mt-1 text-sm text-base-content/70">{getErrorMessage(error, 'Try again.')}</p>
-            <button type="button" onClick={() => refetch()} className="btn btn-sm btn-outline mt-3">
-              Retry
-            </button>
-          </div>
-          <div className="grid gap-6 lg:grid-cols-5">
-            <div className="lg:col-span-3">
-              <ChartCard title="Income vs Expense" isError onRetry={() => refetch()} ariaLabel={incomeExpenseLabel} />
-            </div>
-            <div className="lg:col-span-2">
-              <ChartCard title="Spending by Category" isError onRetry={() => refetch()} ariaLabel={categoryLabel} />
-            </div>
-          </div>
-        </div>
-      ) : isLoading || !data ? (
-        <>
-          <SummaryCardsSkeleton />
-          <div className="grid gap-6 lg:grid-cols-5">
-            <div className="lg:col-span-3">
-              <ChartCard title="Income vs Expense" isLoading ariaLabel={incomeExpenseLabel} />
-            </div>
-            <div className="lg:col-span-2">
-              <ChartCard title="Spending by Category" isLoading ariaLabel={categoryLabel} />
-            </div>
-          </div>
-          <p className="text-center text-sm text-base-content/60">Loading report...</p>
-        </>
-      ) : (
-        <div className={`space-y-6 transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
-          {error && data && (
-            <div role="alert" className="alert alert-warning justify-between">
-              <span>{getErrorMessage(error, 'Could not refresh the report.')}</span>
-              <button type="button" onClick={() => refetch()} className="btn btn-sm btn-outline">
+      {
+        error && !data ? (
+          <div className="space-y-4">
+            <div role="alert" className="rounded-xl border border-error/30 bg-error/10 p-6 text-center">
+              <p className="font-medium text-error">Could not load the report</p>
+              <p className="mt-1 text-sm text-base-content/70">{getErrorMessage(error, 'Try again.')}</p>
+              <button type="button" onClick={() => refetch()} className="btn btn-sm btn-outline mt-3">
                 Retry
               </button>
             </div>
-          )}
-          {data.mixedCurrency && (
-            <div role="alert" className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-              <span>
-                Amounts in different currencies are not converted. Per-currency totals are shown
-                below.
-              </span>
+            <div className="grid gap-6 lg:grid-cols-5">
+              <div className="lg:col-span-3">
+                <ChartCard title="Income vs Expense" isError onRetry={() => refetch()} ariaLabel={incomeExpenseLabel} />
+              </div>
+              <div className="lg:col-span-2">
+                <ChartCard title="Spending by Category" isError onRetry={() => refetch()} ariaLabel={categoryLabel} />
+              </div>
             </div>
-          )}
-
-          <SummaryCards
-            summary={data.summary}
-            mixedCurrency={data.mixedCurrency}
-            totalsByCurrency={data.totalsByCurrency}
-          />
-
-          {empty ? (
-            <div className={`${card} py-12 text-center`}>
-              <p className="font-medium text-base-content">No financial activity found</p>
-              <p className="mt-1 text-sm text-base-content/60">
-                Try changing your date range or filters.
-              </p>
+          </div>
+        ) : isLoading || !data ? (
+          <>
+            <SummaryCardsSkeleton />
+            <div className="grid gap-6 lg:grid-cols-5">
+              <div className="lg:col-span-3">
+                <ChartCard title="Income vs Expense" isLoading ariaLabel={incomeExpenseLabel} />
+              </div>
+              <div className="lg:col-span-2">
+                <ChartCard title="Spending by Category" isLoading ariaLabel={categoryLabel} />
+              </div>
             </div>
-          ) : (
-            <>
-              <div className="grid gap-6 lg:grid-cols-5">
-                <div className="lg:col-span-3">
-                  <ChartCard
-                    title="Income vs Expense"
-                    ariaLabel={incomeExpenseLabel}
-                    isError={!!error && !data}
-                    onRetry={() => refetch()}
-                    isEmpty={data.series.every((point) => point.income === 0 && point.expense === 0)}
-                    emptyMessage="No income or expenses in this period."
-                    filename={`${slugify(active.slug)}-${slugify('income-vs-expense')}-${rangeFilename}`}
-                  >
-                    <IncomeExpenseChart
-                      data={data.series}
-                      granularity={data.granularity}
+            <p className="text-center text-sm text-base-content/60">Loading report...</p>
+          </>
+        ) : (
+          <div className={`space-y-6 transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
+            {error && data && (
+              <div role="alert" className="alert alert-warning justify-between">
+                <span>{getErrorMessage(error, 'Could not refresh the report.')}</span>
+                <button type="button" onClick={() => refetch()} className="btn btn-sm btn-outline">
+                  Retry
+                </button>
+              </div>
+            )}
+            {data.mixedCurrency && (
+              <div role="alert" className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                <span>
+                  Amounts in different currencies are not converted. Per-currency totals are shown
+                  below.
+                </span>
+              </div>
+            )}
+
+            <SummaryCards
+              summary={data.summary}
+              mixedCurrency={data.mixedCurrency}
+              totalsByCurrency={data.totalsByCurrency}
+            />
+
+            {empty ? (
+              <div className={`${card} py-12 text-center`}>
+                <p className="font-medium text-base-content">No financial activity found</p>
+                <p className="mt-1 text-sm text-base-content/60">
+                  Try changing your date range or filters.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="grid gap-6 lg:grid-cols-5">
+                  <div className="lg:col-span-3">
+                    <ChartCard
+                      title="Income vs Expense"
                       ariaLabel={incomeExpenseLabel}
-                    />
-                  </ChartCard>
+                      isError={!!error && !data}
+                      onRetry={() => refetch()}
+                      isEmpty={data.series.every((point) => point.income === 0 && point.expense === 0)}
+                      emptyMessage="No income or expenses in this period."
+                      filename={`${slugify(active.slug)}-${slugify('income-vs-expense')}-${rangeFilename}`}
+                    >
+                      <IncomeExpenseChart
+                        data={data.series}
+                        granularity={data.granularity}
+                        ariaLabel={incomeExpenseLabel}
+                      />
+                    </ChartCard>
+                  </div>
+                  <div className="lg:col-span-2">
+                    <ChartCard
+                      title="Spending by Category"
+                      ariaLabel={categoryLabel}
+                      isError={!!error && !data}
+                      onRetry={() => refetch()}
+                      isEmpty={data.categories.length === 0}
+                      emptyMessage="No spending in this period."
+                      filename={`${slugify(active.slug)}-${slugify('spending-by-category')}-${rangeFilename}`}
+                    >
+                      <CategorySpending rows={data.categories} ariaLabel={categoryLabel} />
+                    </ChartCard>
+                  </div>
                 </div>
-                <div className="lg:col-span-2">
-                  <ChartCard
-                    title="Spending by Category"
-                    ariaLabel={categoryLabel}
-                    isError={!!error && !data}
-                    onRetry={() => refetch()}
-                    isEmpty={data.categories.length === 0}
-                    emptyMessage="No spending in this period."
-                    filename={`${slugify(active.slug)}-${slugify('spending-by-category')}-${rangeFilename}`}
-                  >
-                    <CategorySpending rows={data.categories} ariaLabel={categoryLabel} />
-                  </ChartCard>
+
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <Section title="Account Breakdown">
+                    <AccountBreakdown rows={data.accounts} />
+                  </Section>
+                  <Section title="Top Expenses">
+                    {data.topExpenses.length ? (
+                      <TopExpenses rows={data.topExpenses} />
+                    ) : (
+                      <p className="text-sm text-base-content/60">No expenses in this period.</p>
+                    )}
+                  </Section>
                 </div>
-              </div>
 
-              <div className="grid gap-6 lg:grid-cols-2">
-                <Section title="Account Breakdown">
-                  <AccountBreakdown rows={data.accounts} />
+                <Section title="Budget Performance">
+                  <BudgetPerformance budget={data.budget} />
                 </Section>
-                <Section title="Top Expenses">
-                  {data.topExpenses.length ? (
-                    <TopExpenses rows={data.topExpenses} />
-                  ) : (
-                    <p className="text-sm text-base-content/60">No expenses in this period.</p>
-                  )}
-                </Section>
-              </div>
-
-              <Section title="Budget Performance">
-                <BudgetPerformance budget={data.budget} />
-              </Section>
-            </>
-          )}
-        </div>
-      )}
-    </div>
+              </>
+            )}
+          </div>
+        )
+      }
+    </div >
   );
 }
 
