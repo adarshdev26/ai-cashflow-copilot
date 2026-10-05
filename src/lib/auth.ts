@@ -18,7 +18,7 @@ export function getJwtSecret(): string {
 const getPasswordChangedAt = cache(async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { passwordChangedAt: true },
+    select: { passwordChangedAt: true, isActive: true },
   });
   return user; // null when the user no longer exists
 });
@@ -39,6 +39,7 @@ export async function getSession(): Promise<{ userId: string; email: string } | 
   // not silently log everyone out.
   const user = await getPasswordChangedAt(decoded.userId);
   if (!user) return null; // account was deleted
+  if (!user.isActive) return null; // deactivated by an admin
 
   if (user.passwordChangedAt) {
     // JWT iat is in whole seconds, so compare in seconds. A token issued in the

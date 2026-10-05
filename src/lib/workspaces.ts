@@ -57,10 +57,11 @@ export async function requireWorkspaceAccess(
   // One indexed lookup using @@unique([workspaceId, userId])
   const membership = await prisma.workspaceAccess.findUnique({
     where: { workspaceId_userId: { workspaceId, userId } },
-    select: { role: true },
+    select: { role: true, workspace: { select: { isActive: true } } },
   });
 
   if (!membership) return fail('You do not have access to this workspace', 403);
+  if (!membership.workspace.isActive) return fail('This workspace has been deactivated', 403);
   if (!hasRole(membership.role, minimumRole)) {
     return fail('Your role does not allow this action', 403);
   }
@@ -97,7 +98,7 @@ export type WorkspaceSummary = {
 /** Every workspace the user can open (owned + shared). Uses the userId index. */
 export async function getUserWorkspaces(userId: string): Promise<WorkspaceSummary[]> {
   const rows = await prisma.workspaceAccess.findMany({
-    where: { userId },
+    where: { userId, workspace: { isActive: true } },
     select: {
       role: true,
       workspace: { select: { id: true, name: true, slug: true, owner: { select: { email: true } }, } },

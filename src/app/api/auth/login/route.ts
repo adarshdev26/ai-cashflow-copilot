@@ -33,6 +33,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
+    if (!user.isActive) {
+      return NextResponse.json(
+        { error: 'Your account has been deactivated. Please contact support.' },
+        { status: 403 }
+      );
+    }
+
     await setAuthCookie({ id: user.id, email: user.email })
 
     return NextResponse.json({ message: 'Login successful', userId: user.id }, { status: 200 })
