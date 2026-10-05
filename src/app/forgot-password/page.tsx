@@ -4,10 +4,12 @@ import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { PrimaryButton } from '@/components/ui/Button'
-import { notify, getErrorMessage } from '@/lib/toast'
+import { notify, getErrorMessage } from '@/lib/ui/toast'
+import { usePublicSettings } from '@/features/settings/hooks/use-settings'
 import { authInputCls } from '@/components/ui/inputs'
 
 export default function ForgotPasswordPage() {
+  const { data: settings } = usePublicSettings();
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -47,7 +49,7 @@ export default function ForgotPasswordPage() {
           <div className="space-y-4">
             <p className="text-sm text-base-content/70">
               If an account exists for <span className="font-medium text-base-content">{email}</span>, a reset link
-              has been sent. The link expires in 30 minutes.
+              has been sent. The link expires in {settings?.['auth.passwordResetExpiryMinutes'] ?? 30} minutes.
             </p>
             <Link href="/login" className="block text-center text-sm text-primary hover:underline">
               Back to log in

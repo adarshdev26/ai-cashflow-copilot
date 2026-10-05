@@ -17,12 +17,14 @@ export function IncomeExpenseChart({
   data,
   granularity,
   ariaLabel,
+  locale = 'en-IN',
 }: {
   data: SeriesPoint[];
   granularity: Granularity;
   ariaLabel: string;
+  locale?: string;
 }) {
-  const rows = data.map((p) => ({ ...p, name: formatReportBucket(p.key, granularity) }));
+  const rows = data.map((p) => ({ ...p, name: formatReportBucket(p.key, granularity, locale) }));
   return (
     <div className="relative h-full w-full overflow-hidden">
       <div className="h-full w-full" role="img" aria-label={ariaLabel}>
@@ -36,12 +38,12 @@ export function IncomeExpenseChart({
               interval="preserveStartEnd"
             />
             <YAxis
-              tickFormatter={formatCompactNumber}
+              tickFormatter={(value) => formatCompactNumber(Number(value), locale)}
               width={48}
               tick={{ fill: chartColors.baseContent, fontSize: 12 }}
               stroke={chartColors.base300}
             />
-            <ChartTooltip />
+            <ChartTooltip locale={locale} />
             <Legend />
             <Bar dataKey="income" name="Income" fill={chartColors.income} radius={[4, 4, 0, 0]} />
             <Bar dataKey="expense" name="Expense" fill={chartColors.expense} radius={[4, 4, 0, 0]} />
@@ -62,8 +64,8 @@ export function IncomeExpenseChart({
             {rows.map((row) => (
               <tr key={row.key}>
                 <th scope="row">{row.name}</th>
-                <td>{formatINR(row.income)}</td>
-                <td>{formatINR(row.expense)}</td>
+                <td>{formatINR(row.income, locale)}</td>
+                <td>{formatINR(row.expense, locale)}</td>
               </tr>
             ))}
           </tbody>

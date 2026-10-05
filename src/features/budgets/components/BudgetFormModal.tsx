@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { CategorySelect } from '@/resources/components/CategorySelect';
-import { notify } from '@/lib/toast';
+import { notify } from '@/lib/ui/toast';
 import { useCreateBudget, useUpdateBudget } from '../hooks/use-budgets';
 import type { BudgetUsage } from '../types';
 

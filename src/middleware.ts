@@ -5,6 +5,14 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
+  if (pathname.startsWith('/admin')) {
+    const adminToken = request.cookies.get('admin_session')?.value;
+    const isAdminLogin = pathname === '/admin/login';
+    if (!adminToken && !isAdminLogin) return NextResponse.redirect(new URL('/admin/login', request.url));
+    if (adminToken && isAdminLogin) return NextResponse.redirect(new URL('/admin/users', request.url));
+    return NextResponse.next();
+  }
+
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
   const isDashboardPage = pathname.startsWith('/dashboard');
   const isOnboardingPage = pathname.startsWith('/onboarding');
@@ -25,5 +33,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/onboarding/:path*', '/login', '/signup'],
+  matcher: ['/dashboard/:path*', '/onboarding/:path*', '/login', '/signup', '/admin/:path*'],
 };

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isValidEmail } from '@/lib/validations/auth';
-import { requestPasswordReset } from '@/lib/password-reset';
+import { requestPasswordReset } from '@/lib/auth/password-reset';
 
 const GENERIC = {
   message: 'If an account exists for that email, a reset link has been sent.',

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
-import { prisma } from '@/lib/prisma';
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
+import { prisma } from '@/lib/db/prisma';
 import { visibleCategoryWhere } from '@/lib/categories';
 
 type CategoryTotals = {

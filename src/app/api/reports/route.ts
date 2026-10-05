@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireWorkspaceAction } from '@/lib/workspaces';
+import { getSystemNumber } from '@/lib/settings/server';
+import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import { parseReportParams } from '@/features/reports/lib/report-filters';
 import type { ReportApiError } from '@/features/reports/types';
 import {
@@ -15,7 +16,7 @@ export async function GET(req: Request) {
     const access = await requireWorkspaceAction(req, 'workspace.read');
     if (!access.ok) return access.response;
 
-    const parsed = parseReportParams(new URL(req.url).searchParams);
+    const parsed = parseReportParams(new URL(req.url).searchParams, await getSystemNumber('limits.reportMaxDays'));
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
     const idError = await validateScopedIds(access.workspaceId, parsed.filters);

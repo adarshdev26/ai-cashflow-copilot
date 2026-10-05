@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
-import { prisma } from '@/lib/prisma';
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
+import { prisma } from '@/lib/db/prisma';
 
 type Totals = { income: number; expense: number; net: number; count: number };
 

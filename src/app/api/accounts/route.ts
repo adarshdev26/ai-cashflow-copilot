@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireWorkspaceAction } from '@/lib/workspaces';
+import { prisma } from '@/lib/db/prisma';
+import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import { Prisma } from '@/generated/prisma';
 import { validateCreateAccount } from '@/features/accounts/lib/validate-account';
 import { getAccountTotals, toAccountWithBalance } from '@/features/accounts/lib/balance';

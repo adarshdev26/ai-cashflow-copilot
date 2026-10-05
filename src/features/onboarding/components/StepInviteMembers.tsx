@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PrimaryButton } from '@/components/ui/Button';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { ROLE_DESCRIPTIONS } from '@/features/workspaces/permissions';
 import {
   InvitationLinkCard,

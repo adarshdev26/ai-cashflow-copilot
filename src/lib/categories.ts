@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db/prisma';
 
 export const CATEGORY_NAME_MAX = 40;
 const COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;

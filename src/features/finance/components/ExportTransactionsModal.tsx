@@ -6,7 +6,7 @@ import { Select } from '@/components/ui/Select';
 import { Input } from '@/components/ui/Input';
 import { useCategories } from '@/resources/hooks/use-categories';
 import { useAccounts } from '@/features/accounts';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { downloadTransactionsCsv } from '../api/finance-csv-api';
 import type { TransactionFilters } from '../types';
 

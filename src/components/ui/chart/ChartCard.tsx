@@ -2,7 +2,7 @@
 
 import { type ReactNode, useRef, useState } from 'react';
 import { ImageDown } from 'lucide-react';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { exportElementAsPng, slugify } from './chart-download';
 
 export interface ChartCardProps {

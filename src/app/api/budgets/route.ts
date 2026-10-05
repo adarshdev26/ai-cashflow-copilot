@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db/prisma';
 import { getCategoryError } from '@/lib/categories';
-import { budgetAccess } from '@/lib/budget-access';
-import { getBudgetUsage, parsePeriod, parseStartDate, validateAmount } from '@/lib/budgets';
+import { budgetAccess } from '@/lib/budgets/budget-access';
+import { getBudgetUsage, parsePeriod, parseStartDate, validateAmount } from '@/lib/budgets/budgets';
 
 export async function GET(request: NextRequest) {
   const access = await budgetAccess(request, false);

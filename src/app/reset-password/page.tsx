@@ -6,19 +6,21 @@ import Link from 'next/link'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { PrimaryButton } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
-import { notify, getErrorMessage } from '@/lib/toast'
+import { notify, getErrorMessage } from '@/lib/ui/toast'
 import { validatePassword } from '@/lib/validations/auth'
+import { usePublicSettings } from '@/features/settings/hooks/use-settings'
 import { authInputCls } from '@/components/ui/inputs'
 
 export default function ResetPasswordPage() {
+  const { data: settings } = usePublicSettings();
   return (
     <Suspense fallback={null}>
-      <ResetPasswordForm />
+      <ResetPasswordForm minPasswordLength={Number(settings?.['auth.passwordMinLength'] ?? 8)} />
     </Suspense>
   )
 }
 
-function ResetPasswordForm() {
+function ResetPasswordForm({ minPasswordLength }: { minPasswordLength: number }) {
   const router = useRouter()
   const token = useSearchParams().get('token') ?? ''
   const [password, setPassword] = useState('')
@@ -31,7 +33,7 @@ function ResetPasswordForm() {
       e.preventDefault()
       setError('')
 
-      const pwError = validatePassword(password)
+      const pwError = validatePassword(password, minPasswordLength)
       if (pwError) return setError(pwError)
       if (password !== confirm) return setError('Passwords do not match')
 
@@ -55,7 +57,7 @@ function ResetPasswordForm() {
         setLoading(false)
       }
     },
-    [token, password, confirm, router]
+    [token, password, confirm, router, minPasswordLength]
   )
 
   if (!token) {

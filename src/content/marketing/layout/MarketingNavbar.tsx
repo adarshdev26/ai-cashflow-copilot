@@ -4,18 +4,21 @@ import { Container } from '../../../components/marketing/primitives/Container';
 import { CTAButton } from '../../../components/marketing/primitives/CTAButton';
 import { MobileMenu } from './MobileMenu';
 import { ThemeMenu } from '@/components/ui/ThemePicker';
-import { getSession } from '@/lib/auth';
+import { getSession } from '@/lib/auth/auth';
 import { NAV_LINKS, SITE } from '@/content/marketing/site';
+import { getSystemSettings } from '@/lib/settings/server';
 
 export async function MarketingNavbar() {
-  const session = await getSession();
+  const [session, settings] = await Promise.all([getSession(), getSystemSettings()]);
   const isLoggedIn = Boolean(session);
+  const siteName = String(settings['branding.name'] ?? SITE.name);
+  const signupEnabled = settings['auth.signupEnabled'] !== false;
 
   return (
     <header className="sticky top-0 z-40 border-b border-mk-line bg-mk-bg/80 backdrop-blur">
       <Container className="flex h-16 items-center justify-between">
         <Link href="/" className="mk-heading text-xl font-bold">
-          {SITE.name}
+          {siteName}
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
@@ -30,18 +33,18 @@ export async function MarketingNavbar() {
           <ThemeMenu />
           {isLoggedIn ? (
             <CTAButton href="/dashboard" className="gap-1.5">
-              Open {SITE.name}
+              Open {siteName}
               <ArrowUpRight size={16} aria-hidden />
             </CTAButton>
           ) : (
             <>
               <CTAButton href="/login" variant="ghost">Log in</CTAButton>
-              <CTAButton href="/signup">Get started</CTAButton>
+              {signupEnabled && <CTAButton href="/signup">Get started</CTAButton>}
             </>
           )}
         </div>
 
-        <MobileMenu links={NAV_LINKS} isLoggedIn={isLoggedIn} />
+        <MobileMenu links={NAV_LINKS} isLoggedIn={isLoggedIn} siteName={siteName} signupEnabled={signupEnabled} />
       </Container>
     </header>
   );

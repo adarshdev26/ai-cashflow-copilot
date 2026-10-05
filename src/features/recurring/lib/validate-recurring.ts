@@ -1,4 +1,4 @@
-import { toScheduleDate, type RecurringFrequency } from '@/lib/recurring-dates';
+import { toScheduleDate, type RecurringFrequency } from '@/lib/recurring/recurring-dates';
 import { getAccountError } from "@/features/accounts/lib/check-account";
 import { getCategoryError } from '@/lib/categories';
 

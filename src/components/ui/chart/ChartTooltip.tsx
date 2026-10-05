@@ -3,10 +3,11 @@
 import { Tooltip } from 'recharts';
 import { formatINR } from './chart-formatters';
 
-export function ChartTooltip({ formatValue = formatINR }: { formatValue?: (value: number) => string }) {
+export function ChartTooltip({ formatValue, locale = 'en-IN' }: { formatValue?: (value: number) => string; locale?: string }) {
+  const format = formatValue ?? ((value: number) => formatINR(value, locale));
   return (
     <Tooltip
-      formatter={(value) => formatValue(Number(value))}
+      formatter={(value) => format(Number(value))}
       contentStyle={{
         background: 'var(--color-base-100)',
         border: '1px solid var(--color-base-300)',

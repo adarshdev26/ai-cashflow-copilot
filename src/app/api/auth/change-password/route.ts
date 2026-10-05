@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { requireUserId, setAuthCookie } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { hashPassword, verifyPassword } from '@/lib/users';
+import { requireUserId, setAuthCookie } from '@/lib/auth/auth';
+import { prisma } from '@/lib/db/prisma';
+import { hashPassword, verifyPassword } from '@/lib/users/users';
 import { validatePassword } from '@/lib/validations/auth';
+import { getSystemNumber } from '@/lib/settings/server';
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     if (typeof currentPassword !== 'string' || currentPassword.length === 0) {
       return NextResponse.json({ error: 'Current password is required' }, { status: 400 });
     }
-    const pwError = validatePassword(newPassword);
+    const pwError = validatePassword(newPassword, await getSystemNumber('auth.passwordMinLength'));
     if (pwError) return NextResponse.json({ error: pwError }, { status: 400 });
     if (currentPassword === newPassword) {
       return NextResponse.json({ error: 'New password must be different from the current one' }, { status: 400 });

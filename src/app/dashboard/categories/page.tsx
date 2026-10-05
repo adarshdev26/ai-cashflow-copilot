@@ -5,7 +5,7 @@ import { PrimaryButton } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useCategories } from '@/resources/hooks/use-categories';
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { CategoryFormModal } from '@/features/categories/components/CategoryFormModal';
 import { useDeleteCategory, useUpdateCategory } from '@/features/categories/hooks/use-category-mutations';
 import type { CategoryItem } from '@/features/categories/types';
@@ -65,14 +65,14 @@ export default function CategoriesPage() {
         ) : (
           <ul className="divide-y divide-base-200" data-tour="categories-actions">
             {custom.map((c) => (
-              <li key={c.id} className="flex items-center justify-between px-4 py-3">
-                <span className={`flex items-center gap-3 text-sm ${c.isActive ? 'text-base-content' : 'text-base-content/50'}`}>
+              <li key={c.id} className="flex items-start justify-between gap-2 px-4 py-3">
+                <span className={`flex min-w-0 flex-1 flex-wrap items-center gap-3 break-words text-sm ${c.isActive ? 'text-base-content' : 'text-base-content/50'}`}>
                   <Dot color={c.color} />
-                  {c.name}
+                  <span className="min-w-0 break-all">{c.name}</span>
                   <TypeBadge type={c.type} />
                   {!c.isActive && <span className="text-xs">Inactive</span>}
                 </span>
-                <span className="flex items-center gap-1">
+                <span className="flex shrink-0 items-center gap-1">
                   {canUpdate && (
                     <button
                       type="button"
@@ -87,20 +87,20 @@ export default function CategoriesPage() {
                           }
                         )
                       }
-                      className="rounded p-2 text-base-content/60 hover:bg-base-200 hover:text-base-content/80"
+                      className="min-h-11 min-w-11 rounded p-2 text-base-content/60 hover:bg-base-200 hover:text-base-content/80 sm:min-h-0 sm:min-w-0"
                     >
                       {c.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   )}
                   {canUpdate && (
                     <button type="button" aria-label={`Edit ${c.name}`} onClick={() => setForm({ category: c })}
-                      className="rounded p-2 text-base-content/60 hover:bg-base-200 hover:text-base-content/80">
+                      className="min-h-11 min-w-11 rounded p-2 text-base-content/60 hover:bg-base-200 hover:text-base-content/80 sm:min-h-0 sm:min-w-0">
                       <Pencil className="h-4 w-4" />
                     </button>
                   )}
                   {canDelete && (
                     <button type="button" aria-label={`Delete ${c.name}`} onClick={() => setDeleteTarget(c)}
-                      className="rounded p-2 text-base-content/60 hover:bg-error/10 hover:text-error">
+                      className="min-h-11 min-w-11 rounded p-2 text-base-content/60 hover:bg-error/10 hover:text-error sm:min-h-0 sm:min-w-0">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   )}

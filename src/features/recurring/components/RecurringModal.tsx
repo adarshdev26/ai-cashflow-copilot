@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { AccountSelect } from '@/features/accounts/components/AccountSelect';
 import { CategorySelect } from '@/resources/components/CategorySelect';
-import { notify } from '@/lib/toast';
+import { notify } from '@/lib/ui/toast';
 import { useCreateRecurring, useUpdateRecurring } from '../hooks/use-recurring';
 import type { RecurringFrequency, RecurringTransactionDTO, TxType } from '../types';
 
@@ -33,8 +33,8 @@ function todayLocal(): string {
 /** Schedule dates are stored at 12:00 UTC, so the UTC date part is the calendar day. */
 const dateOnly = (iso: string) => iso.slice(0, 10);
 
-export function formatScheduleDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-IN', {
+export function formatScheduleDate(iso: string, locale = 'en-IN'): string {
+  return new Date(iso).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

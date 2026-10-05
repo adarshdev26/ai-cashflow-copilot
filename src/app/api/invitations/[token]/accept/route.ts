@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
+import { prisma } from '@/lib/db/prisma'
+import { getSession } from '@/lib/auth/auth'
 import {
   InvitationError,
   findInvitationByToken,
   assertInvitationUsable,
   emailsMatch,
   acceptInvitationTx,
-} from '@/lib/invitations'
-import { invitationErrorResponse } from '@/lib/invitation-http'
+} from '@/lib/users/invitations'
+import { invitationErrorResponse } from '@/lib/users/invitation-http'
 
 export async function POST(_req: Request, { params }: { params: Promise<{ token: string }> }) {
   try {

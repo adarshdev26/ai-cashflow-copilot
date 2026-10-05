@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { AccountSelect } from '@/features/accounts/components/AccountSelect';
 import { CategorySelect } from '@/resources/components/CategorySelect';
-import { notify } from '@/lib/toast';
+import { notify } from '@/lib/ui/toast';
 import type { TransactionType } from '@/features/finance/types';
 import { useCreateTemplate, useUpdateTemplate } from '../hooks/use-transaction-templates';
 import { localTodayISO } from '../lib/template-date';

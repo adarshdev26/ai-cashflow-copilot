@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { processSchedule } from '@/lib/create-recurring-occurrence';
-import { cleanupResetTokens } from '@/lib/cleanup';
+import { prisma } from '@/lib/db/prisma';
+import { processSchedule } from '@/lib/recurring/create-recurring-occurrence';
+import { cleanupResetTokens } from '@/lib/auth/cleanup';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 import bcrypt from 'bcryptjs'
-import { setAuthCookie } from '@/lib/auth'
+import { setAuthCookie } from '@/lib/auth/auth'
 
 export async function POST(req: Request) {
   try {
@@ -31,6 +31,13 @@ export async function POST(req: Request) {
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    }
+
+    if (!user.isActive) {
+      return NextResponse.json(
+        { error: 'Your account has been deactivated. Please contact support.' },
+        { status: 403 }
+      );
     }
 
     await setAuthCookie({ id: user.id, email: user.email })

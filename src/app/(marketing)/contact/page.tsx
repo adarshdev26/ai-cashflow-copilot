@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import Link from 'next/link';
 import { Mail, LifeBuoy, MessageSquare, ShieldCheck } from 'lucide-react';
 import { Hero } from '@/components/marketing/sections/Hero';
@@ -9,21 +10,25 @@ import { FAQ } from '@/components/marketing/sections/FAQ';
 import { CTABanner } from '@/components/marketing/sections/CTABanner';
 import { CONTACT_FAQS } from '@/content/marketing/pages';
 import { SITE } from '@/content/marketing/site';
+import { getSystemSettings } from '@/lib/settings/server';
 
-export const metadata: Metadata = {
-  title: 'Contact',
-  description: `Questions or feedback? Get in touch with the ${SITE.name} team.`,
-  alternates: { canonical: '/contact' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+  const settings = await getSystemSettings();
+  const name = String(settings['branding.name'] ?? SITE.name);
+  return { title: 'Contact', description: `Questions or feedback? Get in touch with the ${name} team.`, alternates: { canonical: '/contact' } };
+}
 
-const CHANNELS = [
-  { icon: Mail, title: 'Email us', body: 'Prefer your own inbox? Write to us directly.', href: `mailto:${SITE.email}`, label: SITE.email },
-  { icon: LifeBuoy, title: 'Account help', body: 'Include the email you signed up with and a short description of the issue.' },
-  { icon: MessageSquare, title: 'Feedback and ideas', body: 'Tell us what would make it more useful for you. We read every message.' },
-  { icon: ShieldCheck, title: 'Security concerns', body: 'Mention security in your message, or see how workspaces are protected.', href: '/security', label: 'Read about security' },
-];
-
-export default function ContactPage() {
+export default async function ContactPage() {
+  await connection();
+  const settings = await getSystemSettings();
+  const supportEmail = String(settings['branding.supportEmail'] ?? SITE.email);
+  const channels = [
+    { icon: Mail, title: 'Email us', body: 'Prefer your own inbox? Write to us directly.', href: `mailto:${supportEmail}`, label: supportEmail },
+    { icon: LifeBuoy, title: 'Account help', body: 'Include the email you signed up with and a short description of the issue.' },
+    { icon: MessageSquare, title: 'Feedback and ideas', body: 'Tell us what would make it more useful for you. We read every message.' },
+    { icon: ShieldCheck, title: 'Security concerns', body: 'Mention security in your message, or see how workspaces are protected.', href: '/security', label: 'Read about security' },
+  ];
   return (
     <>
       <Hero
@@ -36,7 +41,7 @@ export default function ContactPage() {
       <Section>
         <div className="grid gap-8 lg:grid-cols-12 lg:gap-12">
           <div className="space-y-4 lg:col-span-5">
-            {CHANNELS.map(({ icon: Icon, title, body, href, label }, i) => (
+            {channels.map(({ icon: Icon, title, body, href, label }, i) => (
               <Reveal key={title} delay={i * 80}>
                 <div className="mk-card flex gap-4 rounded-2xl border border-mk-line bg-mk-surface/60 p-5">
                   <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-mk-brand/25 to-mk-brand/5 text-mk-brand ring-1 ring-mk-brand/20">

@@ -1,4 +1,4 @@
-import type { RecurringFrequency } from '@/lib/recurring-dates';
+import type { RecurringFrequency } from '@/lib/recurring/recurring-dates';
 export type { RecurringFrequency };
 
 export type TxType = 'CREDIT' | 'DEBIT';

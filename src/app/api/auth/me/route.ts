@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { requireUserId } from '@/lib/auth'
+import { prisma } from '@/lib/db/prisma'
+import { getSessionInfo, requireUserId } from '@/lib/auth/auth'
 
 export async function GET() {
   try {
@@ -20,7 +20,12 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 401 })
     }
 
-    return NextResponse.json(user, { status: 200 })
+    const session = await getSessionInfo();
+    return NextResponse.json({
+      ...user,
+      impersonating: !!session?.impersonating,
+      adminEmail: session?.adminEmail ?? null,
+    }, { status: 200 })
   } catch (error) {
     console.error('Get current user error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { setAuthCookie } from '@/lib/auth'
+import { prisma } from '@/lib/db/prisma'
+import { setAuthCookie } from '@/lib/auth/auth'
 import {
   InvitationError,
   findInvitationByToken,
   assertInvitationUsable,
   acceptInvitationTx,
-} from '@/lib/invitations'
-import { invitationErrorResponse } from '@/lib/invitation-http'
-import { createUserWithPersonalWorkspaceTx, hashPassword } from '@/lib/users'
+} from '@/lib/users/invitations'
+import { invitationErrorResponse } from '@/lib/users/invitation-http'
+import { getSystemNumber } from '@/lib/settings/server'
+import { validatePassword } from '@/lib/validations/auth'
+import { createUserWithPersonalWorkspaceTx, hashPassword } from '@/lib/users/users'
 
 const accountExistsResponse = () =>
   NextResponse.json(
@@ -23,6 +25,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
     if (!password || typeof password !== 'string') {
       return NextResponse.json({ error: 'Password is required' }, { status: 400 })
     }
+    const passwordError = validatePassword(password, await getSystemNumber('auth.passwordMinLength'))
+    if (passwordError) return NextResponse.json({ error: passwordError }, { status: 400 })
 
     const invitation = await findInvitationByToken(token)
     if (!invitation) throw new InvitationError('INVALID')

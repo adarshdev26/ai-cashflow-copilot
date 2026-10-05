@@ -2,10 +2,10 @@ import Papa from 'papaparse';
 import { CSV_COLUMNS } from '@/features/finance/lib/transaction-csv';
 import { buildTransactionWhere, parseDateParam } from '@/lib/transaction-filters';
 import { NextResponse } from 'next/server';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
-import { prisma } from '@/lib/prisma'
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
+import { prisma } from '@/lib/db/prisma'
+import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
 
-const MAX_EXPORT_ROWS = 50000;
 
 // Stops Excel from running cells that start with = + - @
 const safe = (v: string | null | undefined) => (v && /^[=+\-@]/.test(v) ? `'${v}` : v ?? '');
@@ -14,6 +14,10 @@ export async function GET(req: Request) {
   try {
     const access = await requireWorkspaceAccess(req, 'VIEWER');
     if (!access.ok) return access.response;
+    if (!(await getSystemBool('features.csvExportEnabled'))) {
+      return NextResponse.json({ error: 'CSV export is currently disabled' }, { status: 403 });
+    }
+    const maxExportRows = await getSystemNumber('limits.csvExportMaxRows');
     const { workspaceId } = access;
 
     const sp = new URL(req.url).searchParams;
@@ -44,10 +48,10 @@ export async function GET(req: Request) {
     const rows = await prisma.transaction.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      take: MAX_EXPORT_ROWS + 1,
+      take: maxExportRows + 1,
       include: { category: { select: { name: true } }, account: { select: { name: true } } },
     });
-    if (rows.length > MAX_EXPORT_ROWS) {
+    if (rows.length > maxExportRows) {
       return NextResponse.json({ error: 'Too many rows, narrow your filters' }, { status: 413 });
     }
 

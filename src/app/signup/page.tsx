@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { PrimaryButton } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
-import { notify, getErrorMessage } from '@/lib/toast'
-import { getSafeNextPath } from '@/lib/safe-redirect'
+import { notify, getErrorMessage } from '@/lib/ui/toast'
+import { getSafeNextPath } from '@/lib/auth/safe-redirect'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { authInputCls } from '@/components/ui/inputs'
+import { usePublicSettings } from '@/features/settings/hooks/use-settings'
 
 export default function SignupPage() {
   return (
@@ -19,6 +20,7 @@ export default function SignupPage() {
 }
 
 function SignupForm() {
+  const { data: settings } = usePublicSettings()
   const router = useRouter()
   const searchParams = useSearchParams()
   const nextPath = getSafeNextPath(searchParams.get('next'))
@@ -65,6 +67,12 @@ function SignupForm() {
     <AuthShell>
       <div className="w-full max-w-md rounded-xl bg-base-100 p-8 border border-base-300 shadow-2xl">
         <h2 className="text-2xl font-bold tracking-tight mb-6">Create Account</h2>
+        {settings?.['auth.signupEnabled'] === false ? (
+          <div role="status" className="rounded bg-base-200 p-3 text-sm text-base-content/70">
+            New account signups are currently disabled.
+          </div>
+        ) : (
+          <>
         {error && (
           <div role="alert" className="mb-4 rounded bg-error/10 p-3 text-sm text-error border border-error/20">{error}</div>
         )}
@@ -90,6 +98,8 @@ function SignupForm() {
           </div>
           <PrimaryButton type="submit" loading={loading} className="w-full">Sign Up</PrimaryButton>
         </form>
+          </>
+        )}
         <p className="mt-4 text-center text-sm text-base-content/60">
           Already have an account?{' '}
           <Link href={loginHref} className="text-primary hover:underline">Log in</Link>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useCurrentUser } from '@/features/auth';
 import { useUpdateProfile } from '@/features/auth/hooks/use-update-profile';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { ChangePasswordSection } from './ChangePasswordSection';
 import { settingsInputCls } from '@/components/ui/inputs';
 

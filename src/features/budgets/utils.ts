@@ -1,11 +1,18 @@
-const inr = new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 0,
-});
+const currencyFormatters = new Map<string, Intl.NumberFormat>();
 
-export const formatINR = (n: number) => inr.format(n);
+export function formatINR(n: number, locale = 'en-IN') {
+  let formatter = currencyFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+    });
+    currencyFormatters.set(locale, formatter);
+  }
+  return formatter.format(n);
+}
 
 /** Browser-local month boundaries as ISO instants (same convention as the finance summary). */
 export function monthRange(year: number, month: number) {
@@ -15,13 +22,13 @@ export function monthRange(year: number, month: number) {
   };
 }
 
-export function monthLabel(year: number, month: number) {
-  return new Date(year, month, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+export function monthLabel(year: number, month: number, locale = 'en-IN') {
+  return new Date(year, month, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 }
 
-export function usageTone(percentUsed: number) {
-  if (percentUsed > 100) return { bar: 'bg-error', text: 'text-error' };
-  if (percentUsed >= 80) return { bar: 'bg-warning', text: 'text-warning' };
+export function usageTone(percentUsed: number, warningPercent: number, exceededPercent: number) {
+  if (percentUsed > exceededPercent) return { bar: 'bg-error', text: 'text-error' };
+  if (percentUsed >= warningPercent) return { bar: 'bg-warning', text: 'text-warning' };
   return { bar: 'bg-success', text: 'text-success' };
 }
 

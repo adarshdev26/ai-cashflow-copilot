@@ -2,14 +2,21 @@
 import { useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
 import { Palette, Check } from 'lucide-react';
-import { THEMES, attrOf, labelOf } from '@/lib/themes';
+import { THEMES, attrOf, labelOf } from '@/lib/ui/themes';
+import { useUpdateUserPreferences } from '@/features/settings/hooks/use-settings';
 
 const noop = () => () => {};
 const useMounted = () => useSyncExternalStore(noop, () => true, () => false);
 
-export function ThemeMenu() {
+export function ThemeMenu({ persistPreference = false }: { persistPreference?: boolean }) {
   const { theme, setTheme } = useTheme();
+  const updatePreference = useUpdateUserPreferences();
   const mounted = useMounted();
+
+  const selectTheme = (next: string) => {
+    setTheme(next);
+    if (persistPreference) updatePreference.mutate({ theme: next });
+  };
 
   const close = () => (document.activeElement as HTMLElement | null)?.blur();
 
@@ -28,7 +35,7 @@ export function ThemeMenu() {
         <button
           type="button"
           onClick={() => {
-            setTheme('system');
+            selectTheme('system');
             close();
           }}
           className={`mb-1 flex w-full items-center justify-between rounded-lg border-2 px-3 py-2 text-left text-sm font-medium transition ${
@@ -49,7 +56,7 @@ export function ThemeMenu() {
                 data-theme={attrOf(t)}
                 aria-pressed={active}
                 onClick={() => {
-                  setTheme(t);
+                  selectTheme(t);
                   close();
                 }}
                 className={`flex w-full items-center justify-between gap-3 rounded-lg border-2 bg-base-100 px-3 py-2 text-left text-base-content transition ${

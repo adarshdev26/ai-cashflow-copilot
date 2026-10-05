@@ -6,18 +6,20 @@ export function SummaryCards({
   summary,
   mixedCurrency = false,
   totalsByCurrency,
+  locale = 'en-IN',
 }: {
   summary: ReportSummary;
   mixedCurrency?: boolean;
   totalsByCurrency?: ReportCurrencyTotal[];
+  locale?: string;
 }) {
   const net = summary.netCashFlow;
   const cards = [
-    { label: 'Total Income', value: formatINR(summary.income), tone: 'text-success' },
-    { label: 'Total Expenses', value: formatINR(summary.expenses), tone: 'text-error' },
+    { label: 'Total Income', value: formatINR(summary.income, locale), tone: 'text-success' },
+    { label: 'Total Expenses', value: formatINR(summary.expenses, locale), tone: 'text-error' },
     {
       label: 'Net Cash Flow',
-      value: `${net < 0 ? '-' : ''}${formatINR(Math.abs(net))}`,
+      value: `${net < 0 ? '-' : ''}${formatINR(Math.abs(net), locale)}`,
       tone: net < 0 ? 'text-error' : 'text-base-content',
     },
     {
@@ -35,7 +37,7 @@ export function SummaryCards({
           className="rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm sm:p-5"
         >
           <p className="text-sm text-base-content/60">{c.label}</p>
-          <p className={`mt-1 truncate text-xl font-semibold sm:text-2xl ${c.tone}`}>{c.value}</p>
+          <p className={`mt-1 break-words text-lg font-semibold tabular-nums sm:text-2xl ${c.tone}`}>{c.value}</p>
         </div>
       ))}
       {mixedCurrency && totalsByCurrency && totalsByCurrency.length > 0 && (
@@ -47,11 +49,11 @@ export function SummaryCards({
                 <p className="text-sm font-medium">{total.currency ?? 'Unknown currency'}</p>
                 <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-base-content/70">
                   <dt>Income</dt>
-                  <dd className="text-right">{formatCurrencyAmount(total.income, total.currency)}</dd>
+                  <dd className="text-right">{formatCurrencyAmount(total.income, total.currency, locale)}</dd>
                   <dt>Expenses</dt>
-                  <dd className="text-right">{formatCurrencyAmount(total.expenses, total.currency)}</dd>
+                  <dd className="text-right">{formatCurrencyAmount(total.expenses, total.currency, locale)}</dd>
                   <dt>Net</dt>
-                  <dd className="text-right">{formatCurrencyAmount(total.netCashFlow, total.currency)}</dd>
+                  <dd className="text-right">{formatCurrencyAmount(total.netCashFlow, total.currency, locale)}</dd>
                   <dt>Transactions</dt>
                   <dd className="text-right">{total.transactionCount}</dd>
                 </dl>

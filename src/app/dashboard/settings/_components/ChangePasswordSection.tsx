@@ -5,10 +5,12 @@ import { PrimaryButton } from '@/components/ui/Button';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { useChangePassword } from '@/features/auth/hooks/use-change-password';
 import { validatePassword } from '@/lib/validations/auth';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { settingsInputCls } from '@/components/ui/inputs';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 export function ChangePasswordSection() {
+  const { data: settings } = usePublicSettings();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -19,7 +21,7 @@ export function ChangePasswordSection() {
     e.preventDefault();
     setError('');
 
-    const pwError = validatePassword(next);
+    const pwError = validatePassword(next, Number(settings?.['auth.passwordMinLength'] ?? 8));
     if (pwError) return setError(pwError);
     if (next !== confirm) return setError('New passwords do not match');
     if (next === current) return setError('New password must be different from the current one');

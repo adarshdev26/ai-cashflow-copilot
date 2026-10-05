@@ -1,4 +1,4 @@
-import { requireWorkspaceAccess, requireWorkspaceAction } from '@/lib/workspaces';
+import { requireWorkspaceAccess, requireWorkspaceAction } from '@/lib/auth/workspaces';
 
 type Ok = { ok: true; workspaceId: string };
 type Fail = { ok: false; response: Response };

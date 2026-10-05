@@ -5,7 +5,7 @@ import { Plus, Landmark } from 'lucide-react';
 import { PrimaryButton } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import {
   useAccounts,
   useCreateAccount,

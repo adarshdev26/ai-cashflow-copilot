@@ -1,4 +1,4 @@
-export { formatCompact, formatCurrency, formatDay } from '@/components/ui/chart/chart-formatters';
+export { formatCompact, formatCurrency, formatDay, formatReportBucket } from '@/components/ui/chart/chart-formatters';
 
 /** Local date as 'YYYY-MM-DD'. Day precision keeps React Query keys stable. */
 export const toDateInput = (d: Date) =>

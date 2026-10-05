@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { formatINR } from '@/features/budgets/utils';
 import { getRecurringStatus, type RecurringTransactionDTO } from '../types';
 import { formatScheduleDate } from './RecurringModal';
+import { useUserPreferences } from '@/features/settings/hooks/use-settings';
 
 interface RecurringTableProps {
   items?: RecurringTransactionDTO[];
@@ -59,6 +60,10 @@ export const RecurringTable = memo(function RecurringTable({
   isLoading,
   isFetching,
 }: RecurringTableProps) {
+  const { data: preferences } = useUserPreferences();
+  const locale = String(preferences?.locale ?? 'en-IN');
+  const pageSize = Number(preferences?.tablePageSize ?? 10);
+  const density = preferences?.tableDensity === 'compact' ? 'compact' : 'comfortable';
   const columns = useMemo<ColumnDef<RecurringTransactionDTO>[]>(() => {
     const base: ColumnDef<RecurringTransactionDTO>[] = [
       {
@@ -94,7 +99,7 @@ export const RecurringTable = memo(function RecurringTable({
           return (
             <span className={`font-semibold ${isIncome ? 'text-success' : 'text-base-content'}`}>
               {isIncome ? '+' : '-'}
-              {formatINR(r.amount)}
+              {formatINR(r.amount, locale)}
             </span>
           );
         },
@@ -119,7 +124,7 @@ export const RecurringTable = memo(function RecurringTable({
           if (getRecurringStatus(r) === 'ENDED') return <span className="text-base-content/50">-</span>;
           return (
             <span className={r.isActive ? 'text-base-content/80' : 'text-base-content/50'}>
-              {formatScheduleDate(r.nextRunAt)}
+              {formatScheduleDate(r.nextRunAt, locale)}
             </span>
           );
         },
@@ -129,7 +134,7 @@ export const RecurringTable = memo(function RecurringTable({
         header: 'Ends',
         cell: ({ row }) =>
           row.original.endDate ? (
-            <span className="text-base-content/80">{formatScheduleDate(row.original.endDate)}</span>
+            <span className="text-base-content/80">{formatScheduleDate(row.original.endDate, locale)}</span>
           ) : (
             <span className="text-base-content/50">No end date</span>
           ),
@@ -173,16 +178,18 @@ export const RecurringTable = memo(function RecurringTable({
         },
       },
     ];
-  }, [canManage, onEdit, onToggle, onDelete]);
+  }, [canManage, onEdit, onToggle, onDelete, locale]);
 
   return (
     <DataTable
+      key={pageSize}
       actionsTourId={canManage ? 'recurring-actions' : undefined}
       columns={columns}
       data={items}
       searchKey="description"
       searchPlaceholder="Search recurring..."
-      pageSize={10}
+      pageSize={pageSize}
+      density={density}
       isLoading={isLoading}
       isFetching={isFetching}
     />

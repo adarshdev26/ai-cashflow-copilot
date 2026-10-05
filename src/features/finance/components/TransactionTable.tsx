@@ -9,7 +9,9 @@ import { CategoryBadge } from '@/resources/components/CategoryBadge';
 import { Button } from '@/components/ui/Button';
 import { usePermission } from '@/features/workspaces';
 import { useCreateTemplate } from '@/features/transaction-templates';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
+import { useUserLocale } from '@/features/settings/hooks/use-settings';
+import { formatINR } from '@/features/budgets/utils';
 
 interface TransactionTableProps {
   transactions?: Transaction[];
@@ -25,6 +27,7 @@ interface TransactionTableProps {
   onGlobalFilterChange: OnChangeFn<string>;
   isLoading?: boolean;
   isFetching?: boolean;
+  density?: 'comfortable' | 'compact';
 }
 
 export const TransactionTable = memo(function TransactionTable({
@@ -41,10 +44,12 @@ export const TransactionTable = memo(function TransactionTable({
   onGlobalFilterChange,
   isLoading,
   isFetching,
+  density = 'comfortable',
 }: TransactionTableProps) {
   const canEdit = usePermission('transaction.update');
   const canDelete = usePermission('transaction.delete');
   const canManageTemplates = usePermission('templates.manage');
+  const locale = useUserLocale();
   const { mutate: createTemplate, isPending: isCreatingTemplate } = useCreateTemplate();
 
   const handleEdit = useCallback((tx: Transaction) => onEdit(tx), [onEdit]);
@@ -129,7 +134,7 @@ export const TransactionTable = memo(function TransactionTable({
         header: 'Date',
         cell: ({ row }) => (
           <span className="text-base-content/60">
-            {new Date(row.getValue('createdAt') as string).toLocaleDateString()}
+            {new Date(row.getValue('createdAt') as string).toLocaleDateString(locale)}
           </span>
         ),
       },
@@ -141,7 +146,7 @@ export const TransactionTable = memo(function TransactionTable({
           return (
             <div className={`text-right font-semibold ${tx.type === 'CREDIT' ? 'text-success' : 'text-error'
               }`}>
-              {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toLocaleString()}
+              {tx.type === 'CREDIT' ? '+' : '-'}{formatINR(tx.amount, locale)}
             </div>
           );
         },
@@ -185,7 +190,7 @@ export const TransactionTable = memo(function TransactionTable({
         },
       },
     ];
-  }, [handleEdit, handleDelete, canEdit, canDelete, canManageTemplates, handleSaveAsTemplate, isCreatingTemplate]);
+  }, [handleEdit, handleDelete, canEdit, canDelete, canManageTemplates, handleSaveAsTemplate, isCreatingTemplate, locale]);
 
   return (
     <div data-tour="transaction-table">
@@ -198,6 +203,7 @@ export const TransactionTable = memo(function TransactionTable({
         actionsTourId={transactions.length > 0 && (canEdit || canDelete) ? 'transaction-actions' : undefined}
         searchPlaceholder="Search transactions..."
         pageSize={pagination.pageSize}
+        density={density}
         manualPagination
         manualFiltering
         manualSorting

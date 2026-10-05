@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { ChartCard, MetricCard, MetricCardSkeleton, useDashboardMetrics } from '@/features/dashboard';
 import { Activity, FileText } from 'lucide-react';
 import { FinanceStats } from '@/features/finance';

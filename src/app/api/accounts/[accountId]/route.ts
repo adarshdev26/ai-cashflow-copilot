@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireWorkspaceAction } from '@/lib/workspaces';
+import { prisma } from '@/lib/db/prisma';
+import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import { canWorkspaceAction } from '@/features/workspaces/permissions';
 import { Prisma } from '@/generated/prisma';
 import { validateUpdateAccount } from '@/features/accounts/lib/validate-account';

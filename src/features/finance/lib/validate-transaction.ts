@@ -1,4 +1,4 @@
-import { toScheduleDate } from '@/lib/recurring-dates';
+import { toScheduleDate } from '@/lib/recurring/recurring-dates';
 
 export type ValidatedTransaction = {
   amount: number;

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import { Hero } from '@/components/marketing/sections/Hero';
 import { StorySplit } from '@/components/marketing/sections/StorySplit';
 import { FeatureGrid } from '@/components/marketing/sections/FeatureGrid';
@@ -9,12 +10,14 @@ import { VALUES, EXTRAS } from '@/content/marketing/features';
 import { USE_CASES, ABOUT_FAQS } from '@/content/marketing/pages';
 import { testimonials } from '@/content/marketing/testimonials';
 import { SITE } from '@/content/marketing/site';
+import { getSystemSettings } from '@/lib/settings/server';
 
-export const metadata: Metadata = {
-  title: 'About',
-  description: `Why we built ${SITE.name}: a simpler, shared way to handle everyday money.`,
-  alternates: { canonical: '/about' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+  const settings = await getSystemSettings();
+  const name = String(settings['branding.name'] ?? SITE.name);
+  return { title: 'About', description: `Why we built ${name}: a simpler, shared way to handle everyday money.`, alternates: { canonical: '/about' } };
+}
 
 function IconCard({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
   return (
@@ -30,14 +33,17 @@ function IconCard({ icon: Icon, title, description }: { icon: React.ElementType;
   );
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  await connection();
+  const settings = await getSystemSettings();
+  const siteName = String(settings['branding.name'] ?? SITE.name);
   return (
     <>
       <Hero
         compact
         eyebrow="About"
         title="Money is better when it's shared and simple"
-        subtitle={`${SITE.name} exists to make everyday money tracking clear for individuals, families and small teams.`}
+        subtitle={`${siteName} exists to make everyday money tracking clear for individuals, families and small teams.`}
         primary={{ href: '/signup', label: 'Get started' }}
         secondary={{ href: '/contact', label: 'Get in touch' }}
       />

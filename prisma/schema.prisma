@@ -59,6 +59,19 @@ model User {
   primaryGoal           String?
   passwordChangedAt     DateTime?
   passwordResetTokens   PasswordResetToken[]
+  isActive Boolean @default(true)
+  preference            UserPreference?
+}
+
+model Admin {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String
+  name              String?
+  isActive          Boolean  @default(true)
+  passwordChangedAt DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model PasswordResetToken {
@@ -90,6 +103,8 @@ model Workspace {
   budgets               Budget[]
   recurringTransactions RecurringTransaction[]
   transactionTemplates  TransactionTemplate[]
+  isActive Boolean @default(true)
+  setting               WorkspaceSetting?
 
   @@index([ownerId])
 }
@@ -291,4 +306,39 @@ model TransactionTemplate {
 
   @@unique([workspaceId, name])
   @@index([workspaceId, createdAt])
+}
+
+model SystemSetting {
+  key              String   @id
+  value            Json
+  updatedByAdminId String?
+  updatedAt        DateTime @updatedAt
+}
+
+model UserPreference {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  values    Json     @default("{}")
+  updatedAt DateTime @updatedAt
+}
+
+model WorkspaceSetting {
+  workspaceId String    @id
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  values      Json      @default("{}")
+  updatedAt   DateTime  @updatedAt
+}
+
+model SettingsAudit {
+  id           String   @id @default(uuid())
+  scope        String
+  scopeId      String?
+  key          String
+  actorAdminId String?
+  actorUserId  String?
+  oldValue     Json?
+  newValue     Json
+  createdAt    DateTime @default(now())
+
+  @@index([scope, createdAt])
 }

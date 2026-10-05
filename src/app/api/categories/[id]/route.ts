@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from "@/lib/prisma";
-import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { prisma } from "@/lib/db/prisma";
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { CATEGORY_SELECT, findNameConflict, loadCustomCategory, parseCategoryInput } from '@/lib/categories';
 
 type Ctx = { params: Promise<{ id: string }> };

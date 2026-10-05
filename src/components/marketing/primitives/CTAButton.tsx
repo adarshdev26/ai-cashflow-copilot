@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { cx } from './cx';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 type Props = {
   href: string;
@@ -17,6 +20,9 @@ const variants = {
 };
 
 export function CTAButton({ href, variant = 'primary', size = 'md', className, children }: Props) {
+  const { data: settings } = usePublicSettings();
+  if (href === '/signup' && settings?.['auth.signupEnabled'] === false) return null;
+
   return (
     <Link
       href={href}

@@ -1,7 +1,7 @@
 import { formatINR } from '@/features/budgets/utils';
 import type { AccountRow } from '../types';
 
-export function AccountBreakdown({ rows }: { rows: AccountRow[] }) {
+export function AccountBreakdown({ rows, locale = 'en-IN' }: { rows: AccountRow[]; locale?: string }) {
   return (
     <div className="overflow-x-auto" data-tour="reports-account-breakdown">
       <table className="min-w-full text-sm">
@@ -22,11 +22,11 @@ export function AccountBreakdown({ rows }: { rows: AccountRow[] }) {
                   <span className="badge badge-ghost badge-sm ml-2">Inactive</span>
                 )}
               </td>
-              <td className="py-2 text-right text-success">{formatINR(r.income)}</td>
-              <td className="py-2 text-right text-error">{formatINR(r.expense)}</td>
+              <td className="py-2 text-right text-success">{formatINR(r.income, locale)}</td>
+              <td className="py-2 text-right text-error">{formatINR(r.expense, locale)}</td>
               <td className={`py-2 text-right font-medium ${r.net < 0 ? 'text-error' : ''}`}>
                 {r.net < 0 ? '-' : ''}
-                {formatINR(Math.abs(r.net))}
+                {formatINR(Math.abs(r.net), locale)}
               </td>
             </tr>
           ))}

@@ -16,7 +16,7 @@ export type ParsedCsvRow = {
 
 export type CsvRowError = { row: number; message: string };
 
-export function parseTransactionCsv(text: string): { rows: ParsedCsvRow[]; errors: CsvRowError[] } {
+export function parseTransactionCsv(text: string, maxRows = MAX_IMPORT_ROWS): { rows: ParsedCsvRow[]; errors: CsvRowError[] } {
   const parsed = Papa.parse<Record<string, string>>(text.replace(/^\uFEFF/, ''), {
     header: true,
     skipEmptyLines: 'greedy',
@@ -31,8 +31,8 @@ export function parseTransactionCsv(text: string): { rows: ParsedCsvRow[]; error
   if (missing.length) {
     return { rows, errors: [{ row: 1, message: `Missing required column(s): ${missing.join(', ')}` }] };
   }
-  if (parsed.data.length > MAX_IMPORT_ROWS) {
-    return { rows, errors: [{ row: 1, message: `Too many rows (max ${MAX_IMPORT_ROWS})` }] };
+  if (parsed.data.length > maxRows) {
+    return { rows, errors: [{ row: 1, message: `Too many rows (max ${maxRows})` }] };
   }
 
   parsed.data.forEach((raw, i) => {

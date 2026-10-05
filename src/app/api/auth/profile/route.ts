@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireUserId } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { requireUserId } from '@/lib/auth/auth';
+import { prisma } from '@/lib/db/prisma';
 
 export async function PATCH(req: Request) {
   try {

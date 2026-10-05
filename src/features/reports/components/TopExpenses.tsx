@@ -1,7 +1,7 @@
 import { formatINR } from '@/features/budgets/utils';
 import type { TopExpenseRow } from '../types';
 
-export function TopExpenses({ rows }: { rows: TopExpenseRow[] }) {
+export function TopExpenses({ rows, locale = 'en-IN' }: { rows: TopExpenseRow[]; locale?: string }) {
   return (
     <div className="overflow-x-auto" data-tour="reports-top-expenses">
       <table className="min-w-full text-sm">
@@ -21,9 +21,9 @@ export function TopExpenses({ rows }: { rows: TopExpenseRow[] }) {
               <td className="hidden py-2 sm:table-cell">{r.category ?? 'Uncategorized'}</td>
               <td className="hidden py-2 md:table-cell">{r.account ?? '-'}</td>
               <td className="hidden py-2 text-base-content/60 md:table-cell">
-                {new Date(r.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                {new Date(r.date).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
               </td>
-              <td className="py-2 text-right font-medium text-error">{formatINR(r.amount)}</td>
+              <td className="py-2 text-right font-medium text-error">{formatINR(r.amount, locale)}</td>
             </tr>
           ))}
         </tbody>

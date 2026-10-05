@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import { Hero } from '@/components/marketing/sections/Hero';
 import { FeatureGrid } from '@/components/marketing/sections/FeatureGrid';
 import { FeatureBento } from '@/components/marketing/sections/FeatureBento';
@@ -13,12 +14,16 @@ import { USE_CASES } from '@/content/marketing/pages';
 import { plans } from '@/content/marketing/pricing';
 import { testimonials } from '@/content/marketing/testimonials';
 import { SITE } from '@/content/marketing/site';
+import { getSystemSettings } from '@/lib/settings/server';
 
-export const metadata: Metadata = {
-  title: { absolute: `${SITE.name}: ${SITE.tagline}` },
-  description: SITE.description,
-  alternates: { canonical: '/' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+  const settings = await getSystemSettings();
+  const name = String(settings['branding.name'] ?? SITE.name);
+  const tagline = String(settings['branding.tagline'] ?? SITE.tagline);
+  const description = String(settings['branding.description'] ?? SITE.description);
+  return { title: { absolute: `${name}: ${tagline}` }, description, alternates: { canonical: '/' } };
+}
 
 export default function HomePage() {
   return (

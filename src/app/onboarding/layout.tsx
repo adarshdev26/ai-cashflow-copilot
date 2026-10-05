@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getValidUserWithOnboarding } from '@/lib/session-guard';
+import { getValidUserWithOnboarding } from '@/lib/auth/session-guard';
 import { AuthShell } from '@/components/auth/AuthShell';
 
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {

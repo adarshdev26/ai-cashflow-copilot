@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { budgetAccess } from '@/lib/budget-access';
-import { validateAmount } from '@/lib/budgets';
+import { prisma } from '@/lib/db/prisma';
+import { budgetAccess } from '@/lib/budgets/budget-access';
+import { validateAmount } from '@/lib/budgets/budgets';
 
 type Ctx = { params: Promise<{ id: string }> };
 

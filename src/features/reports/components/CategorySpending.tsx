@@ -4,7 +4,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import { ChartTooltip, formatINR, categoryFallbackColor } from '@/components/ui/chart';
 import type { CategoryRow } from '../types';
 
-export function CategorySpending({ rows, ariaLabel }: { rows: CategoryRow[]; ariaLabel: string }) {
+export function CategorySpending({ rows, ariaLabel, locale = 'en-IN' }: { rows: CategoryRow[]; ariaLabel: string; locale?: string }) {
   const colorOf = (r: CategoryRow, i: number) => r.color ?? categoryFallbackColor(i);
 
   return (
@@ -17,7 +17,7 @@ export function CategorySpending({ rows, ariaLabel }: { rows: CategoryRow[]; ari
                 <Cell key={r.categoryId ?? 'none'} fill={colorOf(r, i)} />
               ))}
             </Pie>
-            <ChartTooltip />
+            <ChartTooltip locale={locale} />
           </PieChart>
         </ResponsiveContainer>
       </div>
@@ -43,7 +43,7 @@ export function CategorySpending({ rows, ariaLabel }: { rows: CategoryRow[]; ari
                     <span className="truncate">{r.name}</span>
                   </span>
                 </td>
-                <td className="py-2 text-right">{formatINR(r.amount)}</td>
+                <td className="py-2 text-right">{formatINR(r.amount, locale)}</td>
                 <td className="py-2 text-right text-base-content/60">{r.percent}%</td>
               </tr>
             ))}
