@@ -7,21 +7,23 @@ import { useFinanceSummary, PeriodTotals } from '../hooks/use-finance-summary';
 import { useActiveWorkspaceId } from '@/features/workspaces';
 import { useUserLocale } from '@/features/settings/hooks/use-settings';
 
-const locale = useUserLocale();
-const currency = new Intl.NumberFormat(locale, {
-  style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 2,
-});
-
 const netTone = (net: number): StatTone => (net > 0 ? 'positive' : net < 0 ? 'negative' : 'neutral');
 
-function MonthBreakdown({ income, expense }: Pick<PeriodTotals, 'income' | 'expense'>) {
+// MonthBreakdown needs the formatter — pass it in as a prop.
+function MonthBreakdown({
+  income,
+  expense,
+  formatCurrency,
+}: Pick<PeriodTotals, 'income' | 'expense'> & {
+  formatCurrency: (n: number) => string;
+}) {
   return (
     <div className="flex items-center justify-between">
       <span>
-        In <span className="font-medium text-success">{currency.format(income)}</span>
+        In <span className="font-medium text-success">{formatCurrency(income)}</span>
       </span>
       <span>
-        Out <span className="font-medium text-error">{currency.format(expense)}</span>
+        Out <span className="font-medium text-error">{formatCurrency(expense)}</span>
       </span>
     </div>
   );
@@ -32,13 +34,28 @@ export function FinanceStats({
   totalExpense = true,
   netBalance = true,
   thisMonthNet = true,
-  lastMonthNet = true
+  lastMonthNet = true,
 }) {
   const workspaceId = useActiveWorkspaceId();
   const { data, isLoading, isError } = useFinanceSummary(workspaceId);
+
+  const locale = useUserLocale();
+  const currency = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }),
+    [locale],
+  );
+  const formatCurrency = useMemo(() => (n: number) => currency.format(n), [currency]);
+
   const visibleSections = [totalIncome, totalExpense, netBalance, thisMonthNet, lastMonthNet].filter(Boolean).length;
-  const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${visibleSections === 3 ? 'xl:grid-cols-3' : visibleSections === 4 ? 'xl:grid-cols-4' : visibleSections >= 5 ? 'xl:grid-cols-5' : ''
-    }`;
+  const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${
+    visibleSections === 3 ? 'xl:grid-cols-3' : visibleSections === 4 ? 'xl:grid-cols-4' : visibleSections >= 5 ? 'xl:grid-cols-5' : ''
+  }`;
 
   const monthLabels = useMemo(() => {
     const now = new Date();
@@ -68,32 +85,32 @@ export function FinanceStats({
   return (
     <div className={gridClass} data-tour="finance-stats">
       {totalIncome && (
-        <StatCard title="Total income" value={currency.format(allTime.income)} icon={ArrowUpRight} tone="positive" />
+        <StatCard title="Total income" value={formatCurrency(allTime.income)} icon={ArrowUpRight} tone="positive" />
       )}
       {totalExpense && (
-        <StatCard title="Total expense" value={currency.format(allTime.expense)} icon={ArrowDownLeft} tone="negative" />
+        <StatCard title="Total expense" value={formatCurrency(allTime.expense)} icon={ArrowDownLeft} tone="negative" />
       )}
       {netBalance && (
-        <StatCard title="Net balance" value={currency.format(allTime.net)} icon={Wallet} tone={netTone(allTime.net)} />
+        <StatCard title="Net balance" value={formatCurrency(allTime.net)} icon={Wallet} tone={netTone(allTime.net)} />
       )}
       {thisMonthNet && (
         <StatCard
           title="This month Net"
           caption={monthLabels.thisMonth}
-          value={currency.format(thisMonth.net)}
+          value={formatCurrency(thisMonth.net)}
           icon={CalendarDays}
           tone={netTone(thisMonth.net)}
-          footer={<MonthBreakdown income={thisMonth.income} expense={thisMonth.expense} />}
+          footer={<MonthBreakdown income={thisMonth.income} expense={thisMonth.expense} formatCurrency={formatCurrency} />}
         />
       )}
       {lastMonthNet && (
         <StatCard
           title="Last month Net"
           caption={monthLabels.lastMonth}
-          value={currency.format(lastMonth.net)}
+          value={formatCurrency(lastMonth.net)}
           icon={History}
           tone={netTone(lastMonth.net)}
-          footer={<MonthBreakdown income={lastMonth.income} expense={lastMonth.expense} />}
+          footer={<MonthBreakdown income={lastMonth.income} expense={lastMonth.expense} formatCurrency={formatCurrency} />}
         />
       )}
     </div>
