@@ -1,5 +1,5 @@
-import { toScheduleDate } from '@/lib/recurring-dates';
-import { prisma } from '@/lib/prisma';
+import { toScheduleDate } from '@/lib/recurring/recurring-dates';
+import { prisma } from '@/lib/db/prisma';
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { getCategoryError } from '@/lib/categories';
 

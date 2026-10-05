@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { PrimaryButton } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { WORKSPACE_NAME_MAX, WORKSPACE_NAME_MIN } from '@/lib/validations/onboarding';
 import { useSaveOnboardingSetup } from '../hooks/use-onboarding';
 import { GOAL_OPTIONS, type OnboardingGoal } from '../types';

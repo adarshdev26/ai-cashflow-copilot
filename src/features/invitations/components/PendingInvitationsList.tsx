@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import {
   useCancelInvitation,
   useInvitations,
@@ -15,13 +15,14 @@ import type { IssuedInvitationLink } from './InvitationLinkCard';
 
 type Props = {
   workspaceId: string;
+  allowResend?: boolean;
   /** Called with the fresh link after a resend. */
   onLinkReady: (link: IssuedInvitationLink) => void;
   /** Lets the parent hide a link card whose invitation was just cancelled. */
   onCancelled?: (email: string) => void;
 };
 
-export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }: Props) {
+export function PendingInvitationsList({ workspaceId, allowResend = true, onLinkReady, onCancelled }: Props) {
   const now = useNow();
   const [cancelTarget, setCancelTarget] = useState<Invitation | null>(null);
   const [cancelError, setCancelError] = useState<string | undefined>();
@@ -69,7 +70,8 @@ export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }
 
   return (
     <>
-      <div className="border border-base-300 rounded-lg overflow-hidden">
+      <div className="rounded-lg border border-base-300">
+        <div className="overflow-x-auto rounded-lg">
         <table className="min-w-full divide-y divide-base-300 text-sm text-left">
           <thead className="bg-base-200 text-base-content/60">
             <tr>
@@ -106,7 +108,7 @@ export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }
                   resend.isPending && resend.variables?.invitationId === inv.id;
                 return (
                   <tr key={inv.id}>
-                    <td className="px-4 py-3 text-base-content">{inv.email}</td>
+                    <td className="break-all px-4 py-3 text-base-content">{inv.email}</td>
                     <td className="px-4 py-3 text-base-content/80">{ROLE_LABELS[inv.role]}</td>
                     <td
                       className={`px-4 py-3 ${expired ? 'text-error font-medium' : 'text-base-content/70'}`}
@@ -114,14 +116,16 @@ export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }
                       {timeLeft}
                     </td>
                     <td className="px-4 py-3 text-right space-x-4">
-                      <button
-                        type="button"
-                        onClick={() => handleResend(inv)}
-                        disabled={resending}
-                        className="text-primary hover:text-primary font-medium text-sm disabled:opacity-50"
-                      >
-                        {resending ? 'Resending...' : 'Resend'}
-                      </button>
+                      {allowResend && (
+                        <button
+                          type="button"
+                          onClick={() => handleResend(inv)}
+                          disabled={resending}
+                          className="text-primary hover:text-primary font-medium text-sm disabled:opacity-50"
+                        >
+                          {resending ? 'Resending...' : 'Resend'}
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => {
@@ -139,6 +143,7 @@ export function PendingInvitationsList({ workspaceId, onLinkReady, onCancelled }
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       <ConfirmDialog

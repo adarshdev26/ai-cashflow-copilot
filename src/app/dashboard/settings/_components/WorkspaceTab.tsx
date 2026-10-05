@@ -18,7 +18,9 @@ import {
   type IssuedInvitationLink,
 } from '@/features/invitations';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
+import { WorkspaceFinanceSettings } from './WorkspaceFinanceSettings';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 // The key remounts the content when the active workspace changes,
 // so local form state (like the name input) always starts fresh.
@@ -29,6 +31,7 @@ export function WorkspaceTab() {
 
 function WorkspaceContent() {
   const { active: workspace, workspaces } = useWorkspace();
+  const { data: publicSettings } = usePublicSettings();
   const [name, setName] = useState(workspace.name);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -41,6 +44,9 @@ function WorkspaceContent() {
   const canChangeRoles = usePermission('members.changeRole');
   const canRemoveMembers = usePermission('members.remove');
   const canDeleteWorkspace = usePermission('workspace.delete');
+  const minNameLength = Number(publicSettings?.['limits.workspaceNameMinLength'] ?? 2);
+  const maxNameLength = Number(publicSettings?.['limits.workspaceNameMaxLength'] ?? 60);
+  const invitationsEnabled = publicSettings?.['features.invitationsEnabled'] !== false;
 
   const { data: members, isLoading: loadingMembers } = useWorkspaceAccess(workspace.workspaceId, {
     enabled: canViewMembers,
@@ -54,7 +60,7 @@ function WorkspaceContent() {
   const handleUpdateName = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = name.trim();
-    if (trimmed && trimmed !== workspace.name) {
+    if (trimmed.length >= minNameLength && trimmed.length <= maxNameLength && trimmed !== workspace.name) {
       updateName(
         { workspaceId: workspace.workspaceId, name: trimmed },
         {
@@ -85,14 +91,16 @@ function WorkspaceContent() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              minLength={minNameLength}
+              maxLength={maxNameLength}
               disabled={updatingName}
-              className="flex-1 rounded-md border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-base-200"
+              className="flex-1 rounded-md border border-base-300 bg-base-100 px-3 py-2 text-base text-base-content focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-base-200 sm:text-sm"
               placeholder="Workspace Name"
             />
 
             <button
               type="submit"
-              disabled={name.trim() === workspace.name || updatingName || !name.trim()}
+              disabled={name.trim() === workspace.name || updatingName || name.trim().length < minNameLength || name.trim().length > maxNameLength}
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-content hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {updatingName ? 'Saving...' : 'Save'}
@@ -103,11 +111,13 @@ function WorkspaceContent() {
         )}
       </section>
 
+      <WorkspaceFinanceSettings workspaceId={workspace.workspaceId} canEdit={canRename} />
+
       {canViewMembers && (
         <section className="bg-base-100 rounded-xl shadow-sm border border-base-300 p-6 space-y-6" data-tour="settings-members">
           <h2 className="text-lg font-semibold text-base-content">Members</h2>
 
-          {canInvite && (
+          {canInvite && invitationsEnabled && (
             <InviteMemberForm
               workspaceId={workspace.workspaceId}
               onCreated={setIssuedLink}
@@ -155,7 +165,7 @@ function WorkspaceContent() {
                               )
                             }
                             disabled={!canChangeRoles}
-                            className="rounded text-sm py-1 pl-2 pr-8 text-base-content focus:ring-primary focus:border-primary border-none bg-transparent"
+                            className="rounded py-1 pl-2 pr-8 text-base text-base-content focus:ring-primary focus:border-primary border-none bg-transparent sm:text-sm"
                           >
                             <option value="ADMIN">Admin</option>
                             <option value="MEMBER">Member</option>
@@ -201,6 +211,7 @@ function WorkspaceContent() {
           </div>
           <PendingInvitationsList
             workspaceId={workspace.workspaceId}
+            allowResend={invitationsEnabled}
             onLinkReady={setIssuedLink}
             onCancelled={(email) =>
               setIssuedLink((current) => (current?.email === email ? null : current))

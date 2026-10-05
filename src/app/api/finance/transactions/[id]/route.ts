@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { prisma } from '@/lib/db/prisma';
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { getCategoryError } from '@/lib/categories';

@@ -1,7 +1,6 @@
 import type { Granularity, ReportFilters, ReportTimezoneParams, ReportType } from '../types';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const MAX_DAYS = 1830; // ~60 months
 const DAY_MS = 86_400_000;
 const zonedFormatters = new Map<string, Intl.DateTimeFormat>();
 
@@ -27,7 +26,7 @@ export function toYmd(d: Date): string {
 }
 
 /** Returns local from/to dates for a preset. `to` is inclusive. */
-export function resolvePreset(preset: Exclude<PresetId, 'custom'>, today = new Date()) {
+export function resolvePreset(preset: Exclude<PresetId, 'custom'>, today = new Date(), fiscalYearStartMonth = 1) {
   const y = today.getFullYear();
   const m = today.getMonth();
   switch (preset) {
@@ -39,8 +38,11 @@ export function resolvePreset(preset: Exclude<PresetId, 'custom'>, today = new D
       const qStart = Math.floor(m / 3) * 3;
       return { from: toYmd(new Date(y, qStart, 1)), to: toYmd(new Date(y, qStart + 3, 0)) };
     }
-    case 'this_year':
-      return { from: toYmd(new Date(y, 0, 1)), to: toYmd(new Date(y, 11, 31)) };
+    case 'this_year': {
+      const startMonth = Math.min(12, Math.max(1, fiscalYearStartMonth)) - 1;
+      const startYear = m >= startMonth ? y : y - 1;
+      return { from: toYmd(new Date(startYear, startMonth, 1)), to: toYmd(new Date(startYear + 1, startMonth, 0)) };
+    }
     case 'last_6_months':
       return { from: toYmd(new Date(y, m - 5, 1)), to: toYmd(new Date(y, m + 1, 0)) };
     case 'last_12_months':
@@ -144,7 +146,7 @@ export type ParsedParams =
     }
   | { ok: false; error: string };
 
-export function parseReportParams(sp: URLSearchParams): ParsedParams {
+export function parseReportParams(sp: URLSearchParams, maxDays: number): ParsedParams {
   const from = sp.get('from') ?? '';
   const to = sp.get('to') ?? '';
   const a = parseYmd(from);
@@ -171,8 +173,8 @@ export function parseReportParams(sp: URLSearchParams): ParsedParams {
     ? localDayStart(nextDate, timeZone)
     : new Date(Date.UTC(b[0], b[1] - 1, b[2] + 1) + tz * 60_000);
   if (endExclusive <= start) return { ok: false, error: 'from must be on or before to' };
-  if ((endExclusive.getTime() - start.getTime()) / DAY_MS > MAX_DAYS) {
-    return { ok: false, error: 'Date range is too large (max 5 years)' };
+  if ((endExclusive.getTime() - start.getTime()) / DAY_MS > maxDays) {
+    return { ok: false, error: `Date range is too large (max ${Math.ceil(maxDays / 365)} years)` };
   }
 
   const typeRaw = sp.get('type');

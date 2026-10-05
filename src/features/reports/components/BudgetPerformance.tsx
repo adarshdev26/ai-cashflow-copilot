@@ -7,7 +7,7 @@ const STATUS: Record<BudgetStatus, { label: string; badge: string; bar: string }
   over: { label: 'Over budget', badge: 'badge-error', bar: 'progress-error' },
 };
 
-export function BudgetPerformance({ budget }: { budget: ReportResponse['budget'] }) {
+export function BudgetPerformance({ budget, locale = 'en-IN' }: { budget: ReportResponse['budget']; locale?: string }) {
   if (!budget.available) {
     return (
       <p className="text-sm text-base-content/60">
@@ -23,13 +23,13 @@ export function BudgetPerformance({ budget }: { budget: ReportResponse['budget']
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {budget.items.map((b) => (
-        <BudgetItem key={b.categoryId} b={b} />
+        <BudgetItem key={b.categoryId} b={b} locale={locale} />
       ))}
     </div>
   );
 }
 
-function BudgetItem({ b }: { b: BudgetRow }) {
+function BudgetItem({ b, locale }: { b: BudgetRow; locale: string }) {
   const s = STATUS[b.status];
   return (
     <div className="space-y-2 rounded-lg border border-base-300 p-4">
@@ -45,12 +45,12 @@ function BudgetItem({ b }: { b: BudgetRow }) {
       />
       <div className="flex justify-between text-xs text-base-content/70">
         <span>
-          {formatINR(b.spent)} of {formatINR(b.budget)} ({b.percentUsed}%)
+          {formatINR(b.spent, locale)} of {formatINR(b.budget, locale)} ({b.percentUsed}%)
         </span>
         <span className={b.remaining < 0 ? 'text-error' : ''}>
           {b.remaining < 0
-            ? `${formatINR(Math.abs(b.remaining))} over`
-            : `${formatINR(b.remaining)} left`}
+            ? `${formatINR(Math.abs(b.remaining), locale)} over`
+            : `${formatINR(b.remaining, locale)} left`}
         </span>
       </div>
     </div>

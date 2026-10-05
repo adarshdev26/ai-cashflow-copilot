@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Repeat, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { notify } from '@/lib/toast';
+import { notify } from '@/lib/ui/toast';
 import { usePermission } from '@/features/workspaces/hooks/use-permission';
 import { formatINR } from '@/features/budgets/utils';
 import { RecurringTable } from '@/features/recurring/components/RecurringTable';
@@ -15,8 +15,10 @@ import {
   useDeleteRecurring,
 } from '@/features/recurring/hooks/use-recurring';
 import { monthlyEquivalent, type RecurringTransactionDTO } from '@/features/recurring/types';
+import { useUserLocale } from '@/features/settings/hooks/use-settings';
 
 export default function RecurringPage() {
+  const locale = useUserLocale();
   const canManage = usePermission('recurring.manage');
 
   const { data, isLoading, isFetching, isError, error } = useRecurring();
@@ -103,7 +105,7 @@ export default function RecurringPage() {
               </div>
             </div>
             <p className="mt-4 text-2xl font-bold tracking-tight text-success">
-              {formatINR(stats.income)}
+              {formatINR(stats.income, locale)}
             </p>
           </div>
 
@@ -118,7 +120,7 @@ export default function RecurringPage() {
               </div>
             </div>
             <p className="mt-4 text-2xl font-bold tracking-tight text-base-content">
-              {formatINR(stats.expense)}
+              {formatINR(stats.expense, locale)}
             </p>
           </div>
         </div>

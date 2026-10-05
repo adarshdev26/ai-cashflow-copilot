@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { notify } from '@/lib/toast';
+import { notify } from '@/lib/ui/toast';
 import { usePermission } from '@/features/workspaces/hooks/use-permission';
 import {
   useTransactionTemplates,

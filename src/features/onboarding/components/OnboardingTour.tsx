@@ -14,12 +14,14 @@ import {
   tourHref,
   waitForElement,
 } from '../lib/tour-steps';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 export function OnboardingTour() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { active } = useWorkspace();
+  const { data: settings } = usePublicSettings();
   const tourParam = searchParams.get(TOUR_PARAM);
   const tourRef = useRef<Driver | null>(null);
 
@@ -31,6 +33,7 @@ export function OnboardingTour() {
   // Start: runs when the URL carries ?tour=1 (or ?tour=finance) on the matching page.
   useEffect(() => {
     const phase = parseTourPhase(tourParam);
+    if (settings?.['features.tourEnabled'] === false) return;
     if (!phase || pathname !== PHASE_PATH[phase]) return;
 
     let cancelled = false;
@@ -71,7 +74,7 @@ export function OnboardingTour() {
     return () => {
       cancelled = true; // only cancels a pending start; a running tour is left alone
     };
-  }, [tourParam, pathname, router, stop, active.role]);
+  }, [tourParam, pathname, router, stop, active.role, settings]);
 
   // Teardown: when the user leaves the page or the shell unmounts.
   useEffect(() => () => stop(), [pathname, stop]);

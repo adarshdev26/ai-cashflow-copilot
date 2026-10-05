@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireUserId } from '@/lib/auth';
-import { completeOnboarding } from '@/lib/onboarding';
+import { requireUserId } from '@/lib/auth/auth';
+import { completeOnboarding } from '@/lib/users/onboarding';
 
 export async function POST() {
   try {

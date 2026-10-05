@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface UsePaginationOptions {
   defaultPage?: number;
@@ -25,6 +25,9 @@ export function usePagination({
   );
   const [page, setPageState] = useState(() => positiveInteger(defaultPage, 1));
   const [pageSize, setPageSizeState] = useState(initialPageSize);
+  useEffect(() => {
+    setPageSizeState(Math.min(positiveInteger(defaultPageSize, 20), maxPageSize ?? Number.MAX_SAFE_INTEGER));
+  }, [defaultPageSize, maxPageSize]);
   const resolvedTotalPages = totalPages ?? (totalCount === undefined
     ? undefined
     : Math.max(1, Math.ceil(totalCount / pageSize)));

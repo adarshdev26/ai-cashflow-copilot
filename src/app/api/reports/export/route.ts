@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import Papa from 'papaparse';
-import { requireWorkspaceAction } from '@/lib/workspaces';
+import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import {
   buildReportWhere,
   localDateKey,
   parseReportParams,
 } from '@/features/reports/lib/report-filters';
 import { validateScopedIds } from '@/features/reports/lib/report-queries';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db/prisma';
+import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
 
 export const dynamic = 'force-dynamic';
 
-const MAX_ROWS = 50_000;
 
 // Spreadsheet formula-injection guard.
 const safe = (v: string | null | undefined) => {
@@ -23,8 +23,12 @@ export async function GET(req: Request) {
   try {
     const access = await requireWorkspaceAction(req, 'workspace.read');
     if (!access.ok) return access.response;
+    if (!(await getSystemBool('features.csvExportEnabled'))) {
+      return NextResponse.json({ error: 'CSV export is currently disabled' }, { status: 403 });
+    }
+    const maxRows = await getSystemNumber('limits.csvExportMaxRows');
 
-    const parsed = parseReportParams(new URL(req.url).searchParams);
+    const parsed = parseReportParams(new URL(req.url).searchParams, await getSystemNumber('limits.reportMaxDays'));
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
     const idError = await validateScopedIds(access.workspaceId, parsed.filters);
@@ -35,7 +39,7 @@ export async function GET(req: Request) {
     const rows = await prisma.transaction.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      take: MAX_ROWS + 1,
+      take: maxRows + 1,
       select: {
         createdAt: true,
         description: true,
@@ -45,9 +49,9 @@ export async function GET(req: Request) {
         category: { select: { name: true } },
       },
     });
-    if (rows.length > MAX_ROWS) {
+    if (rows.length > maxRows) {
       return NextResponse.json(
-        { error: `Too many rows (max ${MAX_ROWS}). Narrow the date range.` },
+        { error: `Too many rows (max ${maxRows}). Narrow the date range.` },
         { status: 413 }
       );
     }

@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { Landmark, Banknote, CreditCard, Wallet, CircleDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { AccountType, AccountWithBalance } from '../types';
+import { useUserLocale } from '@/features/settings/hooks/use-settings';
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   BANK: 'Bank',
@@ -22,11 +23,11 @@ const ACCOUNT_TYPE_ICONS = {
 } as const;
 
 // Swap for your existing currency formatter if you have one.
-export function formatMoney(amount: number, currency: string): string {
+export function formatMoney(amount: number, currency: string, locale?: string): string {
   try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
   } catch {
-    return `${currency} ${amount.toFixed(2)}`;
+    return `${currency} ${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(amount)}`;
   }
 }
 
@@ -49,6 +50,7 @@ export const AccountCard = memo(function AccountCard({
   onToggleActive,
   onDelete,
 }: AccountCardProps) {
+  const locale = useUserLocale();
   const Icon = ACCOUNT_TYPE_ICONS[account.type] ?? CircleDollarSign;
   const txCount = account.transactionCount ?? 0; // ASSUMPTION: field name
   const isNegative = account.balance < 0;
@@ -79,7 +81,7 @@ export const AccountCard = memo(function AccountCard({
       <div className="mt-4">
         <p className="text-xs text-base-content/60">Balance</p>
         <p className={`text-2xl font-bold tracking-tight ${isNegative ? 'text-error' : 'text-base-content'}`}>
-          {formatMoney(account.balance, account.currency)}
+          {formatMoney(account.balance, account.currency, locale)}
         </p>
         <p className="mt-1 text-xs text-base-content/50">
           {txCount} {txCount === 1 ? 'transaction' : 'transactions'}

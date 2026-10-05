@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getValidUser } from '@/lib/session-guard';
+import { getValidUser } from '@/lib/auth/session-guard';
 
 export const dynamic = 'force-dynamic';
 

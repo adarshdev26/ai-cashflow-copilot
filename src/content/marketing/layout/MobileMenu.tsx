@@ -4,15 +4,18 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { SITE } from '@/content/marketing/site';
 import { ThemeMenu } from '@/components/ui/ThemePicker';
 
 export function MobileMenu({
   links,
   isLoggedIn = false,
+  siteName,
+  signupEnabled,
 }: {
   links: { href: string; label: string }[];
   isLoggedIn?: boolean;
+  siteName: string;
+  signupEnabled: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -57,16 +60,18 @@ export function MobileMenu({
               href="/dashboard"
               className="mt-4 block rounded-lg bg-mk-brand py-3 text-center font-semibold text-mk-brand-fg"
             >
-              Open {SITE.name}
+              Open {siteName}
             </Link>
           ) : (
             <div className="mt-4 grid grid-cols-2 gap-2">
               <Link href="/login" className="rounded-lg border border-mk-line py-3 text-center font-semibold">
                 Log in
               </Link>
-              <Link href="/signup" className="rounded-lg bg-mk-brand py-3 text-center font-semibold text-mk-brand-fg">
-                Get started
-              </Link>
+              {signupEnabled && (
+                <Link href="/signup" className="rounded-lg bg-mk-brand py-3 text-center font-semibold text-mk-brand-fg">
+                  Get started
+                </Link>
+              )}
             </div>
           )}
         </div>

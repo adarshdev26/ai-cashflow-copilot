@@ -14,6 +14,7 @@ import { useCallback, useMemo } from 'react';
 import { useFilters } from './useFilters';
 import { usePagination, UsePaginationOptions } from './usePagination';
 import { SortDirection, useSort } from './useSort';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 export type ListQueryParams<TFilters extends Record<string, unknown>, TSortField extends string> = {
   page: number;
@@ -42,7 +43,9 @@ export function useListQueryState<
   totalPages,
   totalCount,
 }: UseListQueryStateOptions<TFilters, TSortField>) {
-  const pagination = usePagination({ defaultPage, defaultPageSize, maxPageSize, totalPages, totalCount });
+  const { data: publicSettings } = usePublicSettings();
+  const resolvedDefaultPageSize = defaultPageSize ?? Number(publicSettings?.['ui.defaultPageSize'] ?? 20);
+  const pagination = usePagination({ defaultPage, defaultPageSize: resolvedDefaultPageSize, maxPageSize, totalPages, totalCount });
   const sorting = useSort({ defaultSortBy, defaultSortDir });
   const filterState = useFilters(defaultFilters);
 

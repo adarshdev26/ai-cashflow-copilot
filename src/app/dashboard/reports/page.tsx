@@ -13,9 +13,10 @@ import { SummaryCards, SummaryCardsSkeleton } from '@/features/reports/component
 import { AccountBreakdown } from '@/features/reports/components/AccountBreakdown';
 import { BudgetPerformance } from '@/features/reports/components/BudgetPerformance';
 import { TopExpenses } from '@/features/reports/components/TopExpenses';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { ChartCard, slugify } from '@/components/ui/chart';
 import { PrimaryButton } from '@/components/ui/Button';
+import { useUserPreferences, useWorkspaceSettings } from '@/features/settings/hooks/use-settings';
 
 const IncomeExpenseChart = dynamic(
   () => import('@/features/reports/components/IncomeExpenseChart').then((m) => m.IncomeExpenseChart),
@@ -40,18 +41,18 @@ function isPreset(value: string | null): value is PresetId {
   return PRESETS.some((preset) => preset.id === value);
 }
 
-function readFilters(searchParams: URLSearchParams, defaults: ReturnType<typeof resolvePreset>): FilterState {
+function readFilters(searchParams: URLSearchParams, defaults: ReturnType<typeof resolvePreset>, defaultPreset: Exclude<PresetId, 'custom'>, fiscalYearStartMonth: number): FilterState {
   const from = searchParams.get('from');
   const to = searchParams.get('to');
   const validRange = isYmd(from) && isYmd(to) && from <= to;
   const presetParam = searchParams.get('preset');
   const requestedPreset = isPreset(presetParam) ? presetParam : undefined;
-  const presetRange = requestedPreset && requestedPreset !== 'custom'
-    ? resolvePreset(requestedPreset)
+  const effectivePreset = requestedPreset ?? (validRange ? undefined : defaultPreset);
+  const presetRange = effectivePreset && effectivePreset !== 'custom'
+    ? resolvePreset(effectivePreset, new Date(), fiscalYearStartMonth)
     : undefined;
   const range = presetRange ?? (validRange ? { from, to } : defaults);
-  const preset = requestedPreset
-    ?? (range.from === defaults.from && range.to === defaults.to ? 'this_month' : 'custom');
+  const preset = effectivePreset ?? 'custom';
   const id = (key: string) => {
     const value = searchParams.get(key);
     return value && /^[0-9a-f-]{36}$/i.test(value) ? value : undefined;
@@ -86,15 +87,23 @@ function Section({
 
 function ReportsPageContent() {
   const { active } = useWorkspace();
+  const { data: preferences } = useUserPreferences();
+  const { data: workspaceSettings } = useWorkspaceSettings(active.workspaceId);
+  const rawDefaultPreset = String(preferences?.defaultReportPreset ?? 'this_month');
+  const defaultPreset: Exclude<PresetId, 'custom'> = isPreset(rawDefaultPreset) && rawDefaultPreset !== 'custom'
+    ? rawDefaultPreset
+    : 'this_month';
+  const fiscalYearStartMonth = Number(workspaceSettings?.['finance.fiscalYearStartMonth'] ?? 1);
+  const locale = String(preferences?.locale ?? 'en-IN');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tzOffset = useMemo(() => new Date().getTimezoneOffset(), []);
   const tz = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
-  const defaults = useMemo(() => resolvePreset('this_month'), []);
+  const defaults = useMemo(() => resolvePreset(defaultPreset, new Date(), fiscalYearStartMonth), [defaultPreset, fiscalYearStartMonth]);
   const filters = useMemo(
-    () => readFilters(new URLSearchParams(searchParams.toString()), defaults),
-    [searchParams, defaults]
+    () => readFilters(new URLSearchParams(searchParams.toString()), defaults, defaultPreset, fiscalYearStartMonth),
+    [searchParams, defaults, defaultPreset, fiscalYearStartMonth]
   );
   const [exporting, setExporting] = useState(false);
 
@@ -113,7 +122,7 @@ function ReportsPageContent() {
   const handleChange = (next: Partial<FilterState>) => {
     let merged = { ...filters, ...next };
     if (next.preset && next.preset !== 'custom') {
-      merged = { ...merged, ...resolvePreset(next.preset) };
+      merged = { ...merged, ...resolvePreset(next.preset, new Date(), fiscalYearStartMonth) };
     } else if (('from' in next || 'to' in next) && !('preset' in next)) {
       merged.preset = 'custom';
     }
@@ -124,7 +133,7 @@ function ReportsPageContent() {
       params.set('from', merged.from);
       params.set('to', merged.to);
     }
-    if (merged.preset !== 'this_month') params.set('preset', merged.preset);
+    if (merged.preset !== defaultPreset) params.set('preset', merged.preset);
     if (merged.accountId) params.set('accountId', merged.accountId);
     if (merged.categoryId) params.set('categoryId', merged.categoryId);
     if (merged.type) params.set('type', merged.type);
@@ -225,6 +234,7 @@ function ReportsPageContent() {
                 summary={data.summary}
                 mixedCurrency={data.mixedCurrency}
                 totalsByCurrency={data.totalsByCurrency}
+                locale={locale}
               />
             </div>
 
@@ -253,6 +263,7 @@ function ReportsPageContent() {
                         data={data.series}
                         granularity={data.granularity}
                         ariaLabel={incomeExpenseLabel}
+                        locale={locale}
                       />
                     </ChartCard>
                   </div>
@@ -267,18 +278,18 @@ function ReportsPageContent() {
                       filename={`${slugify(active.slug)}-${slugify('spending-by-category')}-${rangeFilename}`}
                       exportTourId="reports-category-png"
                     >
-                      <CategorySpending rows={data.categories} ariaLabel={categoryLabel} />
+                      <CategorySpending rows={data.categories} ariaLabel={categoryLabel} locale={locale} />
                     </ChartCard>
                   </div>
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
                   <Section title="Account Breakdown">
-                    <AccountBreakdown rows={data.accounts} />
+                    <AccountBreakdown rows={data.accounts} locale={locale} />
                   </Section>
                   <Section title="Top Expenses">
                     {data.topExpenses.length ? (
-                      <TopExpenses rows={data.topExpenses} />
+                      <TopExpenses rows={data.topExpenses} locale={locale} />
                     ) : (
                       <p className="text-sm text-base-content/60">No expenses in this period.</p>
                     )}
@@ -287,7 +298,7 @@ function ReportsPageContent() {
 
                 <div data-tour="reports-budget-performance">
                   <Section title="Budget Performance">
-                    <BudgetPerformance budget={data.budget} />
+                    <BudgetPerformance budget={data.budget} locale={locale} />
                   </Section>
                 </div>
               </>

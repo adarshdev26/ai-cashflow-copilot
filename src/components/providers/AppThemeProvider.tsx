@@ -1,6 +1,6 @@
 'use client';
 import { ThemeProvider } from 'next-themes';
-import { THEMES, THEME_VALUE } from '@/lib/themes';
+import { THEMES, THEME_VALUE } from '@/lib/ui/themes';
 
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   return (

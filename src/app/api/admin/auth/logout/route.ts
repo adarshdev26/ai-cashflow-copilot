@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { clearAdminCookie } from '@/lib/admin-auth';
+import { clearAdminCookie } from '@/lib/admin/auth';
 
 export async function POST() {
   await clearAdminCookie();

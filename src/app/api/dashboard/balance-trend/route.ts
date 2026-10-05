@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { prisma } from '@/lib/db/prisma';
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
+import { getSystemNumber } from '@/lib/settings/server';
 
 const DEFAULT_DAYS = 30;
-const MAX_DAYS = 730; // "all" is capped at 2 years; the opening balance still counts older transactions
 
 const dayKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-function parseDays(value: string | null): number | 'all' {
+function parseDays(value: string | null, maxDays: number): number | 'all' {
   if (value === 'all') return 'all';
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1) return DEFAULT_DAYS;
-  return Math.min(parsed, MAX_DAYS);
+  return Math.min(parsed, maxDays);
 }
 
 export async function GET(req: Request) {
@@ -21,7 +21,8 @@ export async function GET(req: Request) {
     if (!access.ok) return access.response;
 
     const { workspaceId } = access;
-    const requested = parseDays(new URL(req.url).searchParams.get('days'));
+    const maxDays = await getSystemNumber('limits.balanceTrendMaxDays');
+    const requested = parseDays(new URL(req.url).searchParams.get('days'), maxDays);
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -35,7 +36,7 @@ export async function GET(req: Request) {
       if (firstDate) {
         const firstDay = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
         const diff = Math.round((today.getTime() - firstDay.getTime()) / 86_400_000) + 1;
-        days = Math.min(MAX_DAYS, Math.max(1, diff));
+        days = Math.min(maxDays, Math.max(1, diff));
       } else {
         days = DEFAULT_DAYS;
       }

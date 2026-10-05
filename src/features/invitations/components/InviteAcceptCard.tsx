@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PrimaryButton } from '@/components/ui/Button';
 import { ApiError } from '@/lib/api-client';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { useAcceptInvitation } from '../hooks/use-invitations';
 import { setActiveWorkspaceId } from '../utils';
 

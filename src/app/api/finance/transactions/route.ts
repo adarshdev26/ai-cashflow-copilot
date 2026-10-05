@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { prisma } from '@/lib/db/prisma';
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { Prisma } from '@/generated/prisma';
 import { buildTransactionWhere } from '@/lib/transaction-filters';
 import { getCategoryError } from '@/lib/categories';
+import { getSystemNumber } from '@/lib/settings/server';
 
 // Offset pagination matches the existing numbered table controls and keeps this query compatible with useQuery.
 const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type'] as const;
 const DEFAULT_LIMIT = 10;
-const MAX_LIMIT = 100;
 
 const TRANSACTION_INCLUDE = {
   category: { select: { id: true, name: true, color: true } },
@@ -68,7 +68,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'dateFrom must be before dateTo' }, { status: 400 });
     }
 
-    const limit = Math.min(rawLimit, MAX_LIMIT);
+    const maxLimit = await getSystemNumber('limits.listMaxPageSize');
+    const limit = Math.min(rawLimit, maxLimit);
     // workspaceId is always in the filter, so an accountId from another
     // workspace simply matches nothing.
     const where = buildTransactionWhere({

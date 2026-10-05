@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
-import { saveOnboardingSetup } from '@/lib/onboarding';
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
+import { saveOnboardingSetup } from '@/lib/users/onboarding';
 import { validateOnboardingSetup } from '@/lib/validations/onboarding';
 
 export async function PATCH(req: Request) {

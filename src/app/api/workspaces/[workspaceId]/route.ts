@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { prisma } from '@/lib/db/prisma';
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { canWorkspaceAction } from '@/features/workspaces/permissions';
+import { getSystemNumber } from '@/lib/settings/server';
 
 export async function GET(req: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
   try {
@@ -32,13 +33,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ worksp
     if (!access.ok) return access.response;
 
     const body = await req.json();
-    if (!body.name || typeof body.name !== 'string' || body.name.trim().length === 0) {
-      return NextResponse.json({ error: 'Workspace name is required' }, { status: 400 });
+    const [minLength, maxLength] = await Promise.all([
+      getSystemNumber('limits.workspaceNameMinLength'),
+      getSystemNumber('limits.workspaceNameMaxLength'),
+    ]);
+    const name = typeof body.name === 'string' ? body.name.trim() : '';
+    if (name.length < minLength || name.length > maxLength) {
+      return NextResponse.json({ error: `Workspace name must be ${minLength}-${maxLength} characters` }, { status: 400 });
     }
 
     const workspace = await prisma.workspace.update({
       where: { id: access.workspaceId },
-      data: { name: body.name.trim() },
+      data: { name },
     });
 
     return NextResponse.json(workspace);

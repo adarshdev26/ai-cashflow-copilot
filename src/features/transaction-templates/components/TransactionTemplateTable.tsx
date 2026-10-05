@@ -7,6 +7,7 @@ import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import { formatINR } from '@/features/budgets/utils';
 import type { TransactionTemplateDTO } from '../types';
+import { useUserPreferences } from '@/features/settings/hooks/use-settings';
 
 interface TransactionTemplateTableProps {
   items?: TransactionTemplateDTO[];
@@ -17,8 +18,8 @@ interface TransactionTemplateTableProps {
   isFetching?: boolean;
 }
 
-function formatFixedDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-IN', {
+function formatFixedDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -43,6 +44,10 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
   isLoading,
   isFetching,
 }: TransactionTemplateTableProps) {
+  const { data: preferences } = useUserPreferences();
+  const locale = String(preferences?.locale ?? 'en-IN');
+  const pageSize = Number(preferences?.tablePageSize ?? 10);
+  const density = preferences?.tableDensity === 'compact' ? 'compact' : 'comfortable';
   const columns = useMemo<ColumnDef<TransactionTemplateDTO>[]>(() => {
     const base: ColumnDef<TransactionTemplateDTO>[] = [
       {
@@ -83,7 +88,7 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
           return (
             <span className={`font-semibold ${isIncome ? 'text-success' : 'text-base-content'}`}>
               {isIncome ? '+' : '-'}
-              {formatINR(t.amount)}
+              {formatINR(t.amount, locale)}
             </span>
           );
         },
@@ -126,7 +131,7 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
         cell: ({ row }) => {
           const t = row.original;
           return t.dateMode === 'FIXED' && t.fixedDate ? (
-            <span className="text-base-content/80">{formatFixedDate(t.fixedDate)}</span>
+            <span className="text-base-content/80">{formatFixedDate(t.fixedDate, locale)}</span>
           ) : (
             <span className="text-base-content/60">Date of use</span>
           );
@@ -156,15 +161,17 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
         },
       },
     ];
-  }, [canManage, onEdit, onDelete]);
+  }, [canManage, onEdit, onDelete, locale]);
 
   return (
     <DataTable
+      key={pageSize}
       columns={columns}
       data={items}
       searchKey="name"
       searchPlaceholder="Search templates..."
-      pageSize={10}
+      pageSize={pageSize}
+      density={density}
       isLoading={isLoading}
       isFetching={isFetching}
     />

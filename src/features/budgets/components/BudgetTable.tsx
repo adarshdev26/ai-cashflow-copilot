@@ -7,6 +7,7 @@ import { DataTable } from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/Button';
 import type { BudgetUsage } from '../types';
 import { categoryColor, formatINR, usageTone } from '../utils';
+import { useUserPreferences } from '@/features/settings/hooks/use-settings';
 
 interface BudgetTableProps {
   budgets?: BudgetUsage[];
@@ -15,17 +16,19 @@ interface BudgetTableProps {
   onDeactivate: (b: BudgetUsage) => void;
   isLoading?: boolean;
   isFetching?: boolean;
+  warningPercent: number;
+  exceededPercent: number;
 }
 
-function StatusBadge({ budget }: { budget: BudgetUsage }) {
-  if (budget.isOverBudget) {
+function StatusBadge({ budget, warningPercent, exceededPercent }: { budget: BudgetUsage; warningPercent: number; exceededPercent: number }) {
+  if (budget.percentUsed > exceededPercent) {
     return (
       <span className="inline-flex items-center rounded-full bg-error/10 px-2.5 py-0.5 text-xs font-semibold text-error">
         Over budget
       </span>
     );
   }
-  if (budget.percentUsed >= 80) {
+  if (budget.percentUsed >= warningPercent) {
     return (
       <span className="inline-flex items-center rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-semibold text-warning">
         Near limit
@@ -46,7 +49,13 @@ export const BudgetTable = memo(function BudgetTable({
   onDeactivate,
   isLoading,
   isFetching,
+  warningPercent,
+  exceededPercent,
 }: BudgetTableProps) {
+  const { data: preferences } = useUserPreferences();
+  const locale = String(preferences?.locale ?? 'en-IN');
+  const pageSize = Number(preferences?.tablePageSize ?? 10);
+  const density = preferences?.tableDensity === 'compact' ? 'compact' : 'comfortable';
   const columns = useMemo<ColumnDef<BudgetUsage>[]>(() => {
     const base: ColumnDef<BudgetUsage>[] = [
       {
@@ -78,14 +87,14 @@ export const BudgetTable = memo(function BudgetTable({
         accessorKey: 'amount',
         header: 'Budget',
         cell: ({ row }) => (
-          <span className="font-semibold text-base-content">{formatINR(row.original.amount)}</span>
+          <span className="font-semibold text-base-content">{formatINR(row.original.amount, locale)}</span>
         ),
       },
       {
         accessorKey: 'spent',
         header: 'Spent',
         cell: ({ row }) => (
-          <span className="font-medium text-base-content/80">{formatINR(row.original.spent)}</span>
+          <span className="font-medium text-base-content/80">{formatINR(row.original.spent, locale)}</span>
         ),
       },
       {
@@ -94,9 +103,9 @@ export const BudgetTable = memo(function BudgetTable({
         cell: ({ row }) => {
           const r = row.original.remaining;
           return r >= 0 ? (
-            <span className="text-base-content/80">{formatINR(r)}</span>
+            <span className="text-base-content/80">{formatINR(r, locale)}</span>
           ) : (
-            <span className="font-medium text-error">{formatINR(Math.abs(r))} over</span>
+            <span className="font-medium text-error">{formatINR(Math.abs(r), locale)} over</span>
           );
         },
       },
@@ -104,7 +113,7 @@ export const BudgetTable = memo(function BudgetTable({
         accessorKey: 'percentUsed',
         header: 'Usage',
         cell: ({ row }) => {
-          const tone = usageTone(row.original.percentUsed);
+          const tone = usageTone(row.original.percentUsed, warningPercent, exceededPercent);
           const width = Math.min(row.original.percentUsed, 100);
           return (
             <div className="flex items-center gap-3">
@@ -122,7 +131,7 @@ export const BudgetTable = memo(function BudgetTable({
         id: 'status',
         header: 'Status',
         enableSorting: false,
-        cell: ({ row }) => <StatusBadge budget={row.original} />,
+        cell: ({ row }) => <StatusBadge budget={row.original} warningPercent={warningPercent} exceededPercent={exceededPercent} />,
       },
     ];
 
@@ -148,15 +157,17 @@ export const BudgetTable = memo(function BudgetTable({
         },
       },
     ];
-  }, [canManage, onEdit, onDeactivate]);
+  }, [canManage, onEdit, onDeactivate, warningPercent, exceededPercent, locale]);
 
   return (
     <DataTable
+      key={pageSize}
       columns={columns}
       data={budgets}
       searchKey="category"
       searchPlaceholder="Search budgets..."
-      pageSize={10}
+      pageSize={pageSize}
+      density={density}
       isLoading={isLoading}
       isFetching={isFetching}
     />

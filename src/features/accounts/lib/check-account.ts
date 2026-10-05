@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db/prisma';
 
 /**
  * Returns an error message, or null when the account is usable.

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { PrimaryButton } from '@/components/ui/Button';
 import { ApiError } from '@/lib/api-client';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { invitationKeys, useInvitationPreview } from '../hooks/use-invitations';
 import { ROLE_LABELS } from '../utils';
 import { InviteAcceptCard } from './InviteAcceptCard';

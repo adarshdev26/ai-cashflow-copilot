@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { useCreateInvitation } from '../hooks/use-invitations';
 import { INVITABLE_ROLES, type InvitableRole } from '../types';
 import { ROLE_LABELS } from '../utils';
@@ -39,8 +39,8 @@ export function InviteMemberForm({ workspaceId, onCreated }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-4 max-w-2xl items-end" data-tour="settings-invite-form">
-      <div className="flex-1 space-y-1">
+    <form onSubmit={handleSubmit} className="flex max-w-2xl flex-col items-end gap-4 sm:flex-row" data-tour="settings-invite-form">
+      <div className="min-w-0 flex-1 space-y-1">
         <label htmlFor={emailId} className="text-xs font-medium text-base-content/80">
           Email Address
         </label>
@@ -50,12 +50,12 @@ export function InviteMemberForm({ workspaceId, onCreated }: Props) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isPending}
-          className="w-full rounded-md border border-base-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-base-200"
+          className="w-full rounded-md border border-base-300 px-3 py-2 text-base focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-base-200 sm:text-sm"
           placeholder="colleague@example.com"
           required
         />
       </div>
-      <div className="w-32 space-y-1">
+      <div className="w-full space-y-1 sm:w-32">
         <label htmlFor={roleId} className="text-xs font-medium text-base-content/80">
           Role
         </label>
@@ -64,7 +64,7 @@ export function InviteMemberForm({ workspaceId, onCreated }: Props) {
           value={role}
           onChange={(e) => setRole(e.target.value as InvitableRole)}
           disabled={isPending}
-          className="w-full rounded-md border border-base-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-base-100"
+          className="w-full rounded-md border border-base-300 px-3 py-2 text-base focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-base-100 sm:text-sm"
         >
           {INVITABLE_ROLES.map((r) => (
             <option key={r} value={r}>
@@ -76,7 +76,7 @@ export function InviteMemberForm({ workspaceId, onCreated }: Props) {
       <button
         type="submit"
         disabled={isPending || !email.trim()}
-        className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-content hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-content hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
       >
         {isPending ? 'Inviting...' : 'Invite Member'}
       </button>

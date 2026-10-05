@@ -4,16 +4,24 @@ import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Wallet, TrendingDown, PiggyBank, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { notify } from '@/lib/toast';
+import { notify } from '@/lib/ui/toast';
 import { usePermission } from '@/features/workspaces/hooks/use-permission';
 import { BudgetTable } from '@/features/budgets/components/BudgetTable';
 import { BudgetFormModal } from '@/features/budgets/components/BudgetFormModal';
 import { useBudgetUsage, useDeactivateBudget } from '@/features/budgets/hooks/use-budgets';
 import type { BudgetUsage } from '@/features/budgets/types';
 import { formatINR, isPastMonth, monthLabel, monthRange } from '@/features/budgets/utils';
+import { useActiveWorkspaceId } from '@/features/workspaces';
+import { useUserLocale, useWorkspaceSettings } from '@/features/settings/hooks/use-settings';
+import { SETTINGS_BY_KEY } from '@/lib/settings/registry';
 
 export default function BudgetsPage() {
   const canManage = usePermission('budgets.manage');
+  const workspaceId = useActiveWorkspaceId();
+  const locale = useUserLocale();
+  const { data: workspaceSettings } = useWorkspaceSettings(workspaceId);
+  const warningPercent = Number(workspaceSettings?.['finance.budgetWarningPercent'] ?? SETTINGS_BY_KEY['finance.budgetWarningPercent'].default);
+  const exceededPercent = Number(workspaceSettings?.['finance.budgetExceededPercent'] ?? SETTINGS_BY_KEY['finance.budgetExceededPercent'].default);
 
   const [cursor, setCursor] = useState(() => {
     const d = new Date();
@@ -81,7 +89,7 @@ export default function BudgetsPage() {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <span className="min-w-36 text-center text-sm font-semibold text-base-content">
-          {monthLabel(cursor.year, cursor.month)}
+          {monthLabel(cursor.year, cursor.month, locale)}
         </span>
         <Button variant="secondary" aria-label="Next month" onClick={() => shiftMonth(1)}>
           <ChevronRight className="h-4 w-4" />
@@ -111,7 +119,7 @@ export default function BudgetsPage() {
             <div className="mt-4">
               <p className="text-xs text-base-content/60">Monthly limit</p>
               <p className="text-2xl font-bold tracking-tight text-base-content">
-                {formatINR(totals.budgeted)}
+                {formatINR(totals.budgeted, locale)}
               </p>
             </div>
           </div>
@@ -140,7 +148,7 @@ export default function BudgetsPage() {
             <div className="mt-4">
               <p className="text-xs text-base-content/60">Spent</p>
               <p className="text-2xl font-bold tracking-tight text-base-content">
-                {formatINR(totals.spent)}
+                {formatINR(totals.spent, locale)}
               </p>
             </div>
 
@@ -176,7 +184,7 @@ export default function BudgetsPage() {
                 className={`text-2xl font-bold tracking-tight ${totals.remaining < 0 ? 'text-error' : 'text-success'
                   }`}
               >
-                {formatINR(Math.abs(totals.remaining))}
+                {formatINR(Math.abs(totals.remaining), locale)}
               </p>
             </div>
           </div>
@@ -205,6 +213,8 @@ export default function BudgetsPage() {
         <div data-tour="budgets-list">
           <BudgetTable
             budgets={budgets}
+            warningPercent={warningPercent}
+            exceededPercent={exceededPercent}
             canManage={canManage}
             onEdit={openEdit}
             onDeactivate={setRemoving}

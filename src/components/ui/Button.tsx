@@ -22,8 +22,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizeClasses = {
-      sm: "h-8 px-3 text-xs rounded-lg gap-1.5",
-      md: "h-10 px-4 py-2 text-sm rounded-lg gap-2",
+      sm: "h-10 px-3 text-xs rounded-lg gap-1.5 sm:h-8",
+      md: "h-11 px-4 py-2 text-sm rounded-lg gap-2 sm:h-10",
       lg: "h-12 px-6 text-base rounded-xl gap-2",
     };
 

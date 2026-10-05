@@ -47,7 +47,7 @@ export function StatCard({
         )}
       </div>
 
-      <p className={`mt-3 truncate text-2xl font-semibold ${styles.value}`}>{value}</p>
+      <p className={`mt-3 break-words text-lg font-semibold tabular-nums sm:text-2xl ${styles.value}`}>{value}</p>
 
       {footer && <div className="mt-3 border-t border-base-200 pt-3 text-xs text-base-content/60">{footer}</div>}
     </div>

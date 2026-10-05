@@ -27,10 +27,12 @@ import {
 } from '@/features/finance/types';
 import { CategoryStatsTooltip } from "@/resources/components/CategoryStats";
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { useAccounts } from '@/features/accounts';
 import { TransactionFilters as TransactionFiltersBar } from '@/features/finance/components/TransactionFilters';
 import { TransactionDialogs, type TransactionFormState } from '@/features/finance/components/TransactionDialogs';
+import { useUserPreferences, usePublicSettings } from '@/features/settings/hooks/use-settings';
+import { SETTINGS_BY_KEY } from '@/lib/settings/registry';
 
 const defaultTransactionFilters: TransactionFilters = {
   search: undefined,
@@ -42,6 +44,11 @@ const defaultTransactionFilters: TransactionFilters = {
 };
 
 export default function TransactionsPage() {
+  const { data: preferences, isPlaceholderData: preferencesLoading } = useUserPreferences();
+  const { data: publicSettings } = usePublicSettings();
+  const preferredPageSize = Number(preferences?.tablePageSize ?? SETTINGS_BY_KEY.tablePageSize.default);
+  const tableDensity = preferences?.tableDensity === 'compact' ? 'compact' : 'comfortable';
+  const maxPageSize = Number(publicSettings?.['limits.listMaxPageSize'] ?? SETTINGS_BY_KEY['limits.listMaxPageSize'].default);
   const {
     params,
     page,
@@ -56,9 +63,12 @@ export default function TransactionsPage() {
   } = useListQueryState<TransactionFilters, TransactionSortField>({
     defaultFilters: defaultTransactionFilters,
     defaultSortDir: 'desc',
-    defaultPageSize: 10,
-    maxPageSize: 100,
+    defaultPageSize: preferredPageSize,
+    maxPageSize,
   });
+  useEffect(() => {
+    if (!preferencesLoading) setPageSize(preferredPageSize);
+  }, [preferencesLoading, preferredPageSize, setPageSize]);
   const isInvalidDateRange = Boolean(filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo);
   const workspaceId = useActiveWorkspaceId();
   const canCreate = usePermission('transaction.create');
@@ -243,6 +253,7 @@ export default function TransactionsPage() {
 
       <TransactionTable
         transactions={transactionResponse?.data}
+        density={tableDensity}
         pagination={pagination}
         sorting={sorting}
         globalFilter={globalFilter}

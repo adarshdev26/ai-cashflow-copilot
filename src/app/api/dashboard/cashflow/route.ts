@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { prisma } from '@/lib/db/prisma';
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
+import { getSystemNumber, getUserPreferences } from '@/lib/settings/server';
 
 const DEFAULT_MONTHS = 6;
-const MAX_MONTHS = 60; // "all" is capped at 5 years so the chart stays readable
 
 const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-function parseMonths(value: string | null): number | 'all' {
+function parseMonths(value: string | null, maxMonths: number): number | 'all' {
   if (value === 'all') return 'all';
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1) return DEFAULT_MONTHS;
-  return Math.min(parsed, MAX_MONTHS);
+  return Math.min(parsed, maxMonths);
 }
 
 export async function GET(req: Request) {
@@ -20,7 +20,12 @@ export async function GET(req: Request) {
     if (!access.ok) return access.response;
 
     const { workspaceId } = access;
-    const requested = parseMonths(new URL(req.url).searchParams.get('months'));
+    const [maxMonths, preferences] = await Promise.all([
+      getSystemNumber('limits.cashflowMaxMonths'),
+      getUserPreferences(access.userId),
+    ]);
+    const locale = String(preferences.locale ?? 'en-IN');
+    const requested = parseMonths(new URL(req.url).searchParams.get('months'), maxMonths);
     const now = new Date();
 
     let months: number;
@@ -33,7 +38,7 @@ export async function GET(req: Request) {
       const firstDate = first._min.createdAt;
       months = firstDate
         ? Math.min(
-            MAX_MONTHS,
+            maxMonths,
             Math.max(1, (now.getFullYear() - firstDate.getFullYear()) * 12 + now.getMonth() - firstDate.getMonth() + 1)
           )
         : DEFAULT_MONTHS;
@@ -54,7 +59,7 @@ export async function GET(req: Request) {
       const key = monthKey(d);
       buckets.set(key, {
         key,
-        label: d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
+        label: d.toLocaleDateString(locale, { month: 'short', year: '2-digit' }),
         income: 0,
         expense: 0,
       });

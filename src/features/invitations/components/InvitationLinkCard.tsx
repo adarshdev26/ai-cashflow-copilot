@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { notify } from '@/lib/toast';
+import { notify } from '@/lib/ui/toast';
 import { buildInviteUrl } from '../utils';
+import { useUserLocale } from '@/features/settings/hooks/use-settings';
 
 /** Held in memory only: the raw token is never stored or returned again. */
 export type IssuedInvitationLink = {
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export function InvitationLinkCard({ link, onDismiss }: Props) {
+  const locale = useUserLocale();
   // Track which token was copied, so the "Copied" state resets by itself for a new link.
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,7 +79,7 @@ export function InvitationLinkCard({ link, onDismiss }: Props) {
             </Button>
           </div>
           <p className="text-xs text-base-content/60">
-            Link expires in 48 hours ({new Date(link.expiresAt).toLocaleString()}).
+            Link expires at {new Date(link.expiresAt).toLocaleString(locale)}.
           </p>
         </div>
       )}

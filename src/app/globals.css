@@ -180,6 +180,12 @@ body {
   background: color-mix(in oklab, var(--color-accent) 28%, transparent);
   animation: mk-float 18s ease-in-out infinite alternate-reverse;
 }
+@media (max-width: 767px) {
+  .mk-aurora::before,
+  .mk-aurora::after { filter: blur(48px); animation: none; }
+  .mk-aurora::before { width: 24rem; height: 24rem; left: -9rem; top: -8rem; }
+  .mk-aurora::after { width: 20rem; height: 20rem; right: -8rem; top: -5rem; }
+}
 @keyframes mk-float { to { transform: translate3d(3rem, 2rem, 0) scale(1.1); } }
 
 .mk-gradient-text {

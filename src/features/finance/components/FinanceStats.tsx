@@ -5,12 +5,11 @@ import { ArrowDownLeft, ArrowUpRight, CalendarDays, History, Wallet } from 'luci
 import { StatCard, StatCardSkeleton, StatTone } from '@/components/ui/StatCard';
 import { useFinanceSummary, PeriodTotals } from '../hooks/use-finance-summary';
 import { useActiveWorkspaceId } from '@/features/workspaces';
+import { useUserLocale } from '@/features/settings/hooks/use-settings';
 
-const currency = new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
+const locale = useUserLocale();
+const currency = new Intl.NumberFormat(locale, {
+  style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 2,
 });
 
 const netTone = (net: number): StatTone => (net > 0 ? 'positive' : net < 0 ? 'negative' : 'neutral');
@@ -38,18 +37,17 @@ export function FinanceStats({
   const workspaceId = useActiveWorkspaceId();
   const { data, isLoading, isError } = useFinanceSummary(workspaceId);
   const visibleSections = [totalIncome, totalExpense, netBalance, thisMonthNet, lastMonthNet].filter(Boolean).length;
-  const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${
-    visibleSections === 3 ? 'xl:grid-cols-3' : visibleSections === 4 ? 'xl:grid-cols-4' : visibleSections >= 5 ? 'xl:grid-cols-5' : ''
-  }`;
+  const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${visibleSections === 3 ? 'xl:grid-cols-3' : visibleSections === 4 ? 'xl:grid-cols-4' : visibleSections >= 5 ? 'xl:grid-cols-5' : ''
+    }`;
 
   const monthLabels = useMemo(() => {
     const now = new Date();
-    const format = (d: Date) => d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+    const format = (d: Date) => d.toLocaleDateString(locale, { month: 'short', year: 'numeric' });
     return {
       thisMonth: format(now),
       lastMonth: format(new Date(now.getFullYear(), now.getMonth() - 1, 1)),
     };
-  }, []);
+  }, [locale]);
 
   if (isLoading) {
     return (

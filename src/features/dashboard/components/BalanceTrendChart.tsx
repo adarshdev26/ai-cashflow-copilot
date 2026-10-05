@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useBalanceTrend } from '../hooks/use-balance-trend';
 import { useActiveWorkspaceId } from '@/features/workspaces';
@@ -8,6 +7,7 @@ import { DaysRange } from '../types';
 import { ChartCard } from './ChartCard';
 import { RangeSelect } from './RangeSelect';
 import { formatCompact, formatCurrency, formatDay } from './chart-utils';
+import { useUserPreferences, useUpdateUserPreferences } from '@/features/settings/hooks/use-settings';
 
 const OPTIONS: { value: DaysRange; label: string }[] = [
   { value: 7, label: 'Last 7 days' },
@@ -20,7 +20,10 @@ const OPTIONS: { value: DaysRange; label: string }[] = [
 
 export function BalanceTrendChart() {
   const workspaceId = useActiveWorkspaceId();
-  const [days, setDays] = useState<DaysRange>(30);
+  const { data: preferences, isPlaceholderData } = useUserPreferences();
+  const updatePreferences = useUpdateUserPreferences();
+  const days = Number(preferences?.balanceTrendDays ?? 30) as DaysRange;
+  const locale = String(preferences?.locale ?? 'en-IN');
   const { data, isLoading, isError, isFetching } = useBalanceTrend(workspaceId, days);
   const isEmpty = !!data && data.every((p) => p.balance === 0);
   const showYear = days === 'all' || days > 180;
@@ -31,7 +34,7 @@ export function BalanceTrendChart() {
       exportTourId="overview-balance-png"
       title="Balance trend"
       description={days === 'all' ? 'Running balance (up to the last 2 years)' : 'Running balance'}
-      action={<RangeSelect label="Balance trend range" value={days} options={OPTIONS} onChange={setDays} />}
+      action={<RangeSelect label="Balance trend range" value={days} options={OPTIONS} disabled={isPlaceholderData} onChange={(value) => updatePreferences.mutate({ balanceTrendDays: value })} />}
       isLoading={isLoading}
       isError={isError}
       isEmpty={isEmpty}
@@ -49,17 +52,17 @@ export function BalanceTrendChart() {
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-base-300)" />
             <XAxis
               dataKey="date"
-              tickFormatter={(value) => formatDay(String(value), showYear)}
+              tickFormatter={(value) => formatDay(String(value), showYear, locale)}
               tickLine={false}
               axisLine={false}
               tick={{ fill: 'var(--color-base-content)' }}
               fontSize={12}
               minTickGap={40}
             />
-            <YAxis tickFormatter={formatCompact} tickLine={false} axisLine={false} tick={{ fill: 'var(--color-base-content)' }} fontSize={12} width={56} />
+            <YAxis tickFormatter={(value) => formatCompact(Number(value), locale)} tickLine={false} axisLine={false} tick={{ fill: 'var(--color-base-content)' }} fontSize={12} width={56} />
             <Tooltip
-              labelFormatter={(label) => formatDay(String(label), true)}
-              formatter={(value) => [formatCurrency(Number(value)), 'Balance']}
+              labelFormatter={(label) => formatDay(String(label), true, locale)}
+              formatter={(value) => [formatCurrency(Number(value), locale), 'Balance']}
             />
             <Area
               type="monotone"

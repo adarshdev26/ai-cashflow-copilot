@@ -4,10 +4,11 @@ import { Download } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button, PrimaryButton } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { MAX_IMPORT_CHARS, parseTransactionCsv, type ParsedCsvRow } from '../lib/transaction-csv';
 import type { ImportTransactionsCsvResult } from '../api/finance-csv-api';
 import { useImportTransactionsCsv } from '../hooks/use-transaction-csv';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 type Props = {
   open: boolean;
@@ -25,6 +26,9 @@ export function ImportTransactionsModal({
   activeAccountName,
 }: Props) {
   const { mutateAsync, isPending } = useImportTransactionsCsv(workspaceId);
+  const { data: settings } = usePublicSettings();
+  const maxBytes = Number(settings?.['limits.csvImportMaxBytes'] ?? MAX_IMPORT_CHARS);
+  const maxRows = Number(settings?.['limits.csvImportMaxRows'] ?? 5000);
 
   const [fileName, setFileName] = useState<string | null>(null);
   const [csv, setCsv] = useState<string | null>(null);
@@ -50,15 +54,15 @@ export function ImportTransactionsModal({
       setFileError('Please choose a .csv file.');
       return;
     }
-    if (file.size > MAX_IMPORT_CHARS) {
-      setFileError('File is too large (max 5 MB).');
+    if (file.size > maxBytes) {
+      setFileError(`File is too large (max ${Math.ceil(maxBytes / (1024 * 1024))} MB).`);
       return;
     }
 
     const text = await file.text();
     setFileName(file.name);
     setCsv(text);
-    setPreview(parseTransactionCsv(text).rows.slice(0, 5)); // instant preview, server does the real check
+    setPreview(parseTransactionCsv(text, maxRows).rows.slice(0, 5)); // instant preview, server does the real check
 
     try {
       const result = await mutateAsync({ csv: text, defaultAccountId: activeAccountId, dryRun: true });

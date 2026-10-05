@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
-import { findInvitationByToken, assertInvitationUsable, emailsMatch } from '@/lib/invitations'
-import { invitationErrorResponse } from '@/lib/invitation-http'
+import { prisma } from '@/lib/db/prisma'
+import { getSession } from '@/lib/auth/auth'
+import { findInvitationByToken, assertInvitationUsable, emailsMatch } from '@/lib/users/invitations'
+import { invitationErrorResponse } from '@/lib/users/invitation-http'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ token: string }> }) {
   try {

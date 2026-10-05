@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from 'react';
 import { ToastContainer } from 'react-toastify';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 const toastStyle = {
   '--toastify-color-light': 'var(--color-base-100)',
@@ -13,11 +14,12 @@ const toastStyle = {
 } as CSSProperties;
 
 export function AppToaster() {
+  const { data } = usePublicSettings();
   return (
     <ToastContainer
       position="bottom-right"
-      autoClose={4000}
-      limit={4}
+      autoClose={Number(data?.['ui.toastDurationMs'] ?? 4000)}
+      limit={Number(data?.['ui.toastLimit'] ?? 4)}
       newestOnTop
       closeOnClick
       pauseOnHover

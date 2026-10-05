@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db/prisma';
 import type { FinancialAccount as DbAccount } from '@/generated/prisma';
 import type { AccountWithBalance } from '../types';
 

@@ -15,9 +15,12 @@ import {
 } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import { useDebouncedSearch } from '@/hooks/useDebouncedSearch';
+import { SETTINGS_BY_KEY } from '@/lib/settings/registry';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
-const DEFAULT_SEARCH_DEBOUNCE_MS = 400;
-const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+const DEFAULT_PAGE_SIZE_OPTIONS = SETTINGS_BY_KEY.tablePageSize.type === 'enum'
+  ? SETTINGS_BY_KEY.tablePageSize.options.map(({ value }) => Number(value))
+  : [10, 20, 50, 100];
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -29,6 +32,7 @@ interface DataTableProps<TData, TValue> {
   pageSize?: number;
   /** Options for the "Rows per page" selector. */
   pageSizeOptions?: number[];
+  density?: 'comfortable' | 'compact';
   manualPagination?: boolean;
   manualFiltering?: boolean;
   manualSorting?: boolean;
@@ -52,9 +56,10 @@ export function DataTable<TData, TValue>({
   data,
   searchKey,
   searchPlaceholder = 'Search records...',
-  searchDebounceMs = DEFAULT_SEARCH_DEBOUNCE_MS,
-  pageSize = 5,
+  searchDebounceMs: configuredSearchDebounceMs,
+  pageSize: configuredPageSize,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
+  density = 'comfortable',
   manualPagination = false,
   manualFiltering = false,
   manualSorting = false,
@@ -72,6 +77,9 @@ export function DataTable<TData, TValue>({
   isLoading = false,
   isFetching = false,
 }: DataTableProps<TData, TValue>) {
+  const { data: settings } = usePublicSettings();
+  const searchDebounceMs = configuredSearchDebounceMs ?? Number(settings?.['ui.searchDebounceMs'] ?? 400);
+  const pageSize = configuredPageSize ?? Number(settings?.['ui.defaultPageSize'] ?? 20);
   const [localSorting, setLocalSorting] = useState<SortingState>([]);
   const [localGlobalFilter, setLocalGlobalFilter] = useState('');
 
@@ -166,7 +174,7 @@ export function DataTable<TData, TValue>({
                     <th
                       key={header.id}
                       onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-                      className={`py-3 px-6 ${canSort ? 'cursor-pointer select-none hover:text-base-content' : ''}`}
+                      className={`${density === 'compact' ? 'py-2' : 'py-3'} px-6 ${canSort ? 'cursor-pointer select-none hover:text-base-content' : ''}`}
                     >
                       <div className="flex items-center gap-1.5">
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -183,7 +191,7 @@ export function DataTable<TData, TValue>({
               Array.from({ length: pageSize }).map((_, rowIndex) => (
                 <tr key={`skeleton-${rowIndex}`}>
                   {columns.map((_, colIndex) => (
-                    <td key={colIndex} className="py-4 px-6">
+                    <td key={colIndex} className={`${density === 'compact' ? 'py-2' : 'py-4'} px-6`}>
                       <div className="h-4 w-full max-w-40 rounded bg-base-200 animate-pulse" />
                     </td>
                   ))}
@@ -199,7 +207,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className="hover:bg-base-200/50 transition-colors">
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="py-4 px-6 text-base-content/80">
+                    <td key={cell.id} className={`${density === 'compact' ? 'py-2' : 'py-4'} px-6 text-base-content/80`}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}

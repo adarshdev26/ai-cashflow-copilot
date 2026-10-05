@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useCategorySummary } from '@/resources/hooks/use-categories';
 import { DateRange } from '@/resources/types';
@@ -8,6 +8,7 @@ import { ChartCard } from './ChartCard';
 import { RangeSelect } from './RangeSelect';
 import { formatCurrency, toDateInput } from './chart-utils';
 import { useActiveWorkspaceId } from '@/features/workspaces';
+import { useUserPreferences, useUpdateUserPreferences } from '@/features/settings/hooks/use-settings';
 
 type Period = 'month' | '30d' | '90d' | 'year' | 'all';
 
@@ -38,7 +39,10 @@ function buildRange(period: Period): DateRange {
 
 export function CategoryDonutChart() {
   const workspaceId = useActiveWorkspaceId();
-  const [period, setPeriod] = useState<Period>('all');
+  const { data: preferences, isPlaceholderData } = useUserPreferences();
+  const updatePreferences = useUpdateUserPreferences();
+  const period = String(preferences?.categoryPeriod ?? 'all') as Period;
+  const locale = String(preferences?.locale ?? 'en-IN');
   const range = useMemo(() => buildRange(period), [period]);
   const { data, isLoading, isError } = useCategorySummary(workspaceId, range);
 
@@ -62,7 +66,7 @@ export function CategoryDonutChart() {
       exportTourId="overview-category-png"
       title="Spending by category"
       description="Expenses"
-      action={<RangeSelect label="Spending period" value={period} options={OPTIONS} onChange={setPeriod} />}
+      action={<RangeSelect label="Spending period" value={period} options={OPTIONS} disabled={isPlaceholderData} onChange={(value) => updatePreferences.mutate({ categoryPeriod: value })} />}
       isLoading={isLoading}
       isError={isError}
       isEmpty={slices.length === 0}
@@ -75,7 +79,7 @@ export function CategoryDonutChart() {
               <Cell key={i} fill={slice.color} />
             ))}
           </Pie>
-          <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+          <Tooltip formatter={(value) => formatCurrency(Number(value), locale)} />
           <Legend verticalAlign="bottom" />
         </PieChart>
       </ResponsiveContainer>

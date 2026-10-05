@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/Button';
 import { formatINR } from '@/features/budgets/utils';
 import { useTransactionTemplates } from '../hooks/use-transaction-templates';
 import type { TransactionTemplateDTO } from '../types';
+import { useUserLocale } from '@/features/settings/hooks/use-settings';
 
 type Props = { onSelect: (template: TransactionTemplateDTO) => void };
 
 export function UseTemplateMenu({ onSelect }: Props) {
+  const locale = useUserLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { data, isLoading, isError } = useTransactionTemplates();
@@ -45,7 +47,7 @@ export function UseTemplateMenu({ onSelect }: Props) {
       </Button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-lg">
+        <div className="absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-lg">
           <div className="max-h-72 overflow-y-auto">
             {isLoading ? (
               <p className="p-4 text-sm text-base-content/60">Loading templates...</p>
@@ -99,7 +101,7 @@ export function UseTemplateMenu({ onSelect }: Props) {
                             : 'text-base-content'
                       }`}
                     >
-                      {t.amount == null ? 'Ask each time' : formatINR(t.amount)}
+                      {t.amount == null ? 'Ask each time' : formatINR(t.amount, locale)}
                     </span>
                   </button>
                 );

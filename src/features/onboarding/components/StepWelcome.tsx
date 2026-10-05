@@ -2,12 +2,15 @@
 
 import { useRouter } from 'next/navigation';
 import { PrimaryButton } from '@/components/ui/Button';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { useCompleteOnboarding } from '../hooks/use-onboarding';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 export function StepWelcome({ onNext }: { onNext: () => void }) {
   const router = useRouter();
   const complete = useCompleteOnboarding();
+  const { data: settings } = usePublicSettings();
+  const siteName = String(settings?.['branding.name'] ?? 'Cashflow Copilot');
 
   const handleSkip = async () => {
     if (complete.isPending) return;
@@ -21,7 +24,7 @@ export function StepWelcome({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="text-center">
-      <h1 className="text-2xl font-bold tracking-tight">Welcome to Cashflow Copilot</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Welcome to {siteName}</h1>
       <p className="mx-auto mt-3 max-w-sm text-sm text-base-content/50">
         Take control of your money with a smarter way to track, understand and manage your
         finances. Setup takes about a minute.

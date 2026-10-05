@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { validatePassword } from '@/lib/validations/auth';
-import { resetPasswordWithToken } from '@/lib/password-reset';
+import { resetPasswordWithToken } from '@/lib/auth/password-reset';
+import { getSystemNumber } from '@/lib/settings/server';
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +13,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'This reset link is invalid or has expired' }, { status: 400 });
     }
 
-    const passwordError = validatePassword(password);
+    const passwordError = validatePassword(password, await getSystemNumber('auth.passwordMinLength'));
     if (passwordError) {
       return NextResponse.json({ error: passwordError }, { status: 400 });
     }

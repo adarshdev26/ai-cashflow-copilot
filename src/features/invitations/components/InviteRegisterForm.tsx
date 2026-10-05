@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { PrimaryButton } from '@/components/ui/Button';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { ApiError } from '@/lib/api-client';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { invitationKeys, useRegisterViaInvitation } from '../hooks/use-invitations';
 import { setActiveWorkspaceId } from '../utils';
 

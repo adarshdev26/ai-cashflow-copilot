@@ -4,7 +4,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button, PrimaryButton } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { notify, getErrorMessage } from '@/lib/toast';
+import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { CATEGORY_COLORS } from '../constants';
 import { useCreateCategory, useUpdateCategory } from '../hooks/use-category-mutations';
 import type { CategoryItem, CategoryKind } from '../types';

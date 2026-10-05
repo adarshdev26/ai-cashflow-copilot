@@ -1,13 +1,21 @@
-import { MAX_IMPORT_CHARS, parseTransactionCsv, type CsvRowError } from '@/features/finance/lib/transaction-csv';
+import { parseTransactionCsv, type CsvRowError } from '@/features/finance/lib/transaction-csv';
 import { NextResponse } from 'next/server';
-import { prisma } from "@/lib/prisma";
-import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { prisma } from "@/lib/db/prisma";
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { visibleCategoryWhere } from '@/lib/categories';
+import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
 
 export async function POST(req: Request) {
     try {
         const access = await requireWorkspaceAccess(req, 'MEMBER'); // same level as creating a transaction
         if (!access.ok) return access.response;
+        if (!(await getSystemBool('features.csvImportEnabled'))) {
+            return NextResponse.json({ error: 'CSV import is currently disabled' }, { status: 403 });
+        }
+        const [maxBytes, maxRows] = await Promise.all([
+            getSystemNumber('limits.csvImportMaxBytes'),
+            getSystemNumber('limits.csvImportMaxRows'),
+        ]);
         const { workspaceId } = access;
 
         const body = await req.json().catch(() => null);
@@ -16,9 +24,9 @@ export async function POST(req: Request) {
         const dryRun = body?.dryRun === true;
 
         if (!csv) return NextResponse.json({ error: 'csv is required' }, { status: 400 });
-        if (csv.length > MAX_IMPORT_CHARS) return NextResponse.json({ error: 'File is too large' }, { status: 413 });
+        if (new TextEncoder().encode(csv).byteLength > maxBytes) return NextResponse.json({ error: 'File is too large' }, { status: 413 });
 
-        const { rows, errors: parseErrors } = parseTransactionCsv(csv);
+        const { rows, errors: parseErrors } = parseTransactionCsv(csv, maxRows);
         const errors: CsvRowError[] = [...parseErrors];
         if (errors.length) return NextResponse.json({ ok: false, errors: errors.slice(0, 100) });
         if (!rows.length) return NextResponse.json({ ok: false, errors: [{ row: 1, message: 'No data rows found' }] });

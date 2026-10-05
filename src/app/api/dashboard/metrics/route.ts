@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireWorkspaceAccess } from '@/lib/workspaces';
+import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 
 export async function GET(req: Request) {
   try {

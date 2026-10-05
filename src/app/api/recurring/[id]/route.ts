@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { recurringAccess } from '@/lib/recurring-access';
-import { firstOccurrenceOnOrAfter, toScheduleDate } from '@/lib/recurring-dates';
+import { prisma } from '@/lib/db/prisma';
+import { recurringAccess } from '@/lib/recurring/recurring-access';
+import { firstOccurrenceOnOrAfter, toScheduleDate } from '@/lib/recurring/recurring-dates';
 import { validateRecurringInput, checkTargets } from '@/features/recurring/lib/validate-recurring';
 
 export const dynamic = 'force-dynamic';
