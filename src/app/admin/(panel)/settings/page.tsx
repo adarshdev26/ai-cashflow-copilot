@@ -27,7 +27,7 @@ export default function AdminSettingsPage() {
   const defs = SETTINGS.filter((d) => d.scope === 'system' && d.group === active);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-base-content">System settings</h1>
         <p className="mt-1 text-base-content/60">Changes apply to every workspace. Session lengths affect new sign-ins only.</p>
