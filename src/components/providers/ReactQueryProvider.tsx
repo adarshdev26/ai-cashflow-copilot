@@ -17,6 +17,13 @@ function handleAuthError(error: unknown) {
   if (typeof window === 'undefined' || redirecting) return;
 
   const path = window.location.pathname;
+  if (path.startsWith('/admin')) {
+    if (path.startsWith('/admin/login')) return;
+    redirecting = true;
+    window.location.replace('/api/admin/auth/invalid');
+    return;
+  }
+
   if (path.startsWith('/login') || path.startsWith('/signup')) return;
 
   redirecting = true;
