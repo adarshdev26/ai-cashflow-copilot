@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
     e.preventDefault(); setError(''); setLoading(true);
     try {
       await apiFetch('/api/admin/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-      router.replace('/admin/users'); router.refresh();
+      router.replace('/admin/dashboard'); router.refresh();
     } catch (err) {
       const message = getErrorMessage(err, 'Login failed'); setError(message); notify.error(message); setLoading(false);
     }
