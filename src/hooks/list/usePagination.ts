@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export interface UsePaginationOptions {
   defaultPage?: number;
@@ -21,30 +21,47 @@ export function usePagination({
 }: UsePaginationOptions = {}) {
   const initialPageSize = Math.min(
     positiveInteger(defaultPageSize, 20),
-    maxPageSize ?? Number.MAX_SAFE_INTEGER
+    maxPageSize ?? Number.MAX_SAFE_INTEGER,
   );
+
   const [page, setPageState] = useState(() => positiveInteger(defaultPage, 1));
   const [pageSize, setPageSizeState] = useState(initialPageSize);
-  useEffect(() => {
-    setPageSizeState(Math.min(positiveInteger(defaultPageSize, 20), maxPageSize ?? Number.MAX_SAFE_INTEGER));
-  }, [defaultPageSize, maxPageSize]);
-  const resolvedTotalPages = totalPages ?? (totalCount === undefined
-    ? undefined
-    : Math.max(1, Math.ceil(totalCount / pageSize)));
+
+  const [prevDefaultPageSize, setPrevDefaultPageSize] = useState(defaultPageSize);
+  const [prevMaxPageSize, setPrevMaxPageSize] = useState(maxPageSize);
+
+  if (prevDefaultPageSize !== defaultPageSize || prevMaxPageSize !== maxPageSize) {
+    setPrevDefaultPageSize(defaultPageSize);
+    setPrevMaxPageSize(maxPageSize);
+    setPageSizeState(
+      Math.min(positiveInteger(defaultPageSize, 20), maxPageSize ?? Number.MAX_SAFE_INTEGER),
+    );
+  }
+
+  const resolvedTotalPages =
+    totalPages ??
+    (totalCount === undefined ? undefined : Math.max(1, Math.ceil(totalCount / pageSize)));
+
   const boundedPage = resolvedTotalPages ? Math.min(page, resolvedTotalPages) : page;
 
-  const setPage = useCallback((nextPage: number) => {
-    setPageState((currentPage) => {
-      const requestedPage = positiveInteger(nextPage, currentPage);
-      return resolvedTotalPages ? Math.min(requestedPage, resolvedTotalPages) : requestedPage;
-    });
-  }, [resolvedTotalPages]);
+  const setPage = useCallback(
+    (nextPage: number) => {
+      setPageState((currentPage) => {
+        const requestedPage = positiveInteger(nextPage, currentPage);
+        return resolvedTotalPages ? Math.min(requestedPage, resolvedTotalPages) : requestedPage;
+      });
+    },
+    [resolvedTotalPages],
+  );
 
-  const setPageSize = useCallback((nextPageSize: number) => {
-    const requestedPageSize = positiveInteger(nextPageSize, pageSize);
-    setPageSizeState(Math.min(requestedPageSize, maxPageSize ?? Number.MAX_SAFE_INTEGER));
-    setPageState(1);
-  }, [maxPageSize, pageSize]);
+  const setPageSize = useCallback(
+    (nextPageSize: number) => {
+      const requestedPageSize = positiveInteger(nextPageSize, pageSize);
+      setPageSizeState(Math.min(requestedPageSize, maxPageSize ?? Number.MAX_SAFE_INTEGER));
+      setPageState(1);
+    },
+    [maxPageSize, pageSize],
+  );
 
   const nextPage = useCallback(() => {
     if (resolvedTotalPages && boundedPage >= resolvedTotalPages) return;

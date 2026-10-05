@@ -19,18 +19,18 @@ export function useAdminTableState<TFilters extends SearchFilters, TSortField ex
     const next = typeof updater === 'function' ? updater(paginationState) : updater;
     if (next.pageSize !== list.pageSize) list.setPageSize(next.pageSize);
     else list.setPage(next.pageIndex + 1);
-  }, [list.pageSize, list.setPage, list.setPageSize, paginationState]);
+  }, [paginationState, list]);
 
   const onSortingChange: OnChangeFn<SortingState> = useCallback((updater) => {
     const next = typeof updater === 'function' ? updater(sortingState) : updater;
     if (next[0]) list.setSort(next[0].id as TSortField, next[0].desc ? 'desc' : 'asc');
     else list.setSort(undefined);
-  }, [list.setSort, sortingState]);
+  }, [sortingState, list]);
 
   const onGlobalFilterChange: OnChangeFn<string> = useCallback((updater) => {
     const next = typeof updater === 'function' ? updater(globalFilter) : updater;
     list.setFilter('search', (next || undefined) as TFilters['search']);
-  }, [globalFilter, list.setFilter]);
+  }, [globalFilter, list]);
 
   return { list, paginationState, sortingState, globalFilter, onPaginationChange, onSortingChange, onGlobalFilterChange };
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import type { CurrentUser } from '@/features/auth/types';
+import { redirect } from 'next/dist/client/components/navigation';
 
 export function ImpersonationBanner({ user }: { user?: CurrentUser | null }) {
   if (!user?.impersonating) return null;
@@ -8,7 +9,7 @@ export function ImpersonationBanner({ user }: { user?: CurrentUser | null }) {
   const handleExit = async () => {
     try {
       await fetch('/api/admin/impersonation/stop', { method: 'POST' });
-      window.location.assign('/admin/users');
+      redirect('/admin/users');
     } catch (error) {
       console.error('Failed to exit impersonation:', error);
     }

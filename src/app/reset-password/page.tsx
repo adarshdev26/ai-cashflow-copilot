@@ -57,7 +57,7 @@ function ResetPasswordForm({ minPasswordLength }: { minPasswordLength: number })
         setLoading(false)
       }
     },
-    [token, password, confirm, router]
+    [token, password, confirm, router, minPasswordLength]
   )
 
   if (!token) {

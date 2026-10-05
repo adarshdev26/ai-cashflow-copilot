@@ -190,7 +190,7 @@ export const TransactionTable = memo(function TransactionTable({
         },
       },
     ];
-  }, [handleEdit, handleDelete, canEdit, canDelete, canManageTemplates, handleSaveAsTemplate, isCreatingTemplate]);
+  }, [handleEdit, handleDelete, canEdit, canDelete, canManageTemplates, handleSaveAsTemplate, isCreatingTemplate, locale]);
 
   return (
     <div data-tour="transaction-table">
