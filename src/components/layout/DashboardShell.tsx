@@ -10,8 +10,6 @@ import {
     Settings,
     LogOut,
     Plus,
-    Menu,
-    X,
     ChevronsLeft,
     ChevronsRight,
     Compass,
@@ -20,6 +18,7 @@ import {
     LayoutTemplate,
     BarChart3,
     LifeBuoy,
+    PiggyBank,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -30,7 +29,9 @@ import { OnboardingTour } from '@/features/onboarding/components/OnboardingTour'
 import { tourHref } from '@/features/onboarding/lib/tour-steps';
 import { ActiveAccountSwitcher } from '@/features/accounts';
 import { ThemeMenu } from '@/components/ui/ThemePicker';
+import { Select } from '@/components/ui/Select';
 import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner';
+import { MobileTabBar, type MobileTabItem } from '@/components/layout/MobileTabBar';
 import { PageTransitionOverlay } from '@/components/ui/PageTransitionOverlay';
 import { useTheme } from 'next-themes';
 import { usePublicSettings, useUserPreferences } from '@/features/settings/hooks/use-settings';
@@ -44,6 +45,22 @@ const navigation = [
     { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
     { name: 'Categories', href: '/dashboard/categories', icon: Tags },
     { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+    { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+];
+
+const mobileTabs: MobileTabItem[] = [
+    { name: 'Home', href: '/dashboard', icon: LayoutDashboard, exact: true },
+    { name: 'Transactions', href: '/dashboard/transactions', icon: WalletCards },
+    { name: 'Budgets', href: '/dashboard/budgets', icon: PiggyBank },
+    { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+];
+
+const mobileMoreItems: MobileTabItem[] = [
+    { name: 'Recurring', href: '/dashboard/recurring', icon: Repeat },
+    { name: 'Templates', href: '/dashboard/templates', icon: LayoutTemplate },
+    { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
+    { name: 'Categories', href: '/dashboard/categories', icon: Tags },
     { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -163,32 +180,38 @@ function WorkspaceSelector() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     return (
-        <div className="flex items-center space-x-3" data-tour="workspace-switcher">
+        <div
+            className="flex min-w-0 items-center space-x-2 sm:space-x-3"
+            data-tour="workspace-switcher"
+        >
             {workspaces.length > 1 ? (
-                <select
-                    className="text-base-content/80 cursor-pointer border-none bg-transparent p-0 text-sm font-semibold focus:ring-0"
-                    value={active.workspaceId}
-                    onChange={(e) => setActiveWorkspaceId(e.target.value)}
-                    aria-label="Select workspace"
-                >
-                    {workspaces.map((w) => (
-                        <option key={w.workspaceId} value={w.workspaceId}>
-                            {w.name} (
-                            {w.ownerEmail && w.ownerEmail === user?.email
-                                ? 'You'
-                                : (w.ownerEmail ?? 'No owner')}
-                            )
-                        </option>
-                    ))}
-                </select>
+                <div className="w-40 min-w-0 sm:w-56">
+                    <Select
+                        value={active.workspaceId}
+                        onChange={(e) => setActiveWorkspaceId(e.target.value)}
+                        aria-label="Select workspace"
+                    >
+                        {workspaces.map((w) => {
+                            const owner =
+                                w.ownerEmail && w.ownerEmail === user?.email
+                                    ? 'You'
+                                    : (w.ownerEmail ?? 'No owner');
+                            return (
+                                <option key={w.workspaceId} value={w.workspaceId}>
+                                    {`${w.name} (${owner})`}
+                                </option>
+                            );
+                        })}
+                    </Select>
+                </div>
             ) : (
-                <h2 className="text-base-content/80 text-sm font-semibold tracking-wide">
+                <h2 className="text-base-content/80 max-w-[9rem] truncate text-sm font-semibold tracking-wide sm:max-w-none">
                     {active.name}
                 </h2>
             )}
             <span
                 data-tour="workspace-role"
-                className="bg-base-200 text-base-content/70 border-base-300 rounded-full border px-2 py-0.5 text-xs font-medium"
+                className="bg-base-200 text-base-content/70 border-base-300 hidden shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium sm:inline-block"
             >
                 {active.role}
             </span>
@@ -196,11 +219,12 @@ function WorkspaceSelector() {
             <button
                 type="button"
                 data-tour="new-workspace-btn"
+                aria-label="New workspace"
                 onClick={() => setIsCreateOpen(true)}
-                className="border-base-300 text-base-content/70 hover:bg-base-200 hover:text-base-content flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors"
+                className="border-base-300 text-base-content/70 hover:bg-base-200 hover:text-base-content flex shrink-0 items-center gap-1 rounded-md border p-1.5 text-xs font-medium whitespace-nowrap transition-colors sm:px-2.5 sm:py-1"
             >
                 <Plus className="h-3.5 w-3.5" />
-                New workspace
+                <span className="hidden sm:inline">New workspace</span>
             </button>
 
             <CreateWorkspaceModal
@@ -240,7 +264,7 @@ function getCollapsedSnapshot(defaultCollapsed: boolean) {
 function setCollapsedStored(next: boolean) {
     try {
         localStorage.setItem(COLLAPSED_KEY, String(next));
-    } catch {}
+    } catch { }
     collapsedListeners.forEach((l) => l());
 }
 
@@ -259,7 +283,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         () => getCollapsedSnapshot(defaultCollapsed),
         () => defaultCollapsed,
     );
-    const [mobileOpen, setMobileOpen] = useState(false); // mobile drawer
     const queryClient = useQueryClient();
 
     useEffect(() => {
@@ -274,24 +297,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     }, [preferences, preferencesLoading, setTheme]);
 
     const toggleSidebar = useCallback(() => {
-        if (window.matchMedia('(min-width: 768px)').matches) {
-            setCollapsedStored(!collapsed);
-        } else {
-            setMobileOpen((open) => !open);
-        }
+        setCollapsedStored(!collapsed);
     }, [collapsed]);
-
-    const closeMobile = useCallback(() => setMobileOpen(false), []);
-
-    // Escape closes the mobile drawer.
-    useEffect(() => {
-        if (!mobileOpen) return;
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setMobileOpen(false);
-        };
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [mobileOpen]);
 
     const { data: user, isLoading: isUserLoading } = useCurrentUser();
 
@@ -328,7 +335,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     const closeSignOutDialog = useCallback(() => setIsSignOutOpen(false), []);
 
     const startTour = useCallback(() => {
-        setMobileOpen(false);
         router.push(tourHref('overview'));
     }, [router]);
 
@@ -346,20 +352,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
             {/* Dashboard row = remaining height (100vh - banner). Sidebar + main sit side by side in here. */}
             <div className="flex min-h-0 flex-1">
-                {/* Mobile backdrop */}
-                {mobileOpen && (
-                    <div
-                        className="fixed inset-0 z-30 bg-black/40 md:hidden"
-                        onClick={closeMobile}
-                        aria-hidden="true"
-                    />
-                )}
-
-                {/* Sidebar */}
+                {/* Desktop sidebar (hidden on mobile; mobile uses the bottom tab bar) */}
                 <aside
-                    className={`border-base-300 bg-base-100 fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] transition-[transform,width] duration-200 ease-in-out ${
-                        mobileOpen ? 'translate-x-0' : '-translate-x-full'
-                    } md:static md:z-auto md:h-full md:translate-x-0 ${collapsed ? 'md:w-18' : 'md:w-64'}`}
+                    className={`border-base-300 bg-base-100 hidden h-full w-64 shrink-0 flex-col border-r transition-[width] duration-200 ease-in-out md:flex ${collapsed ? 'md:w-18' : 'md:w-64'}`}
                 >
                     <div
                         className={`border-base-200 flex items-center gap-2 border-b p-6 ${collapsed ? 'md:justify-center md:px-0' : ''}`}
@@ -368,18 +363,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                             A
                         </div>
                         <span
-                            className={`text-base-content text-lg font-semibold tracking-tight ${collapsed ? 'md:hidden' : ''}`}
+                            className={`text-base-content truncate text-lg font-semibold tracking-tight ${collapsed ? 'md:hidden' : ''}`}
                         >
                             {String(publicSettings?.['branding.name'] ?? 'Cashflow Copilot')}
                         </span>
-                        <button
-                            type="button"
-                            onClick={closeMobile}
-                            aria-label="Close menu"
-                            className="text-base-content/60 hover:bg-base-200 ml-auto rounded-md p-1.5 md:hidden"
-                        >
-                            <X className="h-5 w-5" />
-                        </button>
                     </div>
 
                     <nav className="flex-1 space-y-1 overflow-y-auto p-4">
@@ -391,13 +378,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                                     key={item.name}
                                     href={item.href}
                                     data-tour={`nav-${item?.name?.toLowerCase()}`}
-                                    onClick={closeMobile}
                                     title={collapsed ? item.name : undefined}
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${collapsed ? 'md:justify-center' : ''} ${
-                                        isActive
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${collapsed ? 'md:justify-center' : ''} ${isActive
                                             ? 'bg-primary/10 text-primary'
                                             : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'
-                                    }`}
+                                        }`}
                                 >
                                     <Icon
                                         className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : 'text-base-content/50'}`}
@@ -459,37 +444,40 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
                 {/* Main Content Area */}
                 <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                    <header className="border-base-300 bg-base-100 flex min-h-16 shrink-0 items-center justify-between border-b px-4 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2 md:px-8">
-                        <div className="flex min-w-0 items-center gap-3">
+                    <header className="border-base-300 bg-base-100 flex shrink-0 items-start justify-between gap-3 border-b px-4 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2 md:min-h-16 md:items-center md:px-8">
+                     <div className="flex min-w-0 flex-1 items-center gap-x-3 gap-y-2 md:flex-nowrap">
                             <button
                                 type="button"
                                 onClick={toggleSidebar}
                                 aria-label="Toggle sidebar"
-                                aria-expanded={mobileOpen || !collapsed}
-                                className="text-base-content/60 hover:bg-base-200 hover:text-base-content rounded-md p-2 transition-colors"
+                                aria-expanded={!collapsed}
+                                className="text-base-content/60 hover:bg-base-200 hover:text-base-content hidden rounded-md p-2 transition-colors md:block"
                             >
-                                <Menu className="h-5 w-5 md:hidden" />
                                 {collapsed ? (
-                                    <ChevronsRight className="border-base-300 hidden h-7 w-7 rounded-lg border p-0.5 md:block" />
+                                    <ChevronsRight className="border-base-300 h-7 w-7 rounded-lg border p-0.5" />
                                 ) : (
-                                    <ChevronsLeft className="border-base-300 hidden h-7 w-7 rounded-lg border p-0.5 md:block" />
+                                    <ChevronsLeft className="border-base-300 h-7 w-7 rounded-lg border p-0.5" />
                                 )}
                             </button>
+
                             <WorkspaceSelector />
-                            <div
-                                className="bg-base-300 hidden h-5 w-px sm:block"
-                                aria-hidden="true"
-                            />
-                            <ActiveAccountSwitcher />
+
+                            <div className="bg-base-300 hidden h-5 w-px md:block" aria-hidden="true" />
+
+                            {/* Mobile: own row under the workspace. Desktop: inline, as before. */}
+                            <div className="w-full min-w-0 md:w-auto">
+                                <ActiveAccountSwitcher />
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex shrink-0 items-center gap-2">
                             <ThemeMenu persistPreference />
                             {publicSettings?.['features.tourEnabled'] !== false && (
                                 <button
                                     type="button"
                                     data-tour="take-tour"
                                     onClick={startTour}
+                                    aria-label="Take a tour"
                                     className="btn btn-outline btn-sm gap-1.5"
                                 >
                                     <Compass className="h-4 w-4" />
@@ -499,9 +487,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                         </div>
                     </header>
 
-                    <main className="min-h-0 flex-1 overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:p-8 md:pb-[calc(2rem+env(safe-area-inset-bottom))]">
+                    <main className="min-h-0 flex-1 overflow-y-auto p-4 md:p-8 md:pb-[calc(2rem+env(safe-area-inset-bottom))]">
                         {children}
                     </main>
+
+                    <MobileTabBar
+                        items={mobileTabs}
+                        moreItems={mobileMoreItems}
+                        user={{ name: displayName, email: user?.email }}
+                        onSignOut={openSignOutDialog}
+                    />
                 </div>
             </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useState, useCallback, useSyncExternalStore } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
@@ -10,8 +10,6 @@ import {
     Tags,
     Settings,
     LogOut,
-    Menu,
-    X,
     ChevronsLeft,
     ChevronsRight,
     Headset,
@@ -22,6 +20,7 @@ import { ThemeMenu } from '@/components/ui/ThemePicker';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { useAdminCurrentUser } from '@/features/admin';
 import { usePublicSettings } from '@/features/settings/hooks/use-settings';
+import { MobileTabBar, type MobileTabItem } from '@/components/layout/MobileTabBar';
 
 const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
@@ -31,6 +30,19 @@ const navigation = [
     { name: 'Settings', href: '/admin/settings', icon: Settings },
     { name: 'Support Tickets', href: '/admin/support-tickets', icon: Headset },
 ];
+
+const mobileTabs: MobileTabItem[] = [
+    { name: 'Home', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Users', href: '/admin/users', icon: Users },
+    { name: 'Workspaces', href: '/admin/workspaces', icon: Building2 },
+    { name: 'Tickets', href: '/admin/support-tickets', icon: Headset },
+];
+
+const mobileMoreItems: MobileTabItem[] = [
+    { name: 'Categories', href: '/admin/categories', icon: Tags },
+    { name: 'Settings', href: '/admin/settings', icon: Settings },
+];
+
 const COLLAPSED_KEY = 'admin-sidebar-collapsed';
 const collapsedListeners = new Set<() => void>();
 
@@ -61,9 +73,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
     const queryClient = useQueryClient();
-    const [mobileOpen, setMobileOpen] = useState(false);
     const [signOutOpen, setSignOutOpen] = useState(false);
     const { data: publicSettings } = usePublicSettings();
+    const brandName = String(publicSettings?.['branding.name'] ?? 'Cashflow Copilot');
     const defaultCollapsed = publicSettings?.['ui.sidebarCollapsedByDefault'] === true;
     const collapsed = useSyncExternalStore(
         subscribeCollapsed,
@@ -74,18 +86,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     const displayName = admin?.name || admin?.email?.split('@')[0] || 'Admin';
 
     const toggleSidebar = useCallback(() => {
-        if (window.matchMedia('(min-width: 768px)').matches) setCollapsedStored(!collapsed);
-        else setMobileOpen((open) => !open);
+        setCollapsedStored(!collapsed);
     }, [collapsed]);
-    const closeMobile = useCallback(() => setMobileOpen(false), []);
-    useEffect(() => {
-        if (!mobileOpen) return;
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setMobileOpen(false);
-        };
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [mobileOpen]);
 
     const handleSignOut = useCallback(async () => {
         try {
@@ -100,15 +102,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="bg-base-200/50 flex h-screen overflow-hidden supports-[height:100dvh]:h-dvh">
-            {mobileOpen && (
-                <div
-                    className="bg-base-content/40 fixed inset-0 z-30 md:hidden"
-                    onClick={closeMobile}
-                    aria-hidden="true"
-                />
-            )}
+            {/* Desktop sidebar (hidden on mobile; mobile uses the bottom tab bar) */}
             <aside
-                className={`border-base-300 bg-base-100 fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] transition-[transform,width] duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:static md:z-auto md:h-full md:translate-x-0 ${collapsed ? 'md:w-18' : 'md:w-64'}`}
+                className={`border-base-300 bg-base-100 hidden h-full w-64 shrink-0 flex-col border-r transition-[width] duration-200 md:flex ${collapsed ? 'md:w-18' : 'md:w-64'}`}
             >
                 <div
                     className={`border-base-200 flex items-center gap-2 border-b p-6 ${collapsed ? 'md:justify-center md:px-0' : ''}`}
@@ -117,18 +113,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                         A
                     </div>
                     <span
-                        className={`text-base-content text-lg font-semibold tracking-tight ${collapsed ? 'md:hidden' : ''}`}
+                        className={`text-base-content truncate text-lg font-semibold tracking-tight ${collapsed ? 'md:hidden' : ''}`}
                     >
-                        Admin
+                        {brandName}
                     </span>
-                    <button
-                        type="button"
-                        onClick={closeMobile}
-                        aria-label="Close menu"
-                        className="text-base-content/60 hover:bg-base-200 ml-auto rounded-md p-1.5 md:hidden"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
                 </div>
                 <nav className="flex-1 space-y-1 overflow-y-auto p-4">
                     {navigation.map((item) => {
@@ -139,7 +127,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                onClick={closeMobile}
                                 title={collapsed ? item.name : undefined}
                                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${collapsed ? 'md:justify-center' : ''} ${active ? 'bg-primary/10 text-primary' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`}
                             >
@@ -194,27 +181,53 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     </button>
                 </div>
             </aside>
+
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                <header className="border-base-300 bg-base-100 flex min-h-16 shrink-0 items-center justify-between border-b px-4 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2 md:px-8">
-                    <button
-                        type="button"
-                        onClick={toggleSidebar}
-                        aria-label="Toggle sidebar"
-                        aria-expanded={mobileOpen || !collapsed}
-                        className="text-base-content/60 hover:bg-base-200 hover:text-base-content rounded-md p-2 transition-colors"
-                    >
-                        <Menu className="h-5 w-5 md:hidden" />
-                        {collapsed ? (
-                            <ChevronsRight className="border-base-300 hidden h-7 w-7 rounded-lg border p-0.5 md:block" />
-                        ) : (
-                            <ChevronsLeft className="border-base-300 hidden h-7 w-7 rounded-lg border p-0.5 md:block" />
-                        )}
-                    </button>
-                    <ThemeMenu />
+                <header className="border-base-300 bg-base-100 flex min-h-16 shrink-0 items-center justify-between gap-3 border-b px-4 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2 md:px-8">
+                    <div className="flex min-w-0 items-center gap-2">
+                        {/* Desktop: sidebar toggle */}
+                        <button
+                            type="button"
+                            onClick={toggleSidebar}
+                            aria-label="Toggle sidebar"
+                            aria-expanded={!collapsed}
+                            className="text-base-content/60 hover:bg-base-200 hover:text-base-content hidden rounded-md p-2 transition-colors md:block"
+                        >
+                            {collapsed ? (
+                                <ChevronsRight className="border-base-300 h-7 w-7 rounded-lg border p-0.5" />
+                            ) : (
+                                <ChevronsLeft className="border-base-300 h-7 w-7 rounded-lg border p-0.5" />
+                            )}
+                        </button>
+
+                        {/* Mobile: brand (sidebar is hidden here) */}
+                        <Link
+                            href="/admin/dashboard"
+                            className="flex min-w-0 items-center gap-2 md:hidden"
+                        >
+                            <span className="bg-primary text-primary-content flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-lg font-bold">
+                                A
+                            </span>
+                            <span className="text-base-content truncate text-base font-semibold tracking-tight">
+                                {brandName}
+                            </span>
+                        </Link>
+                    </div>
+                    <div className="shrink-0">
+                        <ThemeMenu />
+                    </div>
                 </header>
-                <main className="min-h-0 flex-1 overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:p-8 md:pb-[calc(2rem+env(safe-area-inset-bottom))]">
+
+                <main className="min-h-0 flex-1 overflow-y-auto p-4 md:p-8 md:pb-[calc(2rem+env(safe-area-inset-bottom))]">
                     {children}
                 </main>
+
+                <MobileTabBar
+                    items={mobileTabs}
+                    moreItems={mobileMoreItems}
+                    user={{ name: displayName, email: admin?.email }}
+                    onSignOut={() => setSignOutOpen(true)}
+                />
             </div>
             <ConfirmDialog
                 isOpen={signOutOpen}
