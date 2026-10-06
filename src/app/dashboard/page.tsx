@@ -12,6 +12,7 @@ import {
 import { Activity, FileText } from 'lucide-react';
 import { FinanceStats } from '@/features/finance';
 import { useActiveWorkspaceId } from '@/features/workspaces';
+import { UpcomingRecurring } from '@/features/dashboard/components/UpcomingRecurring';
 
 const CashflowChart = dynamic(
     () => import('@/features/dashboard/components/CashflowChart').then((m) => m.CashflowChart),
@@ -68,6 +69,7 @@ export default function DashboardOverviewPage() {
             </div>
 
             <FinanceStats totalIncome={false} totalExpense={false} />
+            <UpcomingRecurring />
 
             <div className="grid gap-5 md:grid-cols-2">
                 {isLoading || !data ? (
