@@ -11,136 +11,160 @@ type Ctx = { params: Promise<{ accountId: string }> };
 const withCount = { _count: { select: { transactions: true } } } as const;
 
 export async function GET(req: Request, { params }: Ctx) {
-  try {
-    const access = await requireWorkspaceAction(req, 'workspace.read');
-    if (!access.ok) return access.response;
+    try {
+        const access = await requireWorkspaceAction(req, 'workspace.read');
+        if (!access.ok) return access.response;
 
-    const { workspaceId } = access;
-    const { accountId } = await params;
+        const { workspaceId } = access;
+        const { accountId } = await params;
 
-    // Scoped by workspaceId: another workspace's id looks the same as a missing one
-    const account = await prisma.financialAccount.findFirst({
-      where: { id: accountId, workspaceId },
-      include: withCount,
-    });
-    if (!account) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        // Scoped by workspaceId: another workspace's id looks the same as a missing one
+        const account = await prisma.financialAccount.findFirst({
+            where: { id: accountId, workspaceId },
+            include: withCount,
+        });
+        if (!account) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const totals = await getAccountTotals(workspaceId, [account.id]);
-    return NextResponse.json(toAccountWithBalance(account, totals), { status: 200 });
-  } catch (error) {
-    console.error('Failed to fetch account:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
+        const totals = await getAccountTotals(workspaceId, [account.id]);
+        return NextResponse.json(toAccountWithBalance(account, totals), { status: 200 });
+    } catch (error) {
+        console.error('Failed to fetch account:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
 }
 
 export async function PATCH(req: Request, { params }: Ctx) {
-  try {
-    const access = await requireWorkspaceAction(req, 'account.update');
-    if (!access.ok) return access.response;
-
-    const { workspaceId, role } = access;
-    const { accountId } = await params;
-
-    const existing = await prisma.financialAccount.findFirst({ where: { id: accountId, workspaceId } });
-    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-
-    const body = await req.json().catch(() => null);
-    let data;
     try {
-      data = validateUpdateAccount(body);
-    } catch (err: unknown) {
-      return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid account data' }, { status: 400 });
-    }
+        const access = await requireWorkspaceAction(req, 'account.update');
+        if (!access.ok) return access.response;
 
-    if (data.isActive !== undefined && !canWorkspaceAction(role, 'account.deactivate')) {
-      return NextResponse.json({ error: 'Your role does not allow this action' }, { status: 403 });
-    }
+        const { workspaceId, role } = access;
+        const { accountId } = await params;
 
-    if (data.isActive === false && existing.isActive) {
-      const activeSchedules = await prisma.recurringTransaction.count({
-        where: { accountId, workspaceId, isActive: true },
-      });
-      if (activeSchedules > 0) {
-        return NextResponse.json(
-          {
-            error: `This account is used by ${activeSchedules} active recurring schedule${activeSchedules === 1 ? '' : 's'}. Pause or delete them before deactivating the account.`,
-          },
-          { status: 409 }
-        );
-      }
-    }
+        const existing = await prisma.financialAccount.findFirst({
+            where: { id: accountId, workspaceId },
+        });
+        if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    if (data.name && data.name.toLowerCase() !== existing.name.toLowerCase()) {
-      const duplicate = await prisma.financialAccount.findFirst({
-        where: { workspaceId, id: { not: accountId }, name: { equals: data.name, mode: 'insensitive' } },
-        select: { id: true },
-      });
-      if (duplicate) {
-        return NextResponse.json({ error: 'An account with this name already exists' }, { status: 409 });
-      }
-    }
+        const body = await req.json().catch(() => null);
+        let data;
+        try {
+            data = validateUpdateAccount(body);
+        } catch (err: unknown) {
+            return NextResponse.json(
+                { error: err instanceof Error ? err.message : 'Invalid account data' },
+                { status: 400 },
+            );
+        }
 
-    const updated = await prisma.financialAccount.update({
-      where: { id: accountId },
-      data,
-      include: withCount,
-    });
+        if (data.isActive !== undefined && !canWorkspaceAction(role, 'account.deactivate')) {
+            return NextResponse.json(
+                { error: 'Your role does not allow this action' },
+                { status: 403 },
+            );
+        }
 
-    const totals = await getAccountTotals(workspaceId, [accountId]);
-    return NextResponse.json(toAccountWithBalance(updated, totals), { status: 200 });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      return NextResponse.json({ error: 'An account with this name already exists' }, { status: 409 });
+        if (data.isActive === false && existing.isActive) {
+            const activeSchedules = await prisma.recurringTransaction.count({
+                where: { accountId, workspaceId, isActive: true },
+            });
+            if (activeSchedules > 0) {
+                return NextResponse.json(
+                    {
+                        error: `This account is used by ${activeSchedules} active recurring schedule${activeSchedules === 1 ? '' : 's'}. Pause or delete them before deactivating the account.`,
+                    },
+                    { status: 409 },
+                );
+            }
+        }
+
+        if (data.name && data.name.toLowerCase() !== existing.name.toLowerCase()) {
+            const duplicate = await prisma.financialAccount.findFirst({
+                where: {
+                    workspaceId,
+                    id: { not: accountId },
+                    name: { equals: data.name, mode: 'insensitive' },
+                },
+                select: { id: true },
+            });
+            if (duplicate) {
+                return NextResponse.json(
+                    { error: 'An account with this name already exists' },
+                    { status: 409 },
+                );
+            }
+        }
+
+        const updated = await prisma.financialAccount.update({
+            where: { id: accountId },
+            data,
+            include: withCount,
+        });
+
+        const totals = await getAccountTotals(workspaceId, [accountId]);
+        return NextResponse.json(toAccountWithBalance(updated, totals), { status: 200 });
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            return NextResponse.json(
+                { error: 'An account with this name already exists' },
+                { status: 409 },
+            );
+        }
+        console.error('Failed to update account:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-    console.error('Failed to update account:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
 }
 
 export async function DELETE(req: Request, { params }: Ctx) {
-  try {
-    const access = await requireWorkspaceAction(req, 'account.deactivate');
-    if (!access.ok) return access.response;
+    try {
+        const access = await requireWorkspaceAction(req, 'account.deactivate');
+        if (!access.ok) return access.response;
 
-    const { workspaceId } = access;
-    const { accountId } = await params;
+        const { workspaceId } = access;
+        const { accountId } = await params;
 
-    const existing = await prisma.financialAccount.findFirst({
-      where: { id: accountId, workspaceId },
-      select: { id: true },
-    });
-    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        const existing = await prisma.financialAccount.findFirst({
+            where: { id: accountId, workspaceId },
+            select: { id: true },
+        });
+        if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    const txCount = await prisma.transaction.count({ where: { accountId, workspaceId } });
-    if (txCount > 0) {
-      return NextResponse.json(
-        { error: 'This account has transactions and cannot be deleted. Deactivate it instead.' },
-        { status: 409 }
-      );
+        const txCount = await prisma.transaction.count({ where: { accountId, workspaceId } });
+        if (txCount > 0) {
+            return NextResponse.json(
+                {
+                    error: 'This account has transactions and cannot be deleted. Deactivate it instead.',
+                },
+                { status: 409 },
+            );
+        }
+
+        const scheduleCount = await prisma.recurringTransaction.count({
+            where: { accountId, workspaceId },
+        });
+        if (scheduleCount > 0) {
+            return NextResponse.json(
+                {
+                    error: `This account is used by ${scheduleCount} recurring schedule${scheduleCount === 1 ? '' : 's'}. Delete them first.`,
+                },
+                { status: 409 },
+            );
+        }
+
+        await prisma.financialAccount.delete({ where: { id: accountId } });
+        return NextResponse.json({ id: accountId }, { status: 200 });
+    } catch (error) {
+        // FK Restrict fired because a transaction was added between the count and the delete
+        // FK Restrict fired because a transaction or recurring schedule was added between the count and the delete
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+            return NextResponse.json(
+                {
+                    error: 'This account is still used by transactions or recurring schedules and cannot be deleted. Deactivate it instead.',
+                },
+                { status: 409 },
+            );
+        }
+        console.error('Failed to delete account:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-
-    const scheduleCount = await prisma.recurringTransaction.count({ where: { accountId, workspaceId } });
-    if (scheduleCount > 0) {
-      return NextResponse.json(
-        {
-          error: `This account is used by ${scheduleCount} recurring schedule${scheduleCount === 1 ? '' : 's'}. Delete them first.`,
-        },
-        { status: 409 }
-      );
-    }
-
-    await prisma.financialAccount.delete({ where: { id: accountId } });
-    return NextResponse.json({ id: accountId }, { status: 200 });
-  } catch (error) {
-    // FK Restrict fired because a transaction was added between the count and the delete
-    // FK Restrict fired because a transaction or recurring schedule was added between the count and the delete
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
-      return NextResponse.json(
-        { error: 'This account is still used by transactions or recurring schedules and cannot be deleted. Deactivate it instead.' },
-        { status: 409 }
-      );
-    }
-    console.error('Failed to delete account:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
 }

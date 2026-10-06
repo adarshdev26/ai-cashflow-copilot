@@ -4,60 +4,63 @@ import { requireAdmin } from '@/lib/admin/auth';
 import { sendTicketStatusEmail } from '@/lib/email';
 import { canTransition, isTicketStatus } from '@/features/support-tickets/status';
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ ticketId: string }> },
-) {
-  const guard = await requireAdmin();
-  if (!guard.ok) return guard.response;
+export async function PATCH(req: Request, { params }: { params: Promise<{ ticketId: string }> }) {
+    const guard = await requireAdmin();
+    if (!guard.ok) return guard.response;
 
-  const { ticketId } = await params;
-  const body = await req.json().catch(() => null);
-  const next = body?.status;
+    const { ticketId } = await params;
+    const body = await req.json().catch(() => null);
+    const next = body?.status;
 
-  if (!isTicketStatus(next) || next === 'PENDING')
-    return NextResponse.json({ error: 'Status must be PROCESSING or RESOLVED' }, { status: 400 });
+    if (!isTicketStatus(next) || next === 'PENDING')
+        return NextResponse.json(
+            { error: 'Status must be PROCESSING or RESOLVED' },
+            { status: 400 },
+        );
 
-  const current = await prisma.supportTicket.findUnique({
-    where: { id: ticketId },
-    select: { status: true },
-  });
-  if (!current) return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
-
-  if (!canTransition(current.status, next))
-    return NextResponse.json(
-      { error: `Cannot move ticket from ${current.status} to ${next}` },
-      { status: 409 },
-    );
-
-  const now = new Date();
-  const { count } = await prisma.supportTicket.updateMany({
-    where: { id: ticketId, status: current.status }, // optimistic lock against concurrent admins
-    data: {
-      status: next,
-      ...(next === 'PROCESSING' ? { processingAt: now } : {}),
-      ...(next === 'RESOLVED' ? { resolvedAt: now } : {}),
-    },
-  });
-  if (count === 0)
-    return NextResponse.json({ error: 'Ticket was changed by someone else. Reload and retry.' }, { status: 409 });
-
-  const ticket = await prisma.supportTicket.findUniqueOrThrow({
-    where: { id: ticketId },
-    include: { user: { select: { id: true, name: true, email: true } } },
-  });
-
-  try {
-    await sendTicketStatusEmail({
-      to: ticket.user.email,
-      name: ticket.user.name,
-      ticketId: ticket.id,
-      subject: ticket.subject,
-      status: next,
+    const current = await prisma.supportTicket.findUnique({
+        where: { id: ticketId },
+        select: { status: true },
     });
-  } catch (e) {
-    console.error('[support-tickets] status email failed', e);
-  }
+    if (!current) return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
 
-  return NextResponse.json({ ticket });
+    if (!canTransition(current.status, next))
+        return NextResponse.json(
+            { error: `Cannot move ticket from ${current.status} to ${next}` },
+            { status: 409 },
+        );
+
+    const now = new Date();
+    const { count } = await prisma.supportTicket.updateMany({
+        where: { id: ticketId, status: current.status }, // optimistic lock against concurrent admins
+        data: {
+            status: next,
+            ...(next === 'PROCESSING' ? { processingAt: now } : {}),
+            ...(next === 'RESOLVED' ? { resolvedAt: now } : {}),
+        },
+    });
+    if (count === 0)
+        return NextResponse.json(
+            { error: 'Ticket was changed by someone else. Reload and retry.' },
+            { status: 409 },
+        );
+
+    const ticket = await prisma.supportTicket.findUniqueOrThrow({
+        where: { id: ticketId },
+        include: { user: { select: { id: true, name: true, email: true } } },
+    });
+
+    try {
+        await sendTicketStatusEmail({
+            to: ticket.user.email,
+            name: ticket.user.name,
+            ticketId: ticket.id,
+            subject: ticket.subject,
+            status: next,
+        });
+    } catch (e) {
+        console.error('[support-tickets] status email failed', e);
+    }
+
+    return NextResponse.json({ ticket });
 }

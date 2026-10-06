@@ -7,19 +7,23 @@ import { normalizeEmail } from '@/lib/admin/users';
 const ROLES = ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'] as const;
 
 export async function POST(req: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
-  const g = await requireAdmin();
-  if (!g.ok) return g.response;
-  const { workspaceId } = await params;
-  const body = await req.json().catch(() => null);
+    const g = await requireAdmin();
+    if (!g.ok) return g.response;
+    const { workspaceId } = await params;
+    const body = await req.json().catch(() => null);
 
-  const email = typeof body?.email === 'string' ? normalizeEmail(body.email) : '';
-  const role = body?.role;
-  if (!email || !ROLES.includes(role)) return NextResponse.json({ error: 'email and a valid role are required' }, { status: 400 });
+    const email = typeof body?.email === 'string' ? normalizeEmail(body.email) : '';
+    const role = body?.role;
+    if (!email || !ROLES.includes(role))
+        return NextResponse.json({ error: 'email and a valid role are required' }, { status: 400 });
 
-  const user = await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } }, select: { id: true } });
-  if (!user) return NextResponse.json({ error: 'No user with that email' }, { status: 404 });
+    const user = await prisma.user.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' } },
+        select: { id: true },
+    });
+    if (!user) return NextResponse.json({ error: 'No user with that email' }, { status: 404 });
 
-  const result = await setMemberRole(workspaceId, user.id, role);
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
-  return NextResponse.json({ message: 'Member saved' }, { status: 201 });
+    const result = await setMemberRole(workspaceId, user.id, role);
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
+    return NextResponse.json({ message: 'Member saved' }, { status: 201 });
 }

@@ -1,18 +1,18 @@
 import type { TicketStatus } from '@/features/support-tickets/status';
 
 export type AdminTicketRow = {
-  id: string;
-  subject: string;
-  status: TicketStatus;
-  createdAt: string;
-  updatedAt: string;
-  user: { id: string; name: string | null; email: string };
+    id: string;
+    subject: string;
+    status: TicketStatus;
+    createdAt: string;
+    updatedAt: string;
+    user: { id: string; name: string | null; email: string };
 };
 
 export type AdminTicketDetail = AdminTicketRow & {
-  message: string;
-  processingAt: string | null;
-  resolvedAt: string | null;
+    message: string;
+    processingAt: string | null;
+    resolvedAt: string | null;
 };
 
 export type AdminTicketSortField = 'createdAt' | 'updatedAt' | 'status' | 'subject';

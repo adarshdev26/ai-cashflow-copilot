@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react';
  * With `delay <= 0` the value is returned immediately (no debounce).
  */
 export function useDebounce<T>(value: T, delay = 300): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-  useEffect(() => {
-    if (delay <= 0) return;
-    const id = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(id);
-  }, [value, delay]);
+    useEffect(() => {
+        if (delay <= 0) return;
+        const id = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(id);
+    }, [value, delay]);
 
-  return delay <= 0 ? value : debouncedValue;
+    return delay <= 0 ? value : debouncedValue;
 }

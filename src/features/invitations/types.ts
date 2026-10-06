@@ -9,47 +9,47 @@ export const INVITABLE_ROLES: readonly InvitableRole[] = ['ADMIN', 'MEMBER', 'VI
 
 /** Matches `invitationSelect` on the server (no tokenHash). Dates arrive as ISO strings. */
 export type Invitation = {
-  id: string;
-  email: string;
-  role: InvitableRole;
-  status: InvitationStatus;
-  expiresAt: string;
-  createdAt: string;
-  invitedBy: { id: string; email: string };
+    id: string;
+    email: string;
+    role: InvitableRole;
+    status: InvitationStatus;
+    expiresAt: string;
+    createdAt: string;
+    invitedBy: { id: string; email: string };
 };
 
 /** The raw token is only returned once, on create and resend. */
 export type InvitationWithToken = {
-  invitation: Invitation;
-  token: string;
+    invitation: Invitation;
+    token: string;
 };
 
 export type InvitationPreview = {
-  workspaceName: string;
-  role: InvitableRole;
-  email: string;
-  expiresAt: string;
-  accountExists: boolean;
-  viewer: { signedIn: boolean; emailMatches: boolean };
+    workspaceName: string;
+    role: InvitableRole;
+    email: string;
+    expiresAt: string;
+    accountExists: boolean;
+    viewer: { signedIn: boolean; emailMatches: boolean };
 };
 
 export type AcceptInvitationResponse = { workspaceId: string };
 
 export type RegisterInvitationResponse = {
-  message: string;
-  userId: string;
-  workspaceId: string;
+    message: string;
+    userId: string;
+    workspaceId: string;
 };
 
 export type RegisterInvitationInput = { name?: string; password: string };
 
 /** Codes the invitation endpoints can return in ApiError.code. */
 export type InvitationErrorCode =
-  | 'INVALID'
-  | 'EXPIRED'
-  | 'ACCEPTED'
-  | 'CANCELLED'
-  | 'ALREADY_MEMBER'
-  | 'INVITER_NOT_ALLOWED'
-  | 'EMAIL_MISMATCH'
-  | 'ACCOUNT_EXISTS';
+    | 'INVALID'
+    | 'EXPIRED'
+    | 'ACCEPTED'
+    | 'CANCELLED'
+    | 'ALREADY_MEMBER'
+    | 'INVITER_NOT_ALLOWED'
+    | 'EMAIL_MISMATCH'
+    | 'ACCOUNT_EXISTS';

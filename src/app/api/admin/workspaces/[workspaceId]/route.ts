@@ -6,75 +6,108 @@ import { getSystemNumber } from '@/lib/settings/server';
 type Ctx = { params: Promise<{ workspaceId: string }> };
 
 export async function GET(_req: Request, { params }: Ctx) {
-  const g = await requireAdmin();
-  if (!g.ok) return g.response;
-  const { workspaceId } = await params;
+    const g = await requireAdmin();
+    if (!g.ok) return g.response;
+    const { workspaceId } = await params;
 
-  const ws = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: {
-      id: true, name: true, slug: true, currency: true, isActive: true, createdAt: true,
-      owner: { select: { id: true, name: true, email: true } },
-      access: {
-        orderBy: { createdAt: 'asc' },
-        select: { role: true, user: { select: { id: true, name: true, email: true, isActive: true } } },
-      },
-    },
-  });
-  if (!ws) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+    const ws = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: {
+            id: true,
+            name: true,
+            slug: true,
+            currency: true,
+            isActive: true,
+            createdAt: true,
+            owner: { select: { id: true, name: true, email: true } },
+            access: {
+                orderBy: { createdAt: 'asc' },
+                select: {
+                    role: true,
+                    user: { select: { id: true, name: true, email: true, isActive: true } },
+                },
+            },
+        },
+    });
+    if (!ws) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
 
-  const { access, ...rest } = ws;
-  return NextResponse.json({
-    workspace: {
-      ...rest,
-      members: access.map((a) => ({ userId: a.user.id, name: a.user.name, email: a.user.email, isActive: a.user.isActive, role: a.role })),
-    },
-  });
+    const { access, ...rest } = ws;
+    return NextResponse.json({
+        workspace: {
+            ...rest,
+            members: access.map((a) => ({
+                userId: a.user.id,
+                name: a.user.name,
+                email: a.user.email,
+                isActive: a.user.isActive,
+                role: a.role,
+            })),
+        },
+    });
 }
 
 export async function PATCH(req: Request, { params }: Ctx) {
-  const g = await requireAdmin();
-  if (!g.ok) return g.response;
-  const { workspaceId } = await params;
-  const body = await req.json().catch(() => null);
+    const g = await requireAdmin();
+    if (!g.ok) return g.response;
+    const { workspaceId } = await params;
+    const body = await req.json().catch(() => null);
 
-  const data: { name?: string; currency?: string } = {};
-  if (typeof body?.name === 'string') {
-    const name = body.name.trim();
-    const [minLength, maxLength] = await Promise.all([
-      getSystemNumber('limits.workspaceNameMinLength'),
-      getSystemNumber('limits.workspaceNameMaxLength'),
-    ]);
-    if (name.length < minLength || name.length > maxLength) return NextResponse.json({ error: `Name must be ${minLength}-${maxLength} characters` }, { status: 400 });
-    data.name = name;
-  }
-  if (typeof body?.currency === 'string') {
-    const currency = body.currency.trim().toUpperCase();
-    if (!/^[A-Z]{3}$/.test(currency)) return NextResponse.json({ error: 'Currency must be a 3-letter code' }, { status: 400 });
-    data.currency = currency;
-  }
-  if (Object.keys(data).length === 0) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
+    const data: { name?: string; currency?: string } = {};
+    if (typeof body?.name === 'string') {
+        const name = body.name.trim();
+        const [minLength, maxLength] = await Promise.all([
+            getSystemNumber('limits.workspaceNameMinLength'),
+            getSystemNumber('limits.workspaceNameMaxLength'),
+        ]);
+        if (name.length < minLength || name.length > maxLength)
+            return NextResponse.json(
+                { error: `Name must be ${minLength}-${maxLength} characters` },
+                { status: 400 },
+            );
+        data.name = name;
+    }
+    if (typeof body?.currency === 'string') {
+        const currency = body.currency.trim().toUpperCase();
+        if (!/^[A-Z]{3}$/.test(currency))
+            return NextResponse.json(
+                { error: 'Currency must be a 3-letter code' },
+                { status: 400 },
+            );
+        data.currency = currency;
+    }
+    if (Object.keys(data).length === 0)
+        return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
 
-  const exists = await prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true } });
-  if (!exists) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+    const exists = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: { id: true },
+    });
+    if (!exists) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
 
-  const workspace = await prisma.workspace.update({ where: { id: workspaceId }, data, select: { id: true, name: true, currency: true } });
-  return NextResponse.json({ workspace });
+    const workspace = await prisma.workspace.update({
+        where: { id: workspaceId },
+        data,
+        select: { id: true, name: true, currency: true },
+    });
+    return NextResponse.json({ workspace });
 }
 
 export async function DELETE(_req: Request, { params }: Ctx) {
-  const g = await requireAdmin();
-  if (!g.ok) return g.response;
-  const { workspaceId } = await params;
+    const g = await requireAdmin();
+    if (!g.ok) return g.response;
+    const { workspaceId } = await params;
 
-  const exists = await prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true } });
-  if (!exists) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+    const exists = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: { id: true },
+    });
+    if (!exists) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
 
-  await prisma.$transaction([
-    prisma.transaction.deleteMany({ where: { workspaceId } }),
-    prisma.recurringTransaction.deleteMany({ where: { workspaceId } }),
-    prisma.budget.deleteMany({ where: { workspaceId } }),
-    prisma.workspace.delete({ where: { id: workspaceId } }),
-  ]);
-  return new NextResponse(null, { status: 204 });
+    await prisma.$transaction([
+        prisma.transaction.deleteMany({ where: { workspaceId } }),
+        prisma.recurringTransaction.deleteMany({ where: { workspaceId } }),
+        prisma.budget.deleteMany({ where: { workspaceId } }),
+        prisma.workspace.delete({ where: { id: workspaceId } }),
+    ]);
+    return new NextResponse(null, { status: 204 });
 }
