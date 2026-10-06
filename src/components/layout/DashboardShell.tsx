@@ -19,6 +19,7 @@ import {
     BarChart3,
     LifeBuoy,
     PiggyBank,
+     Sparkles,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -35,7 +36,7 @@ import { MobileTabBar, type MobileTabItem } from '@/components/layout/MobileTabB
 import { PageTransitionOverlay } from '@/components/ui/PageTransitionOverlay';
 import { useTheme } from 'next-themes';
 import { usePublicSettings, useUserPreferences } from '@/features/settings/hooks/use-settings';
-import { PlanUpgradeListener, useLimit } from '@/features/plans';
+import { PlanBadge, PlanUpgradeListener, useLimit, usePlan } from '@/features/plans';
 import { requestUpgrade } from '@/lib/plans/upgrade-event';
 
 const navigation = [
@@ -307,7 +308,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         setCollapsedStored(!collapsed);
     }, [collapsed]);
 
-    const { data: user, isLoading: isUserLoading } = useCurrentUser();
+  const { data: user, isLoading: isUserLoading } = useCurrentUser();
+    const { data: planData } = usePlan();
 
     const displayName = user?.name || user?.email?.split('@')[0] || 'User';
     const initial = displayName.charAt(0).toUpperCase();
@@ -404,7 +406,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                         })}
                     </nav>
 
-                    <div className="border-base-200 border-t p-4">
+                    <div className="border-base-300 border-t p-4">
                         <div
                             data-tour={isUserLoading ? undefined : 'signed-in-user'}
                             className={`mb-3 flex items-center gap-3 px-3 py-2 ${collapsed ? 'md:justify-center md:px-0' : ''}`}
@@ -438,7 +440,29 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                                     </div>
                                 </>
                             )}
-                        </div>
+                       </div>
+                        {planData?.plan && (
+                            <div
+                                data-tour="plan-card"
+                                className={`border-primary/50 bg-base-100 shadow-primary/40 hover:shadow-primary/60 mb-3 rounded-lg border p-3 shadow-[0_0_16px_0] transition-shadow ${collapsed ? 'md:hidden' : ''}`}
+                            >
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-base-content/60 text-xs">
+                                        Current plan
+                                    </span>
+                                    <PlanBadge plan={planData.plan} />
+                                </div>
+                                {planData.plan !== 'PREMIUM' && (
+                                    <Link
+                                        href="/dashboard/upgrade"
+                                        className="btn btn-primary btn-sm mt-3 w-full gap-1.5"
+                                    >
+                                        <Sparkles className="h-3.5 w-3.5" />
+                                        Upgrade
+                                    </Link>
+                                )}
+                            </div>
+                        )}
                         <button
                             onClick={openSignOutDialog}
                             data-tour="sign-out"
