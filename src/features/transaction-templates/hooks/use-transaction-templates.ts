@@ -25,10 +25,14 @@ function useInvalidateTemplates() {
 
 export function useCreateTemplate() {
     const workspaceId = useActiveWorkspaceId();
+    const queryClient = useQueryClient();
     const done = useInvalidateTemplates();
     return useMutation({
         mutationFn: (input: TemplateInput) => transactionTemplatesApi.create(workspaceId, input),
-        onSuccess: done,
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
+            return done();
+        },
     });
 }
 
@@ -44,9 +48,13 @@ export function useUpdateTemplate() {
 
 export function useDeleteTemplate() {
     const workspaceId = useActiveWorkspaceId();
+    const queryClient = useQueryClient();
     const done = useInvalidateTemplates();
     return useMutation({
         mutationFn: (id: string) => transactionTemplatesApi.remove(workspaceId, id),
-        onSuccess: done,
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
+            return done();
+        },
     });
 }

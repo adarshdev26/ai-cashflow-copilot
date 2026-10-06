@@ -34,7 +34,10 @@ export function useCreateWorkspace() {
         // Returning the promise makes react-query wait for the refetch BEFORE
         // the component-level onSuccess runs, so the new workspace is already
         // in the list when we switch to it.
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: workspaceKeys.all }),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
+            return queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+        },
     });
 }
 
@@ -55,6 +58,7 @@ export function useDeleteWorkspace() {
         mutationFn: (workspaceId: string) => deleteWorkspace(workspaceId),
         onSuccess: (_, workspaceId) => {
             queryClient.removeQueries({ queryKey: workspaceKeys.access(workspaceId) });
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
             return queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
         },
     });
@@ -81,6 +85,7 @@ export function useAddWorkspaceMember() {
             role: string;
         }) => addWorkspaceMember(workspaceId, email, role),
         onSuccess: (_, variables) => {
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
             queryClient.invalidateQueries({
                 queryKey: workspaceKeys.access(variables.workspaceId),
             });
@@ -101,6 +106,7 @@ export function useUpdateWorkspaceMember() {
             role: string;
         }) => updateWorkspaceMember(workspaceId, userId, role),
         onSuccess: (_, variables) => {
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
             queryClient.invalidateQueries({
                 queryKey: workspaceKeys.access(variables.workspaceId),
             });
@@ -115,6 +121,7 @@ export function useRemoveWorkspaceMember() {
         mutationFn: ({ workspaceId, userId }: { workspaceId: string; userId: string }) =>
             removeWorkspaceMember(workspaceId, userId),
         onSuccess: (_, variables) => {
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
             queryClient.invalidateQueries({
                 queryKey: workspaceKeys.access(variables.workspaceId),
             });

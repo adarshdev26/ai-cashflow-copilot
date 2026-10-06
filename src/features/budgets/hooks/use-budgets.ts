@@ -22,18 +22,21 @@ export function useBudgetUsage(from: string, to: string) {
     });
 }
 
-function useInvalidateBudgets() {
+function useInvalidateBudgets(invalidatePlan = false) {
     const queryClient = useQueryClient();
     const workspaceId = useActiveWorkspaceId();
     return () => {
         queryClient.invalidateQueries({ queryKey: budgetKeys.all(workspaceId) });
         invalidateReports(queryClient);
+        if (invalidatePlan) {
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
+        }
     };
 }
 
 export function useCreateBudget() {
     const workspaceId = useActiveWorkspaceId();
-    const invalidate = useInvalidateBudgets();
+    const invalidate = useInvalidateBudgets(true);
     return useMutation({
         mutationFn: (input: CreateBudgetInput) => budgetsApi.create(workspaceId as string, input),
         onSuccess: invalidate,
@@ -52,7 +55,7 @@ export function useUpdateBudget() {
 
 export function useDeactivateBudget() {
     const workspaceId = useActiveWorkspaceId();
-    const invalidate = useInvalidateBudgets();
+    const invalidate = useInvalidateBudgets(true);
     return useMutation({
         mutationFn: (id: string) => budgetsApi.deactivate(workspaceId as string, id),
         onSuccess: invalidate,

@@ -17,7 +17,7 @@ export function useRecurring() {
     });
 }
 
-function useInvalidate() {
+function useInvalidate(includePlan = false) {
     const qc = useQueryClient();
     return () => {
         qc.invalidateQueries({ queryKey: ['recurring'] });
@@ -26,6 +26,9 @@ function useInvalidate() {
         qc.invalidateQueries({ queryKey: ['accounts'] });
         qc.invalidateQueries({ queryKey: ['budgets'] });
         invalidateReports(qc);
+        if (includePlan) {
+            void qc.invalidateQueries({ queryKey: ['plan'] });
+        }
     };
 }
 
@@ -35,7 +38,7 @@ export function useCreateRecurring() {
 
     // Extract the ID (e.g., from the first workspace in the list)
     const workspaceId = workspaces?.[0]?.workspaceId;
-    const done = useInvalidate();
+    const done = useInvalidate(true);
     return useMutation({
         mutationFn: (input: RecurringInput) => recurringApi.create(workspaceId!, input),
         onSuccess: done,
@@ -62,7 +65,7 @@ export function useDeleteRecurring() {
 
     // Extract the ID (e.g., from the first workspace in the list)
     const workspaceId = workspaces?.[0]?.workspaceId;
-    const done = useInvalidate();
+    const done = useInvalidate(true);
     return useMutation({
         mutationFn: (id: string) => recurringApi.remove(workspaceId!, id),
         onSuccess: done,

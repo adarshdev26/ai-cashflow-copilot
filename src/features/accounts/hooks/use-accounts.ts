@@ -30,6 +30,7 @@ export function useCreateAccount(workspaceId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: accountKeys.all(workspaceId) });
             invalidateReports(queryClient);
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
         },
     });
 }
@@ -55,6 +56,7 @@ export function useDeleteAccount(workspaceId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: accountKeys.all(workspaceId) });
             invalidateReports(queryClient);
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
         },
     });
 }
