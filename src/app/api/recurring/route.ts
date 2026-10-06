@@ -6,6 +6,7 @@ import { validateRecurringInput, checkTargets } from '@/features/recurring/lib/v
 import { requireUserId } from '@/lib/auth/auth';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,9 @@ export async function POST(request: Request) {
             { status: 400 },
         );
     }
+
+    const blocked = await enforceWorkspaceLimit(access.workspaceId, 'maxRecurring');
+    if (blocked) return blocked;
 
     const created = await prisma.recurringTransaction.create({
         data: {

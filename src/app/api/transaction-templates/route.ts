@@ -10,6 +10,7 @@ import {
 import { requireUserId } from '@/lib/auth/auth';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,6 +66,9 @@ export async function POST(request: Request) {
             d.categoryId ?? null,
         );
         if (targetErr) return NextResponse.json({ error: targetErr }, { status: 400 });
+
+        const blocked = await enforceWorkspaceLimit(access.workspaceId, 'maxTemplates');
+        if (blocked) return blocked;
 
         const created = await prisma.transactionTemplate.create({
             data: {

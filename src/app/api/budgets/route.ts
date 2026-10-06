@@ -6,6 +6,7 @@ import { getBudgetUsage, parsePeriod, parseStartDate, validateAmount } from '@/l
 import { requireUserId } from '@/lib/auth/auth';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 export async function GET(request: NextRequest) {
     const access = await budgetAccess(request, false);
@@ -56,19 +57,22 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const blocked = await enforceWorkspaceLimit(workspaceId, 'maxBudgets'); // adapt `workspaceId` to the variable this route uses
+        if (blocked) return blocked;
+
         const budget = existing
             ? await prisma.budget.update({
-                  where: { id: existing.id },
-                  data: {
-                      amount: amount.amount,
-                      startDate: start.startDate,
-                      endDate: null,
-                      isActive: true,
-                  },
-              })
+                where: { id: existing.id },
+                data: {
+                    amount: amount.amount,
+                    startDate: start.startDate,
+                    endDate: null,
+                    isActive: true,
+                },
+            })
             : await prisma.budget.create({
-                  data: { ...key, amount: amount.amount, startDate: start.startDate },
-              });
+                data: { ...key, amount: amount.amount, startDate: start.startDate },
+            });
 
         const userId = await requireUserId();
         await logAudit({
@@ -81,11 +85,11 @@ export async function POST(request: NextRequest) {
                 categoryId: body.categoryId,
                 before: existing
                     ? {
-                          amount: existing.amount,
-                          startDate: existing.startDate,
-                          endDate: existing.endDate,
-                          isActive: existing.isActive,
-                      }
+                        amount: existing.amount,
+                        startDate: existing.startDate,
+                        endDate: existing.endDate,
+                        isActive: existing.isActive,
+                    }
                     : null,
                 after: {
                     amount: budget.amount,

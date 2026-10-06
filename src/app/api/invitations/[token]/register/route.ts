@@ -13,6 +13,7 @@ import { validatePassword } from '@/lib/validations/auth';
 import { createUserWithPersonalWorkspaceTx, hashPassword } from '@/lib/users/users';
 import { logAudit } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 const accountExistsResponse = () =>
     NextResponse.json(
@@ -48,6 +49,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
             });
 
         if (await findAccount()) return accountExistsResponse();
+
+        const blocked = await enforceWorkspaceLimit(invitation.workspaceId, 'maxCollaborators', 0)
+        if (blocked) return blocked;
 
         const hashedPassword = await hashPassword(password); // outside the tx: bcrypt is slow
 

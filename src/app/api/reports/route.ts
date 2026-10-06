@@ -8,6 +8,7 @@ import {
     ReportSeriesTooLargeError,
     validateScopedIds,
 } from '@/features/reports/lib/report-queries';
+import { enforceWorkspaceFeature } from "@/lib/plans/server";
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,9 @@ export async function GET(req: Request) {
     try {
         const access = await requireWorkspaceAction(req, 'workspace.read');
         if (!access.ok) return access.response;
+
+        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'reports');
+        if (blocked) return blocked;
 
         const parsed = parseReportParams(
             new URL(req.url).searchParams,

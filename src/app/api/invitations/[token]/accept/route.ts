@@ -11,6 +11,7 @@ import {
 import { invitationErrorResponse } from '@/lib/users/invitation-http';
 import { logAudit } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 export async function POST(_req: Request, { params }: { params: Promise<{ token: string }> }) {
     try {
@@ -33,6 +34,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ token:
             return NextResponse.json({ error: 'Please sign in to accept' }, { status: 401 });
         }
         if (!emailsMatch(user.email, invitation.email)) throw new InvitationError('EMAIL_MISMATCH');
+
+        const blocked = await enforceWorkspaceLimit(invitation.workspaceId, 'maxCollaborators', 0)
+        if (blocked) return blocked;
 
         await prisma.$transaction((tx) => acceptInvitationTx(tx, invitation, user.id));
 

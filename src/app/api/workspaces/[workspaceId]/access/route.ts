@@ -4,6 +4,7 @@ import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { WorkspaceRole } from '@/generated/prisma';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 export async function GET(req: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
     try {
@@ -71,6 +72,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ workspa
         if (existingAccess) {
             return NextResponse.json({ error: 'User is already a member' }, { status: 409 });
         }
+
+        const blocked = await enforceWorkspaceLimit(workspaceId, 'maxCollaborators')
+        if (blocked) return blocked;
 
         const newAccess = await prisma.workspaceAccess.create({
             data: {

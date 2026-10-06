@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceFeature } from '@/lib/plans/server';
 
 // Stops Excel from running cells that start with = + - @
 const safe = (v: string | null | undefined) => (v && /^[=+\-@]/.test(v) ? `'${v}` : (v ?? ''));
@@ -15,6 +16,10 @@ export async function GET(req: Request) {
     try {
         const access = await requireWorkspaceAccess(req, 'VIEWER');
         if (!access.ok) return access.response;
+
+        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'export');
+        if (blocked) return blocked;
+
         if (!(await getSystemBool('features.csvExportEnabled'))) {
             return NextResponse.json(
                 { error: 'CSV export is currently disabled' },

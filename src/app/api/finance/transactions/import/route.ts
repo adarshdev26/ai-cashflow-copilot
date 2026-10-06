@@ -6,11 +6,16 @@ import { visibleCategoryWhere } from '@/lib/categories';
 import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceFeature } from '@/lib/plans/server';
 
 export async function POST(req: Request) {
     try {
         const access = await requireWorkspaceAccess(req, 'MEMBER'); // same level as creating a transaction
         if (!access.ok) return access.response;
+
+        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'import');
+        if (blocked) return blocked;
+
         if (!(await getSystemBool('features.csvImportEnabled'))) {
             return NextResponse.json(
                 { error: 'CSV import is currently disabled' },

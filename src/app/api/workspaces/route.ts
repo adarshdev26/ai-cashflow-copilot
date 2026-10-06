@@ -5,6 +5,7 @@ import { getUserWorkspaces, generateWorkspaceSlug } from '@/lib/auth/workspaces'
 import { getSystemNumber, getSystemString } from '@/lib/settings/server';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceUserLimit } from '@/lib/plans/server';
 
 export async function GET() {
     const userId = await requireUserId();
@@ -30,6 +31,9 @@ export async function POST(req: Request) {
             { status: 400 },
         );
     }
+
+    const blocked = await enforceUserLimit(userId, 'maxWorkspaces');
+    if (blocked) return blocked;
 
     const workspace = await prisma.workspace.create({
         data: {

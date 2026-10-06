@@ -5,6 +5,7 @@ import { setMemberRole } from '@/lib/admin/workspaces';
 import { normalizeEmail } from '@/lib/admin/users';
 import { adminActor, logAudit } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 const ROLES = ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'] as const;
 
@@ -35,16 +36,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ workspa
             select: { role: true },
         }),
     ]);
+
+    if (!existingAccess && role !== 'OWNER') {
+        const blocked = await enforceWorkspaceLimit(workspaceId, 'maxCollaborators');
+        if (blocked) return blocked;
+    }
+
     const result = await setMemberRole(workspaceId, user.id, role);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
     const action =
         role === 'OWNER' && workspace?.ownerId !== user.id
             ? AUDIT_ACTIONS.WORKSPACE_OWNERSHIP_TRANSFERRED
             : existingAccess
-              ? existingAccess.role !== role
-                  ? AUDIT_ACTIONS.WORKSPACE_MEMBER_ROLE_CHANGED
-                  : null
-              : AUDIT_ACTIONS.WORKSPACE_MEMBER_ADDED;
+                ? existingAccess.role !== role
+                    ? AUDIT_ACTIONS.WORKSPACE_MEMBER_ROLE_CHANGED
+                    : null
+                : AUDIT_ACTIONS.WORKSPACE_MEMBER_ADDED;
     if (action) {
         await logAudit({
             actor: await adminActor(g.adminId),
@@ -58,9 +65,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ workspa
                 ...(action === AUDIT_ACTIONS.WORKSPACE_OWNERSHIP_TRANSFERRED
                     ? { previousOwnerEmail: workspace?.owner.email ?? null, role: 'OWNER' }
                     : {
-                          ...(existingAccess ? { before: { role: existingAccess.role } } : {}),
-                          after: { role },
-                      }),
+                        ...(existingAccess ? { before: { role: existingAccess.role } } : {}),
+                        after: { role },
+                    }),
             },
             request: req,
         });

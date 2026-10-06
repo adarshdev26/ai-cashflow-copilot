@@ -9,6 +9,7 @@ import {
 } from '@/lib/categories';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 export async function GET(req: Request) {
     try {
@@ -48,6 +49,9 @@ export async function POST(req: Request) {
                 { status: 409 },
             );
         }
+
+        const blocked = await enforceWorkspaceLimit(workspaceId, 'maxCustomCategories');
+        if (blocked) return blocked;
 
         const created = await prisma.category.create({
             data: { name: name!, color: color ?? null, type: type ?? 'BOTH', workspaceId },

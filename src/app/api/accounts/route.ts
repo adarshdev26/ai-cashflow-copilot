@@ -6,6 +6,7 @@ import { validateCreateAccount } from '@/features/accounts/lib/validate-account'
 import { getAccountTotals, toAccountWithBalance } from '@/features/accounts/lib/balance';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 export async function GET(req: Request) {
     try {
@@ -69,6 +70,9 @@ export async function POST(req: Request) {
                 { status: 409 },
             );
         }
+
+        const blocked = await enforceWorkspaceLimit(workspaceId, 'maxAccounts');
+        if (blocked) return blocked;
 
         const created = await prisma.financialAccount.create({
             data: { ...data, workspaceId },
