@@ -40,7 +40,9 @@ export async function POST(req: Request) {
                 action: AUDIT_ACTIONS.ADMIN_LOGIN_FAILED,
                 resourceType: 'admin',
                 resourceId: admin?.id,
-                metadata: { reason: admin && !admin.isActive ? 'inactive_account' : 'invalid_credentials' },
+                metadata: {
+                    reason: admin && !admin.isActive ? 'inactive_account' : 'invalid_credentials',
+                },
                 request: req,
             });
             return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });

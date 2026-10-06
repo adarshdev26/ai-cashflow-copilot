@@ -72,14 +72,15 @@ export function FinanceStats({
         thisMonthNet,
         lastMonthNet,
     ].filter(Boolean).length;
-    const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${visibleSections === 3
+    const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${
+        visibleSections === 3
             ? 'xl:grid-cols-3'
             : visibleSections === 4
-                ? 'xl:grid-cols-4'
-                : visibleSections >= 5
-                    ? 'xl:grid-cols-5'
-                    : ''
-        }`;
+              ? 'xl:grid-cols-4'
+              : visibleSections >= 5
+                ? 'xl:grid-cols-5'
+                : ''
+    }`;
 
     const monthLabels = useMemo(() => {
         const now = new Date();

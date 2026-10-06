@@ -25,7 +25,10 @@ export async function PATCH(req: Request, { params }: Ctx) {
             where: { workspaceId_userId: { workspaceId, userId } },
             select: { role: true },
         }),
-        prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, email: true } }),
+        prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, name: true, email: true },
+        }),
     ]);
     const result = await setMemberRole(workspaceId, userId, body.role);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });

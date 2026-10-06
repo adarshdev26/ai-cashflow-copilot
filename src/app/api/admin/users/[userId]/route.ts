@@ -53,9 +53,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
         select: { id: true, name: true, email: true },
     });
     const changes = {
-        ...(exists.name !== user.name
-            ? { name: { before: exists.name, after: user.name } }
-            : {}),
+        ...(exists.name !== user.name ? { name: { before: exists.name, after: user.name } } : {}),
         ...(exists.email !== user.email
             ? { email: { before: exists.email, after: user.email } }
             : {}),

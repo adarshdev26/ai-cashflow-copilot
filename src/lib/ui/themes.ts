@@ -29,13 +29,7 @@ const ATTR: Record<string, string> = {
 export const attrOf = (t: string) => ATTR[t] ?? t;
 
 export const labelOf = (t: string) =>
-    t === 'system'
-        ? 'System'
-        : t === 'light'
-          ? 'Default light'
-          : t === 'dark'
-            ? 'Default dark'
-            : t;
+    t === 'system' ? 'System' : t === 'light' ? 'Default light' : t === 'dark' ? 'Default dark' : t;
 
 export const THEME_VALUE: Record<string, string> = Object.fromEntries(
     THEMES.map((t) => [t, attrOf(t)]),

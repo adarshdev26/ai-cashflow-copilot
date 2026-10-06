@@ -17,7 +17,7 @@ export async function PATCH(
 
     const exists = await prisma.workspace.findUnique({
         where: { id: workspaceId },
-            select: { id: true, name: true, isActive: true },
+        select: { id: true, name: true, isActive: true },
     });
     if (!exists) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
 
@@ -26,20 +26,20 @@ export async function PATCH(
         data: { isActive: body.isActive },
         select: { id: true, isActive: true },
     });
-        if (exists.isActive !== workspace.isActive) {
-            await logAudit({
-                actor: await adminActor(g.adminId),
-                action: AUDIT_ACTIONS.WORKSPACE_STATUS_CHANGED,
-                resourceType: 'workspace',
-                resourceId: workspace.id,
-                workspaceId: workspace.id,
-                metadata: {
-                    targetName: exists.name,
-                    before: { isActive: exists.isActive },
-                    after: { isActive: workspace.isActive },
-                },
-                request: req,
-            });
-        }
+    if (exists.isActive !== workspace.isActive) {
+        await logAudit({
+            actor: await adminActor(g.adminId),
+            action: AUDIT_ACTIONS.WORKSPACE_STATUS_CHANGED,
+            resourceType: 'workspace',
+            resourceId: workspace.id,
+            workspaceId: workspace.id,
+            metadata: {
+                targetName: exists.name,
+                before: { isActive: exists.isActive },
+                after: { isActive: workspace.isActive },
+            },
+            request: req,
+        });
+    }
     return NextResponse.json({ workspace });
 }

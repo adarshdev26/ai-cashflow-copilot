@@ -112,7 +112,7 @@ export function AdminDashboardPage() {
                     : stats.map((stat) => <StatCard key={stat.title} {...stat} />)}
             </div>
 
-            <RecentActivityCard/>
+            <RecentActivityCard />
 
             <ChartCard
                 title="Daily activity and growth"

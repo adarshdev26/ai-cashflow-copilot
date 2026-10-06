@@ -23,7 +23,12 @@ export async function POST() {
         });
         if (existing && !existing.onboardingCompletedAt && updated?.onboardingCompletedAt) {
             await logAudit({
-                actor: { type: 'USER', id: existing.id, name: existing.name, email: existing.email },
+                actor: {
+                    type: 'USER',
+                    id: existing.id,
+                    name: existing.name,
+                    email: existing.email,
+                },
                 action: AUDIT_ACTIONS.ONBOARDING_COMPLETED,
                 resourceType: 'user',
                 resourceId: existing.id,

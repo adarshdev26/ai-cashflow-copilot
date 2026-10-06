@@ -6,12 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { auditActionLabel, auditResourceLabel } from '@/lib/admin/audit-events';
 import { useAuditLog } from '../hooks/use-audit-logs';
-import {
-    auditActorLabel,
-    formatAuditFullDateTime,
-    formatMetaValue,
-    humanizeKey,
-} from '../utils';
+import { auditActorLabel, formatAuditFullDateTime, formatMetaValue, humanizeKey } from '../utils';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (

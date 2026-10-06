@@ -13,7 +13,7 @@ import {
     ChevronsLeft,
     ChevronsRight,
     Headset,
-    FileText
+    FileText,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';

@@ -264,7 +264,7 @@ function getCollapsedSnapshot(defaultCollapsed: boolean) {
 function setCollapsedStored(next: boolean) {
     try {
         localStorage.setItem(COLLAPSED_KEY, String(next));
-    } catch { }
+    } catch {}
     collapsedListeners.forEach((l) => l());
 }
 
@@ -379,10 +379,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                                     href={item.href}
                                     data-tour={`nav-${item?.name?.toLowerCase()}`}
                                     title={collapsed ? item.name : undefined}
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${collapsed ? 'md:justify-center' : ''} ${isActive
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${collapsed ? 'md:justify-center' : ''} ${
+                                        isActive
                                             ? 'bg-primary/10 text-primary'
                                             : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'
-                                        }`}
+                                    }`}
                                 >
                                     <Icon
                                         className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : 'text-base-content/50'}`}
@@ -445,7 +446,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 {/* Main Content Area */}
                 <div className="flex min-h-0 min-w-0 flex-1 flex-col">
                     <header className="border-base-300 bg-base-100 flex shrink-0 items-start justify-between gap-3 border-b px-4 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2 md:min-h-16 md:items-center md:px-8">
-                     <div className="flex min-w-0 flex-1 items-center gap-x-3 gap-y-2 md:flex-nowrap">
+                        <div className="flex min-w-0 flex-1 items-center gap-x-3 gap-y-2 md:flex-nowrap">
                             <button
                                 type="button"
                                 onClick={toggleSidebar}
@@ -462,7 +463,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
                             <WorkspaceSelector />
 
-                            <div className="bg-base-300 hidden h-5 w-px md:block" aria-hidden="true" />
+                            <div
+                                className="bg-base-300 hidden h-5 w-px md:block"
+                                aria-hidden="true"
+                            />
 
                             {/* Mobile: own row under the workspace. Desktop: inline, as before. */}
                             <div className="w-full min-w-0 md:w-auto">

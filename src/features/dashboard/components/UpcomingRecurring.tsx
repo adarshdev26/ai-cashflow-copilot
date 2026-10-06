@@ -40,7 +40,7 @@ export function UpcomingRecurring() {
 
     const totals = useMemo(() => {
         const sum = (type: 'CREDIT' | 'DEBIT') =>
-            upcoming.filter((r) => r.type === type).reduce((acc, r) => acc + Number(r.amount), 0); 
+            upcoming.filter((r) => r.type === type).reduce((acc, r) => acc + Number(r.amount), 0);
         return { income: sum('CREDIT'), expense: sum('DEBIT') };
     }, [upcoming]);
 
@@ -98,7 +98,8 @@ export function UpcomingRecurring() {
                     Income: <b className="text-success">{formatINR(totals.income, locale)}</b>
                 </span>
                 <span>
-                    Expenses: <b className="text-base-content">{formatINR(totals.expense, locale)}</b>
+                    Expenses:{' '}
+                    <b className="text-base-content">{formatINR(totals.expense, locale)}</b>
                 </span>
             </div>
         </div>

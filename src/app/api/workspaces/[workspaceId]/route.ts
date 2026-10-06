@@ -66,7 +66,10 @@ export async function PATCH(
                 resourceType: 'workspace',
                 resourceId: workspace.id,
                 workspaceId: workspace.id,
-                metadata: { before: { name: existing?.name ?? null }, after: { name: workspace.name } },
+                metadata: {
+                    before: { name: existing?.name ?? null },
+                    after: { name: workspace.name },
+                },
             });
         }
 

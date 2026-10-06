@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 @plugin 'daisyui' {
-    themes: cashflow, cashflow-dark, emerald, synthwave, retro, halloween, garden,
-        forest, black, luxury, dracula, autumn, night, coffee, dim, sunset,
-        caramellatte, abyss;
+    themes:
+        cashflow, cashflow-dark, emerald, synthwave, retro, halloween, garden, forest, black,
+        luxury, dracula, autumn, night, coffee, dim, sunset, caramellatte, abyss;
 }
 
 /* ---------- DEFAULT THEMES ---------- */

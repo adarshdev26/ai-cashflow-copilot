@@ -123,7 +123,10 @@ export function MobileTabBar({ items, moreItems, user, onSignOut }: Props) {
                 </>
             )}
 
-            <ul className="grid" style={{ gridTemplateColumns: `repeat(${items.length + 1}, 1fr)` }}>
+            <ul
+                className="grid"
+                style={{ gridTemplateColumns: `repeat(${items.length + 1}, 1fr)` }}
+            >
                 {items.map((item) => {
                     const active = isActive(item);
                     const Icon = item.icon;

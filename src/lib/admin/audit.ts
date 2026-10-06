@@ -52,7 +52,12 @@ export async function adminActor(adminId: string): Promise<AuditActor> {
             where: { id: adminId },
             select: { name: true, email: true },
         });
-        return { type: 'ADMIN', id: adminId, name: admin?.name ?? null, email: admin?.email ?? null };
+        return {
+            type: 'ADMIN',
+            id: adminId,
+            name: admin?.name ?? null,
+            email: admin?.email ?? null,
+        };
     } catch {
         return { type: 'ADMIN', id: adminId };
     }
@@ -77,7 +82,9 @@ export async function userActor(userId: string): Promise<AuditActor> {
  */
 export async function logAudit(input: LogAuditInput): Promise<void> {
     try {
-        const ctx = input.request ? getRequestContext(input.request) : { ip: null, userAgent: null };
+        const ctx = input.request
+            ? getRequestContext(input.request)
+            : { ip: null, userAgent: null };
         await prisma.auditLog.create({
             data: {
                 actorId: input.actor.id ?? null,

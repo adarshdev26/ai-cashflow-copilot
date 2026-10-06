@@ -12,9 +12,7 @@ const ID_RE = /^[a-zA-Z0-9_-]{1,64}$/;
 function parseDate(raw: string | null, endOfDay: boolean): Date | undefined {
     if (!raw) return undefined;
     const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(raw);
-    const d = new Date(
-        dateOnly ? `${raw}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}Z` : raw,
-    );
+    const d = new Date(dateOnly ? `${raw}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}Z` : raw);
     return Number.isNaN(d.getTime()) ? undefined : d;
 }
 
@@ -57,7 +55,12 @@ export async function GET(req: Request) {
         ...(actorId && ID_RE.test(actorId) ? { actorId } : {}),
         ...(resourceId && ID_RE.test(resourceId) ? { resourceId } : {}),
         ...(dateFrom || dateTo
-            ? { createdAt: { ...(dateFrom ? { gte: dateFrom } : {}), ...(dateTo ? { lte: dateTo } : {}) } }
+            ? {
+                  createdAt: {
+                      ...(dateFrom ? { gte: dateFrom } : {}),
+                      ...(dateTo ? { lte: dateTo } : {}),
+                  },
+              }
             : {}),
         ...(p.search
             ? {
