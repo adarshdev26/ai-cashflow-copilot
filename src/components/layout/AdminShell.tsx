@@ -13,6 +13,7 @@ import {
     ChevronsLeft,
     ChevronsRight,
     Headset,
+    FileText
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -28,6 +29,7 @@ const navigation = [
     { name: 'Workspaces', href: '/admin/workspaces', icon: Building2 },
     { name: 'Categories', href: '/admin/categories', icon: Tags },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
+    { name: 'Audit Logs', href: '/admin/audit-logs', icon: FileText },
     { name: 'Support Tickets', href: '/admin/support-tickets', icon: Headset },
 ];
 
