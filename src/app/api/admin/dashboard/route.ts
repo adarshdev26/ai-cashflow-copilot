@@ -34,6 +34,7 @@ export async function GET() {
             customCategoryCount,
             transactionDates,
             userDates,
+            recentWorkspaces,
         ] = await Promise.all([
             prisma.user.count(),
             prisma.user.count({ where: { isActive: true } }),
@@ -54,6 +55,11 @@ export async function GET() {
             prisma.user.findMany({
                 where: { createdAt: { gte: activityStart } },
                 select: { createdAt: true },
+            }),
+            prisma.workspace.findMany({
+                select: { id: true, name: true, createdAt: true },
+                orderBy: { createdAt: 'desc' },
+                take: 8,
             }),
         ]);
 
@@ -84,6 +90,7 @@ export async function GET() {
                 total: workspaceCount,
                 active: activeWorkspaces,
                 inactive: workspaceCount - activeWorkspaces,
+                recent: recentWorkspaces,
             },
             transactions: { total: transactionCount },
             pendingInvitations,

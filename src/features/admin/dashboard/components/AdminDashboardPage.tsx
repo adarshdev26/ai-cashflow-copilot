@@ -1,14 +1,6 @@
 'use client';
 
-import {
-    Building2,
-    CalendarPlus,
-    FolderTree,
-    Mail,
-    Receipt,
-    UserRoundCheck,
-    Users,
-} from 'lucide-react';
+import { Building2, CalendarPlus, Receipt, Users } from 'lucide-react';
 import {
     CartesianGrid,
     Line,
@@ -22,6 +14,7 @@ import { ChartCard } from '@/components/ui/chart/ChartCard';
 import { StatCard, StatCardSkeleton } from '@/components/ui/StatCard';
 import { Button } from '@/components/ui/Button';
 import { getErrorMessage } from '@/lib/ui/toast';
+import { formatAdminDate } from '../../shared/lib/format-date';
 import { useAdminDashboard } from '../hooks/use-admin-dashboard';
 import { RecentActivityCard } from '../../audit-logs';
 
@@ -32,6 +25,57 @@ const dateLabel = (value: string) =>
         month: 'short',
         timeZone: 'UTC',
     });
+
+function NewWorkspacesCard({
+    workspaces,
+    total,
+    isLoading,
+}: {
+    workspaces: { id: string; name: string; createdAt: string }[];
+    total: number;
+    isLoading: boolean;
+}) {
+    return (
+        <div className="border-base-300 bg-base-100 rounded-xl border p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+                <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+                    <Building2 className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                    <p className="text-base-content text-sm font-semibold">New workspaces</p>
+                    <p className="text-base-content/60 text-xs">
+                        Latest created · {number.format(total)} total
+                    </p>
+                </div>
+            </div>
+
+            {isLoading ? (
+                <div className="mt-4 space-y-3">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="bg-base-200 h-8 animate-pulse rounded" />
+                    ))}
+                </div>
+            ) : workspaces.length === 0 ? (
+                <p className="text-base-content/60 mt-4 text-center text-sm">
+                    No workspaces yet.
+                </p>
+            ) : (
+                <ul className="divide-base-300 mt-4 divide-y">
+                    {workspaces.map((w) => (
+                        <li key={w.id} className="flex items-center justify-between gap-3 py-2.5">
+                            <span className="text-base-content truncate text-sm font-medium">
+                                {w.name}
+                            </span>
+                            <span className="text-base-content/60 shrink-0 text-xs">
+                                {formatAdminDate(w.createdAt)}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+}
 
 export function AdminDashboardPage() {
     const { data, isLoading, isError, error, refetch } = useAdminDashboard();
@@ -51,20 +95,15 @@ export function AdminDashboardPage() {
     const stats = data
         ? [
               {
-                  title: 'Users',
+                  title: 'Total Users',
                   value: number.format(data.users.total),
                   caption: `${number.format(data.users.active)} active · ${number.format(data.users.inactive)} inactive`,
                   icon: Users,
               },
               {
-                  title: 'New users · 7 days',
-                  value: number.format(data.users.new7Days),
+                  title: 'Active Users',
+                  value: number.format(data.users.active),
                   icon: CalendarPlus,
-              },
-              {
-                  title: 'New users · 30 days',
-                  value: number.format(data.users.new30Days),
-                  icon: UserRoundCheck,
               },
               {
                   title: 'Workspaces',
@@ -76,21 +115,6 @@ export function AdminDashboardPage() {
                   title: 'Transactions',
                   value: number.format(data.transactions.total),
                   icon: Receipt,
-              },
-              {
-                  title: 'Pending invitations',
-                  value: number.format(data.pendingInvitations),
-                  icon: Mail,
-              },
-              {
-                  title: 'Global categories',
-                  value: number.format(data.categories.global),
-                  icon: FolderTree,
-              },
-              {
-                  title: 'Custom categories',
-                  value: number.format(data.categories.custom),
-                  icon: FolderTree,
               },
           ]
         : [];
@@ -106,14 +130,14 @@ export function AdminDashboardPage() {
                 </p>
             </div>
 
+            {/* 1. Stat cards */}
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {isLoading || !data
-                    ? Array.from({ length: 8 }, (_, index) => <StatCardSkeleton key={index} />)
+                    ? Array.from({ length: 4 }, (_, index) => <StatCardSkeleton key={index} />)
                     : stats.map((stat) => <StatCard key={stat.title} {...stat} />)}
             </div>
 
-            <RecentActivityCard />
-
+            {/* 2. Growth chart, full width */}
             <ChartCard
                 title="Daily activity and growth"
                 description="Transactions created and new users over the last 30 days"
@@ -180,6 +204,17 @@ export function AdminDashboardPage() {
                     </LineChart>
                 </ResponsiveContainer>
             </ChartCard>
+
+            {/* 3. Two columns: new workspaces | recent activity */}
+            <div className="grid items-start gap-5 lg:grid-cols-2">
+                <NewWorkspacesCard
+                    workspaces={data?.workspaces.recent ?? []}
+                    total={data?.workspaces.total ?? 0}
+                    isLoading={isLoading}
+                />
+                <RecentActivityCard />
+            </div>
+
             {isError && data && (
                 <p className="text-error text-sm">Could not refresh the dashboard data.</p>
             )}
