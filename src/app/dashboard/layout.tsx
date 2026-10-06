@@ -4,13 +4,13 @@ import { getValidUserWithOnboarding } from '@/lib/auth/session-guard';
 import { redirect } from 'next/navigation';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-  const user = await getValidUserWithOnboarding();
-  if (!user) redirect('/api/auth/invalid');
-  if (!user.onboardingCompletedAt) redirect('/onboarding');
+    const user = await getValidUserWithOnboarding();
+    if (!user) redirect('/api/auth/invalid');
+    if (!user.onboardingCompletedAt) redirect('/onboarding');
 
-  return (
-    <WorkspaceProvider>
-      <DashboardShell>{children}</DashboardShell>
-    </WorkspaceProvider>
-  );
+    return (
+        <WorkspaceProvider>
+            <DashboardShell>{children}</DashboardShell>
+        </WorkspaceProvider>
+    );
 }

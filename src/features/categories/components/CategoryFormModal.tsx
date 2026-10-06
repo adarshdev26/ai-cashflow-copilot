@@ -9,61 +9,78 @@ import type { CategoryItem, CategoryKind } from '../types';
 import { CategoryFormFields } from './CategoryFormFields';
 
 type Props = {
-  open: boolean;
-  onClose: () => void;
-  workspaceId: string;
-  category?: CategoryItem | null;            // set = edit mode
-  defaultType?: CategoryKind;                // preselected type for a new category
-  onSaved?: (category: CategoryItem) => void; // inline add uses this to select the new category
+    open: boolean;
+    onClose: () => void;
+    workspaceId: string;
+    category?: CategoryItem | null; // set = edit mode
+    defaultType?: CategoryKind; // preselected type for a new category
+    onSaved?: (category: CategoryItem) => void; // inline add uses this to select the new category
 };
 
-export function CategoryFormModal({ open, onClose, workspaceId, category, defaultType, onSaved }: Props) {
-  const isEdit = Boolean(category);
-  const [name, setName] = useState(category?.name ?? '');
-  const [color, setColor] = useState(category?.color ?? CATEGORY_COLORS[0]);
-  const [kind, setKind] = useState<CategoryKind>(category?.type ?? defaultType ?? 'BOTH');
-  const [error, setError] = useState<string | null>(null);
+export function CategoryFormModal({
+    open,
+    onClose,
+    workspaceId,
+    category,
+    defaultType,
+    onSaved,
+}: Props) {
+    const isEdit = Boolean(category);
+    const [name, setName] = useState(category?.name ?? '');
+    const [color, setColor] = useState(category?.color ?? CATEGORY_COLORS[0]);
+    const [kind, setKind] = useState<CategoryKind>(category?.type ?? defaultType ?? 'BOTH');
+    const [error, setError] = useState<string | null>(null);
 
-  const { mutateAsync: create, isPending: creating } = useCreateCategory(workspaceId);
-  const { mutateAsync: update, isPending: updating } = useUpdateCategory(workspaceId);
-  const busy = creating || updating;
+    const { mutateAsync: create, isPending: creating } = useCreateCategory(workspaceId);
+    const { mutateAsync: update, isPending: updating } = useUpdateCategory(workspaceId);
+    const busy = creating || updating;
 
-  const handleSubmit = async () => {
-    const trimmed = name.trim();
-    if (!trimmed) return setError('Name is required');
-    setError(null);
-    try {
-      const saved = isEdit
-        ? await update({ id: category!.id, data: { name: trimmed, color, type: kind } })
-        : await create({ name: trimmed, color, type: kind });
-      notify.success(isEdit ? 'Category updated' : 'Category created');
-      onSaved?.(saved);
-      onClose();
-    } catch (e) {
-      setError(getErrorMessage(e, 'Failed to save category'));
-    }
-  };
+    const handleSubmit = async () => {
+        const trimmed = name.trim();
+        if (!trimmed) return setError('Name is required');
+        setError(null);
+        try {
+            const saved = isEdit
+                ? await update({ id: category!.id, data: { name: trimmed, color, type: kind } })
+                : await create({ name: trimmed, color, type: kind });
+            notify.success(isEdit ? 'Category updated' : 'Category created');
+            onSaved?.(saved);
+            onClose();
+        } catch (e) {
+            setError(getErrorMessage(e, 'Failed to save category'));
+        }
+    };
 
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      size="sm"
-      title={isEdit ? 'Edit category' : 'Add category'}
-      description={isEdit ? undefined : 'Only visible in this workspace.'}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button>
-          <PrimaryButton onClick={handleSubmit} loading={busy}>
-            {isEdit ? 'Save' : 'Create category'}
-          </PrimaryButton>
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        <CategoryFormFields name={name} color={color} kind={kind} onNameChange={setName} onColorChange={setColor} onKindChange={setKind} onSubmit={handleSubmit} />
-        {error && <p className="text-sm text-error">{error}</p>}
-      </div>
-    </Modal>
-  );
+    return (
+        <Modal
+            open={open}
+            onClose={onClose}
+            size="sm"
+            title={isEdit ? 'Edit category' : 'Add category'}
+            description={isEdit ? undefined : 'Only visible in this workspace.'}
+            footer={
+                <div className="flex justify-end gap-2">
+                    <Button variant="secondary" onClick={onClose} disabled={busy}>
+                        Cancel
+                    </Button>
+                    <PrimaryButton onClick={handleSubmit} loading={busy}>
+                        {isEdit ? 'Save' : 'Create category'}
+                    </PrimaryButton>
+                </div>
+            }
+        >
+            <div className="space-y-4">
+                <CategoryFormFields
+                    name={name}
+                    color={color}
+                    kind={kind}
+                    onNameChange={setName}
+                    onColorChange={setColor}
+                    onKindChange={setKind}
+                    onSubmit={handleSubmit}
+                />
+                {error && <p className="text-error text-sm">{error}</p>}
+            </div>
+        </Modal>
+    );
 }

@@ -31,16 +31,16 @@ Route handlers call Prisma directly. Keep new server logic there, or in an exist
 
 ## Feature organization
 
-| Path | What belongs there |
-| --- | --- |
-| `src/features/auth` | Current-user hook, client fetch, `CurrentUser` type |
-| `src/features/finance` | Ledger UI, transaction hooks, `finance-api.ts`, transaction types, `validate-transaction.ts` |
-| `src/features/dashboard` | Metric and chart UI, dashboard hooks, chart fetch helpers, dashboard types |
-| `src/resources` | Shared global category catalog: API helper, hooks, `CategorySelect`, `CategoryBadge`, `CategoryStats` |
-| `src/app` | Pages, layouts, and route handlers only |
-| `src/components` | Shared UI, `DashboardShell`, `ReactQueryProvider` |
-| `src/hooks` | Cross-feature hooks (`useDebounce`, `useDebouncedSearch`, `src/hooks/list/*`) |
-| `src/lib` | `prisma`, `auth`, `apiFetch`, `cn` |
+| Path                     | What belongs there                                                                                    |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `src/features/auth`      | Current-user hook, client fetch, `CurrentUser` type                                                   |
+| `src/features/finance`   | Ledger UI, transaction hooks, `finance-api.ts`, transaction types, `validate-transaction.ts`          |
+| `src/features/dashboard` | Metric and chart UI, dashboard hooks, chart fetch helpers, dashboard types                            |
+| `src/resources`          | Shared global category catalog: API helper, hooks, `CategorySelect`, `CategoryBadge`, `CategoryStats` |
+| `src/app`                | Pages, layouts, and route handlers only                                                               |
+| `src/components`         | Shared UI, `DashboardShell`, `ReactQueryProvider`                                                     |
+| `src/hooks`              | Cross-feature hooks (`useDebounce`, `useDebouncedSearch`, `src/hooks/list/*`)                         |
+| `src/lib`                | `prisma`, `auth`, `apiFetch`, `cn`                                                                    |
 
 Feature files are mostly kebab-case (`use-finance.ts`, `finance-api.ts`). Shared hooks are camelCase (`useDebounce.ts`). Components are PascalCase. Match the folder you are editing.
 
@@ -154,16 +154,16 @@ Use the existing manual checks. Do not add Zod.
 
 `ReactQueryProvider` defaults: `staleTime` 5 minutes, `refetchOnWindowFocus: false`.
 
-| Data | Query key |
-| --- | --- |
-| Current user | `['current-user']` |
-| Transaction list | `['transactions', params]` |
-| Finance summary | `['transactions', 'summary', range]` |
-| Categories | `['categories']` |
-| Category summary | `['transactions', 'category-summary', range]` |
-| Dashboard counts | `['dashboard-metrics']` |
-| Cash flow | `['dashboard-metrics', 'cashflow', months]` |
-| Balance trend | `['dashboard-metrics', 'balance-trend', days]` |
+| Data             | Query key                                      |
+| ---------------- | ---------------------------------------------- |
+| Current user     | `['current-user']`                             |
+| Transaction list | `['transactions', params]`                     |
+| Finance summary  | `['transactions', 'summary', range]`           |
+| Categories       | `['categories']`                               |
+| Category summary | `['transactions', 'category-summary', range]`  |
+| Dashboard counts | `['dashboard-metrics']`                        |
+| Cash flow        | `['dashboard-metrics', 'cashflow', months]`    |
+| Balance trend    | `['dashboard-metrics', 'balance-trend', days]` |
 
 Create, update, and delete transactions invalidate `['transactions']` and `['dashboard-metrics']`. Keep summary and chart keys on those prefixes so they refresh. List and chart queries use `placeholderData: keepPreviousData`.
 

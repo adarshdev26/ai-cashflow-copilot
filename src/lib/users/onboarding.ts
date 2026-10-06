@@ -6,26 +6,26 @@ import type { OnboardingSetupInput } from '@/lib/validations/onboarding';
  * Both writes succeed or neither does. The slug is intentionally not changed.
  */
 export async function saveOnboardingSetup(params: {
-  userId: string;
-  workspaceId: string;
-  input: OnboardingSetupInput;
+    userId: string;
+    workspaceId: string;
+    input: OnboardingSetupInput;
 }) {
-  const { userId, workspaceId, input } = params;
+    const { userId, workspaceId, input } = params;
 
-  const [workspace] = await prisma.$transaction([
-    prisma.workspace.update({
-      where: { id: workspaceId },
-      data: { name: input.name, currency: input.currency },
-      select: { id: true, name: true, currency: true },
-    }),
-    prisma.user.update({
-      where: { id: userId },
-      data: input.primaryGoal === undefined ? {} : { primaryGoal: input.primaryGoal },
-      select: { id: true },
-    }),
-  ]);
+    const [workspace] = await prisma.$transaction([
+        prisma.workspace.update({
+            where: { id: workspaceId },
+            data: { name: input.name, currency: input.currency },
+            select: { id: true, name: true, currency: true },
+        }),
+        prisma.user.update({
+            where: { id: userId },
+            data: input.primaryGoal === undefined ? {} : { primaryGoal: input.primaryGoal },
+            select: { id: true },
+        }),
+    ]);
 
-  return { workspaceId: workspace.id, name: workspace.name, currency: workspace.currency };
+    return { workspaceId: workspace.id, name: workspace.name, currency: workspace.currency };
 }
 
 /**
@@ -33,8 +33,8 @@ export async function saveOnboardingSetup(params: {
  * again is harmless and the first completion time is kept.
  */
 export async function completeOnboarding(userId: string) {
-  await prisma.user.updateMany({
-    where: { id: userId, onboardingCompletedAt: null },
-    data: { onboardingCompletedAt: new Date() },
-  });
+    await prisma.user.updateMany({
+        where: { id: userId, onboardingCompletedAt: null },
+        data: { onboardingCompletedAt: new Date() },
+    });
 }

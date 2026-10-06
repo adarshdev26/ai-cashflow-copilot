@@ -8,29 +8,29 @@ export const CATEGORIES_QUERY_KEY = ['categories'] as const;
 
 /** Globals + this workspace's custom categories. Key includes workspaceId. */
 export function useCategories() {
-  const workspaceId = useActiveWorkspaceId();
-  return useQuery({
-    queryKey: [...CATEGORIES_QUERY_KEY, workspaceId],
-    queryFn: () => fetchCategories(workspaceId as string),
-    enabled: Boolean(workspaceId),
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 30 * 60 * 1000,    // 30 minutes
-    refetchOnWindowFocus: false,
-  });
+    const workspaceId = useActiveWorkspaceId();
+    return useQuery({
+        queryKey: [...CATEGORIES_QUERY_KEY, workspaceId],
+        queryFn: () => fetchCategories(workspaceId as string),
+        enabled: Boolean(workspaceId),
+        staleTime: 10 * 60 * 1000, // 10 minutes
+        gcTime: 30 * 60 * 1000, // 30 minutes
+        refetchOnWindowFocus: false,
+    });
 }
 
 export function useCategoryMap() {
-  const { data: categories } = useCategories();
+    const { data: categories } = useCategories();
 
-  return useMemo(() => {
-    const map: Record<string, Category> = {};
-    if (categories) {
-      for (const category of categories) {
-        map[category.id] = category;
-      }
-    }
-    return map;
-  }, [categories]);
+    return useMemo(() => {
+        const map: Record<string, Category> = {};
+        if (categories) {
+            for (const category of categories) {
+                map[category.id] = category;
+            }
+        }
+        return map;
+    }, [categories]);
 }
 
 /**
@@ -40,23 +40,23 @@ export function useCategoryMap() {
  * from the finance mutations also invalidates these cards.
  */
 export function useCategorySummary(workspaceId: string, range: DateRange = {}) {
-  return useQuery({
-    queryKey: ['transactions', workspaceId, 'category-summary', range],
-    queryFn: () => fetchCategoriesSummary(workspaceId, range),
-    staleTime: 3 * 60 * 1000, // 3 minutes
-  });
+    return useQuery({
+        queryKey: ['transactions', workspaceId, 'category-summary', range],
+        queryFn: () => fetchCategoriesSummary(workspaceId, range),
+        staleTime: 3 * 60 * 1000, // 3 minutes
+    });
 }
 
 export function useCategorySummaryMap(workspaceId: string, range: DateRange = {}) {
-  const { data: summaries } = useCategorySummary(workspaceId, range);
+    const { data: summaries } = useCategorySummary(workspaceId, range);
 
-  return useMemo(() => {
-    const map: Record<string, CategorySummary> = {};
-    if (summaries) {
-      for (const summary of summaries) {
-        map[summary.categoryId] = summary;
-      }
-    }
-    return map;
-  }, [summaries]);
+    return useMemo(() => {
+        const map: Record<string, CategorySummary> = {};
+        if (summaries) {
+            for (const summary of summaries) {
+                map[summary.categoryId] = summary;
+            }
+        }
+        return map;
+    }, [summaries]);
 }

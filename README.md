@@ -27,18 +27,18 @@ What is not a working product surface yet:
 
 ## Tech Stack
 
-| Area | Choice |
-| --- | --- |
-| Framework | Next.js 16.3.4 (App Router, `src/`) |
-| UI | React 19, Tailwind CSS 4 |
-| Data fetching | TanStack Query 5 |
-| Tables | TanStack Table 8 |
-| Charts | Recharts 3 |
-| Icons | lucide-react |
-| Database | PostgreSQL through Prisma 7 and the Neon serverless driver |
-| Auth | bcryptjs password hashes, jsonwebtoken, HTTP-only `token` cookie |
-| Language | TypeScript (`strict: true`) |
-| Lint | ESLint 9 with `eslint-config-next` |
+| Area          | Choice                                                           |
+| ------------- | ---------------------------------------------------------------- |
+| Framework     | Next.js 16.3.4 (App Router, `src/`)                              |
+| UI            | React 19, Tailwind CSS 4                                         |
+| Data fetching | TanStack Query 5                                                 |
+| Tables        | TanStack Table 8                                                 |
+| Charts        | Recharts 3                                                       |
+| Icons         | lucide-react                                                     |
+| Database      | PostgreSQL through Prisma 7 and the Neon serverless driver       |
+| Auth          | bcryptjs password hashes, jsonwebtoken, HTTP-only `token` cookie |
+| Language      | TypeScript (`strict: true`)                                      |
+| Lint          | ESLint 9 with `eslint-config-next`                               |
 
 There is no component library such as shadcn, no Zod, and no React Hook Form. Validation is handwritten.
 
@@ -215,19 +215,19 @@ Schema, SQL migrations, category seed, and an optional transaction seed script.
 
 ## Architecture / Data Flow
 
-| Feature | UI | Client hook | Client fetch | Route | Database |
-| --- | --- | --- | --- | --- | --- |
-| Log in | `src/app/login/page.tsx` | local `useState` | `fetch` | `POST /api/auth/login` | `User` |
-| Sign up | `src/app/signup/page.tsx` | local `useState` | `fetch` | `POST /api/auth/signup` | `User`, `Personal` workspace, `OWNER` access, `General` account |
-| Current user | `DashboardShell` | `useCurrentUser` | `apiFetch` | `GET /api/auth/me` | `User` |
-| Sign out | `DashboardShell` | — | `fetch` | `POST /api/auth/logout` | clears cookie |
-| Transactions | `dashboard/finance/page.tsx` | `useTransactions` and mutations | `apiFetch` | `/api/finance/transactions` | `Transaction` |
-| Finance totals | `FinanceStats` | `useFinanceSummary` | `apiFetch` | `GET /api/finance/summary` | `Transaction` grouped by type |
-| Categories | selects and badges | `useCategories` | `apiFetch` | `GET /api/categories` | `Category` |
-| Category totals | `CategoryStats`, donut chart | `useCategorySummary` | `apiFetch` | `GET /api/categories/summary` | `Category` + `Transaction` |
-| Habit / note counts | dashboard metric cards | `useDashboardMetrics` | `fetch` | `GET /api/dashboard/metrics` | `Habit`, `Note` |
-| Cash flow chart | `CashflowChart` | `useCashflow` | `fetch` | `GET /api/dashboard/cashflow` | `Transaction` |
-| Balance chart | `BalanceTrendChart` | `useBalanceTrend` | `fetch` | `GET /api/dashboard/balance-trend` | `Transaction` |
+| Feature             | UI                           | Client hook                     | Client fetch | Route                              | Database                                                        |
+| ------------------- | ---------------------------- | ------------------------------- | ------------ | ---------------------------------- | --------------------------------------------------------------- |
+| Log in              | `src/app/login/page.tsx`     | local `useState`                | `fetch`      | `POST /api/auth/login`             | `User`                                                          |
+| Sign up             | `src/app/signup/page.tsx`    | local `useState`                | `fetch`      | `POST /api/auth/signup`            | `User`, `Personal` workspace, `OWNER` access, `General` account |
+| Current user        | `DashboardShell`             | `useCurrentUser`                | `apiFetch`   | `GET /api/auth/me`                 | `User`                                                          |
+| Sign out            | `DashboardShell`             | —                               | `fetch`      | `POST /api/auth/logout`            | clears cookie                                                   |
+| Transactions        | `dashboard/finance/page.tsx` | `useTransactions` and mutations | `apiFetch`   | `/api/finance/transactions`        | `Transaction`                                                   |
+| Finance totals      | `FinanceStats`               | `useFinanceSummary`             | `apiFetch`   | `GET /api/finance/summary`         | `Transaction` grouped by type                                   |
+| Categories          | selects and badges           | `useCategories`                 | `apiFetch`   | `GET /api/categories`              | `Category`                                                      |
+| Category totals     | `CategoryStats`, donut chart | `useCategorySummary`            | `apiFetch`   | `GET /api/categories/summary`      | `Category` + `Transaction`                                      |
+| Habit / note counts | dashboard metric cards       | `useDashboardMetrics`           | `fetch`      | `GET /api/dashboard/metrics`       | `Habit`, `Note`                                                 |
+| Cash flow chart     | `CashflowChart`              | `useCashflow`                   | `fetch`      | `GET /api/dashboard/cashflow`      | `Transaction`                                                   |
+| Balance chart       | `BalanceTrendChart`          | `useBalanceTrend`               | `fetch`      | `GET /api/dashboard/balance-trend` | `Transaction`                                                   |
 
 Dashboard fetch helpers (`get-dashboard-data.ts`, `get-cashflow.ts`, `get-balance-trend.ts`) use `fetch` directly. Finance, auth, and categories use `apiFetch`.
 
@@ -316,16 +316,16 @@ User
 
 Categories can be shared defaults (`workspaceId` is null) or custom to one workspace. A workspace can read shared defaults and its own custom categories; only custom categories in that workspace can be edited or deleted.
 
-| Model | Notes |
-| --- | --- |
-| `User` | `id` UUID, unique `email`, hashed `password`, optional `name`, `role` default `USER` |
-| `Workspace` | `name`, `ownerId`, slug and currency. Owner deletion is restricted |
-| `WorkspaceAccess` | unique workspace/user membership with a workspace role |
-| `Category` | `name`, optional `color`, type and active state; nullable `workspaceId` distinguishes shared defaults from custom categories |
-| `Transaction` | `amount` float, `type` default `DEBIT`, optional `description`, required `workspaceId`, optional `categoryId` |
-| `Habit` | `title`, `userId`. No API yet |
-| `HabitLog` | `completed` default false, `date`, `habitId`. No API yet |
-| `Note` | `title`, optional `content`, `userId`. No API yet |
+| Model             | Notes                                                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `User`            | `id` UUID, unique `email`, hashed `password`, optional `name`, `role` default `USER`                                         |
+| `Workspace`       | `name`, `ownerId`, slug and currency. Owner deletion is restricted                                                           |
+| `WorkspaceAccess` | unique workspace/user membership with a workspace role                                                                       |
+| `Category`        | `name`, optional `color`, type and active state; nullable `workspaceId` distinguishes shared defaults from custom categories |
+| `Transaction`     | `amount` float, `type` default `DEBIT`, optional `description`, required `workspaceId`, optional `categoryId`                |
+| `Habit`           | `title`, `userId`. No API yet                                                                                                |
+| `HabitLog`        | `completed` default false, `date`, `habitId`. No API yet                                                                     |
+| `Note`            | `title`, optional `content`, `userId`. No API yet                                                                            |
 
 Enums: `Role` (`USER`, `ADMIN`), `TransactionType` (`CREDIT`, `DEBIT`).
 
@@ -350,13 +350,13 @@ Committed migrations:
 
 Session: JWT in the `token` cookie. `getSession` returns `{ userId, email }` or `null`. Invalid or missing tokens fail closed on API routes that call `requireUserId`.
 
-| Route | Auth |
-| --- | --- |
-| `POST /api/auth/signup` | public |
-| `POST /api/auth/login` | public |
-| `POST /api/auth/logout` | clears the cookie; does not require a valid JWT |
-| `GET /api/auth/me` | session required |
-| `/api/finance/*`, `/api/categories/*`, `/api/dashboard/*` | session required |
+| Route                                                     | Auth                                            |
+| --------------------------------------------------------- | ----------------------------------------------- |
+| `POST /api/auth/signup`                                   | public                                          |
+| `POST /api/auth/login`                                    | public                                          |
+| `POST /api/auth/logout`                                   | clears the cookie; does not require a valid JWT |
+| `GET /api/auth/me`                                        | session required                                |
+| `/api/finance/*`, `/api/categories/*`, `/api/dashboard/*` | session required                                |
 
 Workspace-scoped handlers read the selected workspace id from the header or route, then verify membership and the minimum role using the signed-in user id from the JWT. They do not trust a workspace id in the request body.
 
@@ -382,23 +382,23 @@ JSON in and out. Errors are `{ error: string }` with `400`, `401`, `404`, or `50
 
 `apiFetch` (`src/lib/api-client.ts`) sets `Content-Type: application/json`, throws `Error` using the response `error` field, and treats an empty body as `{}`.
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/api/auth/signup` | Create user |
-| POST | `/api/auth/login` | Verify password, set cookie |
-| POST | `/api/auth/logout` | Clear cookie |
-| GET | `/api/auth/me` | Current user |
-| GET | `/api/finance/transactions` | Paginated ledger |
-| POST | `/api/finance/transactions` | Create transaction |
-| PATCH | `/api/finance/transactions/[id]` | Update transaction |
-| DELETE | `/api/finance/transactions/[id]` | Delete transaction |
-| GET | `/api/finance/summary` | Totals for all time, this month, last month |
-| GET / POST | `/api/categories` | List visible categories / create a workspace category |
-| PATCH / DELETE | `/api/categories/[id]` | Update or delete a workspace category |
-| GET | `/api/categories/summary` | Per-category income, expense, net, count |
-| GET | `/api/dashboard/metrics` | Habit streak placeholder and note count |
-| GET | `/api/dashboard/cashflow` | Monthly income and expense |
-| GET | `/api/dashboard/balance-trend` | Daily running balance |
+| Method         | Path                             | Purpose                                               |
+| -------------- | -------------------------------- | ----------------------------------------------------- |
+| POST           | `/api/auth/signup`               | Create user                                           |
+| POST           | `/api/auth/login`                | Verify password, set cookie                           |
+| POST           | `/api/auth/logout`               | Clear cookie                                          |
+| GET            | `/api/auth/me`                   | Current user                                          |
+| GET            | `/api/finance/transactions`      | Paginated ledger                                      |
+| POST           | `/api/finance/transactions`      | Create transaction                                    |
+| PATCH          | `/api/finance/transactions/[id]` | Update transaction                                    |
+| DELETE         | `/api/finance/transactions/[id]` | Delete transaction                                    |
+| GET            | `/api/finance/summary`           | Totals for all time, this month, last month           |
+| GET / POST     | `/api/categories`                | List visible categories / create a workspace category |
+| PATCH / DELETE | `/api/categories/[id]`           | Update or delete a workspace category                 |
+| GET            | `/api/categories/summary`        | Per-category income, expense, net, count              |
+| GET            | `/api/dashboard/metrics`         | Habit streak placeholder and note count               |
+| GET            | `/api/dashboard/cashflow`        | Monthly income and expense                            |
+| GET            | `/api/dashboard/balance-trend`   | Daily running balance                                 |
 
 Month boundaries for `/api/finance/summary` are `lastMonthStart`, `thisMonthStart`, and `nextMonthStart`, sent by the browser so “this month” follows the user’s timezone. The route rejects an inverted range. If the query params are omitted, it falls back to server-local month boundaries.
 
@@ -406,16 +406,16 @@ Workspace and category routes support their current create, read, update, and de
 
 ## Shared Components
 
-| Component | Role |
-| --- | --- |
+| Component                  | Role                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------- |
 | `Button` / `PrimaryButton` | `primary`, `secondary`, `danger`, `ghost`; sizes `sm`, `md`, `lg`; `loading` and `leftIcon` |
-| `Input`, `Select` | Styled form controls |
-| `Modal` | Dialog shell used by the transaction form |
-| `ConfirmDialog` | Sign-out and delete confirmation |
-| `DataTable` | TanStack Table with server-driven pagination, sort, and debounced search |
-| `StatCard` | Presentational metric. Callers pass an already formatted value |
-| `DashboardShell` | Sidebar navigation, user chip, sign-out |
-| `ReactQueryProvider` | Query client |
+| `Input`, `Select`          | Styled form controls                                                                        |
+| `Modal`                    | Dialog shell used by the transaction form                                                   |
+| `ConfirmDialog`            | Sign-out and delete confirmation                                                            |
+| `DataTable`                | TanStack Table with server-driven pagination, sort, and debounced search                    |
+| `StatCard`                 | Presentational metric. Callers pass an already formatted value                              |
+| `DashboardShell`           | Sidebar navigation, user chip, sign-out                                                     |
+| `ReactQueryProvider`       | Query client                                                                                |
 
 `cn` is used by `Button` and `Modal`.
 
@@ -436,25 +436,25 @@ Shared hooks:
 
 ## Utilities / Lib
 
-| File | Role |
-| --- | --- |
-| `src/lib/prisma.ts` | Throws if `DATABASE_URL` is missing. Logs queries. Reuses one client outside production |
-| `src/lib/auth.ts` | Throws if `JWT_SECRET` is missing when a session is read |
-| `src/lib/api-client.ts` | Browser helper for JSON fetches |
-| `src/lib/cn.ts` | Class string join |
-| `src/features/finance/lib/validate-transaction.ts` | Shared create/update validation |
-| `src/features/dashboard/components/chart-utils.ts` | INR formatting and `YYYY-MM-DD` dates |
+| File                                               | Role                                                                                    |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `src/lib/prisma.ts`                                | Throws if `DATABASE_URL` is missing. Logs queries. Reuses one client outside production |
+| `src/lib/auth.ts`                                  | Throws if `JWT_SECRET` is missing when a session is read                                |
+| `src/lib/api-client.ts`                            | Browser helper for JSON fetches                                                         |
+| `src/lib/cn.ts`                                    | Class string join                                                                       |
+| `src/features/finance/lib/validate-transaction.ts` | Shared create/update validation                                                         |
+| `src/features/dashboard/components/chart-utils.ts` | INR formatting and `YYYY-MM-DD` dates                                                   |
 
 ## Environment Variables
 
 `.env.example` lists the required server variables and the public site URL without secret values. `.gitignore` ignores `.env*`; create a local `.env` yourself and do not commit it.
 
-| Variable | Required | Scope | Used for |
-| --- | --- | --- | --- |
-| `DATABASE_URL` | Yes | Server only | Prisma config, `src/lib/prisma.ts`, seed scripts. Neon Postgres connection string |
-| `JWT_SECRET` | Yes | Server only | Signing and verifying the session JWT (`src/lib/auth.ts`) |
-| `NODE_ENV` | Set by Next.js / Node | Server | `secure` cookie flag; Prisma client caching |
-| `SEED_USER_EMAIL` | No | Seed script only | Default user for `prisma/seed-transactions.ts` when no email argument is passed |
+| Variable          | Required              | Scope            | Used for                                                                          |
+| ----------------- | --------------------- | ---------------- | --------------------------------------------------------------------------------- |
+| `DATABASE_URL`    | Yes                   | Server only      | Prisma config, `src/lib/prisma.ts`, seed scripts. Neon Postgres connection string |
+| `JWT_SECRET`      | Yes                   | Server only      | Signing and verifying the session JWT (`src/lib/auth.ts`)                         |
+| `NODE_ENV`        | Set by Next.js / Node | Server           | `secure` cookie flag; Prisma client caching                                       |
+| `SEED_USER_EMAIL` | No                    | Seed script only | Default user for `prisma/seed-transactions.ts` when no email argument is passed   |
 
 `NEXT_PUBLIC_SITE_URL` supplies the canonical site URL for marketing links. `JWT_SECRET` and `DATABASE_URL` must not be exposed to the client.
 
@@ -513,13 +513,13 @@ Open [http://localhost:3000](http://localhost:3000). `/` redirects to `/dashboar
 
 From `package.json`:
 
-| Script | Command | Purpose |
-| --- | --- | --- |
-| `dev` | `next dev` | Development server |
-| `build` | `next build` | Production build and type check |
-| `start` | `next start` | Serve a production build |
-| `lint` | `eslint` | ESLint (`eslint.config.mjs`, Next.js core-web-vitals and TypeScript configs) |
-| `typecheck` | `tsc --noEmit` | TypeScript without emit |
+| Script      | Command        | Purpose                                                                      |
+| ----------- | -------------- | ---------------------------------------------------------------------------- |
+| `dev`       | `next dev`     | Development server                                                           |
+| `build`     | `next build`   | Production build and type check                                              |
+| `start`     | `next start`   | Serve a production build                                                     |
+| `lint`      | `eslint`       | ESLint (`eslint.config.mjs`, Next.js core-web-vitals and TypeScript configs) |
+| `typecheck` | `tsc --noEmit` | TypeScript without emit                                                      |
 
 There is no `test` script. There are no test files.
 
