@@ -13,11 +13,16 @@ function parseDate(value: string | null): Date | undefined | null {
     return Number.isNaN(date.getTime()) ? null : date;
 }
 
-async function totalsFor(workspaceId: string, range?: { gte: Date; lt: Date }): Promise<Totals> {
+async function totalsFor(
+    workspaceId: string,
+    accountId: string | null,
+    range?: { gte: Date; lt: Date },
+): Promise<Totals> {
     const rows = await prisma.transaction.groupBy({
         by: ['type'],
         where: {
             workspaceId,
+            ...(accountId ? { accountId } : {}),
             ...(range ? { createdAt: range } : {}),
         },
         _sum: { amount: true },
@@ -77,10 +82,26 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Invalid month range' }, { status: 400 });
         }
 
+        // Optional account filter. The account must belong to THIS workspace, so a
+        // user can't probe account ids from other workspaces. Inactive accounts are
+        // allowed: their history should still be viewable.
+        const accountIdParam = searchParams.get('accountId')?.trim() || null;
+        let accountId: string | null = null;
+        if (accountIdParam) {
+            const account = await prisma.financialAccount.findFirst({
+                where: { id: accountIdParam, workspaceId },
+                select: { id: true },
+            });
+            if (!account) {
+                return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+            }
+            accountId = account.id;
+        }
+
         const [allTime, thisMonth, lastMonth] = await Promise.all([
-            totalsFor(workspaceId),
-            totalsFor(workspaceId, { gte: thisMonthStart, lt: nextMonthStart }),
-            totalsFor(workspaceId, { gte: lastMonthStart, lt: thisMonthStart }),
+            totalsFor(workspaceId, accountId),
+            totalsFor(workspaceId, accountId, { gte: thisMonthStart, lt: nextMonthStart }),
+            totalsFor(workspaceId, accountId, { gte: lastMonthStart, lt: thisMonthStart }),
         ]);
 
         return NextResponse.json({ allTime, thisMonth, lastMonth }, { status: 200 });

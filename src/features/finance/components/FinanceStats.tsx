@@ -6,6 +6,7 @@ import { StatCard, StatCardSkeleton, StatTone } from '@/components/ui/StatCard';
 import { useFinanceSummary, PeriodTotals } from '../hooks/use-finance-summary';
 import { useActiveWorkspaceId } from '@/features/workspaces';
 import { useUserLocale } from '@/features/settings/hooks/use-settings';
+import { useAccounts, useActiveAccountId } from '@/features/accounts';
 
 const netTone = (net: number): StatTone =>
     net > 0 ? 'positive' : net < 0 ? 'negative' : 'neutral';
@@ -38,7 +39,18 @@ export function FinanceStats({
     lastMonthNet = true,
 }) {
     const workspaceId = useActiveWorkspaceId();
-    const { data, isLoading, isError } = useFinanceSummary(workspaceId);
+    const [activeAccountId] = useActiveAccountId();
+    const { data: accounts } = useAccounts(workspaceId, { activeOnly: true });
+
+    // null = all accounts. If the stored account no longer exists (deleted or deactivated),
+    // fall back to all accounts. While accounts are still loading, trust the stored id so we
+    // don't fire an all-accounts request and then a second, filtered one.
+    const accountId =
+        activeAccountId && (!accounts || accounts.some((a) => a.id === activeAccountId))
+            ? activeAccountId
+            : null;
+
+    const { data, isLoading, isError } = useFinanceSummary(workspaceId, accountId);
 
     const locale = useUserLocale();
     const currency = useMemo(
@@ -60,15 +72,14 @@ export function FinanceStats({
         thisMonthNet,
         lastMonthNet,
     ].filter(Boolean).length;
-    const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${
-        visibleSections === 3
+    const gridClass = `grid gap-4 grid-cols-1 ${visibleSections > 1 ? 'sm:grid-cols-2' : ''} ${visibleSections === 3
             ? 'xl:grid-cols-3'
             : visibleSections === 4
-              ? 'xl:grid-cols-4'
-              : visibleSections >= 5
-                ? 'xl:grid-cols-5'
-                : ''
-    }`;
+                ? 'xl:grid-cols-4'
+                : visibleSections >= 5
+                    ? 'xl:grid-cols-5'
+                    : ''
+        }`;
 
     const monthLabels = useMemo(() => {
         const now = new Date();

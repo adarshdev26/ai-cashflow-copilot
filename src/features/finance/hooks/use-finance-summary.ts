@@ -23,16 +23,21 @@ function getMonthRange() {
  * The key starts with 'transactions' and includes workspaceId, so the existing
  * invalidateQueries({ queryKey: ['transactions', workspaceId] }) in the create / update /
  * delete mutations refreshes the cards automatically.
+ *
+ * accountId: null = all accounts. Part of the key, so each account has its own cache entry.
  */
-export function useFinanceSummary(workspaceId: string) {
+export function useFinanceSummary(workspaceId: string, accountId: string | null = null) {
     const range = getMonthRange();
     return useQuery({
-        queryKey: ['transactions', workspaceId, 'summary', range],
-        queryFn: () =>
-            apiFetch<TransactionSummary>(
-                `/api/finance/summary?${new URLSearchParams(range).toString()}`,
+        queryKey: ['transactions', workspaceId, 'summary', accountId, range],
+        queryFn: () => {
+            const params = new URLSearchParams(range);
+            if (accountId) params.set('accountId', accountId);
+            return apiFetch<TransactionSummary>(
+                `/api/finance/summary?${params.toString()}`,
                 withWorkspace(workspaceId),
-            ),
+            );
+        },
         staleTime: 2 * 60 * 1000, // 2 minutes
     });
 }
