@@ -59,6 +59,9 @@ export const AUDIT_ACTIONS = {
     TEMPLATE_DELETED: 'template.deleted',
     SUPPORT_TICKET_CREATED: 'support_ticket.created',
     SUPPORT_TICKET_STATUS_CHANGED: 'support_ticket.status_changed',
+    USER_PLAN_CHANGED: 'user.plan_changed',
+    BILLING_UPGRADED: 'billing.upgraded',
+    BILLING_DOWNGRADED: 'billing.downgraded',
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
@@ -124,6 +127,9 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     'template.deleted': 'Deleted transaction template',
     'support_ticket.created': 'Created support ticket',
     'support_ticket.status_changed': 'Changed support ticket status',
+    'user.plan_changed': 'Changed user plan',
+    'billing.upgraded': 'Upgraded plan',
+    'billing.downgraded': 'Downgraded plan',
 };
 
 export const AUDIT_RESOURCE_TYPES = {
