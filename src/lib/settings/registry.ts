@@ -1,4 +1,8 @@
 import { THEMES } from '@/lib/ui/themes';
+import {
+    PLAN_DEFAULTS, PLAN_FEATURES, PLAN_IDS, PLAN_LABELS, PLAN_LIMITS, planSettingKey,
+    type PlanFeatureKey, type PlanLimitKey,
+} from '@/lib/plans/constants';
 
 /**
  * Single source of truth for every configurable setting.
@@ -24,12 +28,12 @@ export type SettingDef = Base &
         | { type: 'number'; default: number; min: number; max: number; unit?: string }
         | { type: 'boolean'; default: boolean }
         | {
-              type: 'string';
-              default: string;
-              minLength?: number;
-              maxLength: number;
-              format?: 'email';
-          }
+            type: 'string';
+            default: string;
+            minLength?: number;
+            maxLength: number;
+            format?: 'email';
+        }
         | { type: 'enum'; default: string | number; options: readonly EnumOption[] }
     );
 
@@ -131,7 +135,35 @@ export const SETTING_GROUPS = {
     limits: 'Limits',
     features: 'Features',
     defaults: 'Defaults & UI',
+    plans: 'Plans',
 } as const;
+
+const PLAN_SETTING_DEFS: SettingDef[] = PLAN_IDS.flatMap((plan) => [
+    ...(Object.keys(PLAN_LIMITS) as PlanLimitKey[]).map(
+        (key): SettingDef => ({
+            key: planSettingKey(plan, key),
+            scope: 'system',
+            group: 'plans',
+            label: `${PLAN_LABELS[plan]}: ${PLAN_LIMITS[key]}`,
+            description: 'Use -1 for unlimited.',
+            type: 'number',
+            default: PLAN_DEFAULTS[plan].limits[key],
+            min: -1,
+            max: 100000,
+        }),
+    ),
+    ...(Object.keys(PLAN_FEATURES) as PlanFeatureKey[]).map(
+        (key): SettingDef => ({
+            key: planSettingKey(plan, key),
+            scope: 'system',
+            group: 'plans',
+            label: `${PLAN_LABELS[plan]}: ${PLAN_FEATURES[key]}`,
+            description: 'Turn on to include this feature in the plan.',
+            type: 'boolean',
+            default: PLAN_DEFAULTS[plan].features[key],
+        }),
+    ),
+]);
 
 export const SETTINGS: readonly SettingDef[] = [
     // ---------------- SYSTEM: general ----------------
@@ -622,6 +654,9 @@ export const SETTINGS: readonly SettingDef[] = [
             { value: 'en-GB', label: 'English (UK)' },
         ],
     ),
+
+    // ---------------- SYSTEM: plans (generated from src/lib/plans/constants.ts) ----------------
+    ...PLAN_SETTING_DEFS,
 ];
 
 export const SETTINGS_BY_KEY: Record<string, SettingDef> = Object.fromEntries(

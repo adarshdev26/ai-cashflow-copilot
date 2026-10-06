@@ -17,6 +17,11 @@ enum Role {
   ADMIN
 }
 
+enum Plans {
+  FREEMIUM
+  PREMIUM
+}
+
 enum WorkspaceRole {
   OWNER
   ADMIN
@@ -55,6 +60,7 @@ model User {
   sentInvitations       WorkspaceInvitation[] @relation("InvitationInviter") // invites I created
   updatedAt             DateTime              @updatedAt
   role                  Role                  @default(USER)
+  plan                  Plans                 @default(FREEMIUM)
   onboardingCompletedAt DateTime? // null = still needs onboarding
   primaryGoal           String?
   passwordChangedAt     DateTime?

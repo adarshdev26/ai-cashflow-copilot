@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, ShieldCheck, Gauge, ToggleRight, SlidersHorizontal } from 'lucide-react';
+import {
+    Settings,
+    ShieldCheck,
+    Gauge,
+    ToggleRight,
+    SlidersHorizontal,
+    Crown,
+} from 'lucide-react';
 import { Tabs, type TabItem } from '@/components/ui/Tabs';
 import { SettingsForm } from '@/components/settings/SettingsForm';
 import { SETTINGS, SETTING_GROUPS } from '@/lib/settings/registry';
@@ -15,11 +22,12 @@ const TABS: readonly TabItem<GroupId>[] = [
     { id: 'auth', label: SETTING_GROUPS.auth, icon: <ShieldCheck className="h-4 w-4" /> },
     { id: 'limits', label: SETTING_GROUPS.limits, icon: <Gauge className="h-4 w-4" /> },
     { id: 'features', label: SETTING_GROUPS.features, icon: <ToggleRight className="h-4 w-4" /> },
-    {
+       {
         id: 'defaults',
         label: SETTING_GROUPS.defaults,
         icon: <SlidersHorizontal className="h-4 w-4" />,
     },
+    { id: 'plans', label: SETTING_GROUPS.plans, icon: <Crown className="h-4 w-4" /> },
 ];
 
 const card = 'bg-base-100 rounded-xl shadow-sm border border-base-300 p-4 sm:p-6 space-y-4';
