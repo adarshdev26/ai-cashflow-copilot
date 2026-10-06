@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useCallback, useEffect, useSyncExternalStore } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, Building2, Tags, Settings, LogOut, Menu, X, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, Tags, Settings, LogOut, Menu, X, ChevronsLeft, ChevronsRight, Headset } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ThemeMenu } from '@/components/ui/ThemePicker';
@@ -17,6 +17,7 @@ const navigation = [
   { name: 'Workspaces', href: '/admin/workspaces', icon: Building2 },
   { name: 'Categories', href: '/admin/categories', icon: Tags },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { name: 'Support Tickets', href: '/admin/support-tickets', icon: Headset },
 ];
 const COLLAPSED_KEY = 'admin-sidebar-collapsed';
 const collapsedListeners = new Set<() => void>();

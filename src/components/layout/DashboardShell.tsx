@@ -5,7 +5,8 @@ import { useState, useCallback, useEffect, useSyncExternalStore, Suspense } from
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, WalletCards, Landmark, Settings, LogOut, Plus, Menu, X,
-  ChevronsLeft, ChevronsRight, Compass, Tags, Repeat, LayoutTemplate, BarChart3
+  ChevronsLeft, ChevronsRight, Compass, Tags, Repeat, LayoutTemplate,
+  BarChart3, LifeBuoy
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -29,6 +30,7 @@ const navigation = [
   { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
   { name: 'Categories', href: '/dashboard/categories', icon: Tags },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+  { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 

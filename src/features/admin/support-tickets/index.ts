@@ -1,0 +1,1 @@
+export { AdminSupportTicketsPage } from './components/AdminSupportTicketsPage';
