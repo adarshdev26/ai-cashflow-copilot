@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Eye, EyeOff, Pencil, Plus, Trash2 } from 'lucide-react';
-import { PrimaryButton } from '@/components/ui/Button';
+import { LockedButton, UsageMeter, useLimit } from '@/features/plans';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useCategories } from '@/resources/hooks/use-categories';
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
@@ -37,6 +37,7 @@ export default function CategoriesPage() {
     const canCreate = usePermission('category.create');
     const canUpdate = usePermission('category.update');
     const canDelete = usePermission('category.delete');
+    const { canCreate: withinLimit } = useLimit('maxCustomCategories');
     const { data, isLoading } = useCategories();
     const { mutate: remove, isPending: deleting } = useDeleteCategory(workspaceId);
     const { mutate: update } = useUpdateCategory(workspaceId);
@@ -59,14 +60,19 @@ export default function CategoriesPage() {
                         Default categories are shared. Custom ones belong to this workspace only.
                     </p>
                 </div>
-                {canCreate && (
-                    <PrimaryButton
-                        data-tour="categories-add-btn"
-                        onClick={() => setForm({ category: null })}
-                        leftIcon={<Plus className="h-4 w-4" />}
-                    >
-                        Add category
-                    </PrimaryButton>
+           {canCreate && (
+                    <div className="flex items-center gap-3">
+                        <UsageMeter limitKey="maxCustomCategories" />
+                        <LockedButton
+                            data-tour="categories-add-btn"
+                            locked={!withinLimit}
+                            lockedMessage="You've reached your custom category limit."
+                            onClick={() => setForm({ category: null })}
+                            leftIcon={<Plus className="h-4 w-4" />}
+                        >
+                            Add category
+                        </LockedButton>
+                    </div>
                 )}
             </div>
 

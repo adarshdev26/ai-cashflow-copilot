@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Repeat, TrendingUp, TrendingDown } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { LockedButton, UsageMeter, useLimit } from '@/features/plans';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify } from '@/lib/ui/toast';
 import { usePermission } from '@/features/workspaces/hooks/use-permission';
@@ -19,7 +19,8 @@ import { useUserLocale } from '@/features/settings/hooks/use-settings';
 
 export default function RecurringPage() {
     const locale = useUserLocale();
-    const canManage = usePermission('recurring.manage');
+ const canManage = usePermission('recurring.manage');
+    const { canCreate: withinLimit } = useLimit('maxRecurring');
 
     const { data, isLoading, isFetching, isError, error } = useRecurring();
     const update = useUpdateRecurring();
@@ -80,10 +81,18 @@ export default function RecurringPage() {
                         Manage your scheduled income and expenses.
                     </p>
                 </div>
-                {canManage && (
-                    <Button data-tour="recurring-add-btn" onClick={openCreate}>
-                        + Add Recurring
-                    </Button>
+           {canManage && (
+                    <div className="flex items-center gap-3">
+                        <UsageMeter limitKey="maxRecurring" />
+                        <LockedButton
+                            data-tour="recurring-add-btn"
+                            locked={!withinLimit}
+                            lockedMessage="You've reached your recurring transactions limit."
+                            onClick={openCreate}
+                        >
+                            + Add Recurring
+                        </LockedButton>
+                    </div>
                 )}
             </div>
 
@@ -165,7 +174,13 @@ export default function RecurringPage() {
                     </p>
                     {canManage && (
                         <div className="mt-4 flex justify-center">
-                            <Button onClick={openCreate}>+ Add Recurring</Button>
+                       <LockedButton
+                                locked={!withinLimit}
+                                lockedMessage="You've reached your recurring transactions limit."
+                                onClick={openCreate}
+                            >
+                                + Add Recurring
+                            </LockedButton>
                         </div>
                     )}
                 </div>

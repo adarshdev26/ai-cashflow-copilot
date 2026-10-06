@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { Plus, Landmark } from 'lucide-react';
-import { PrimaryButton } from '@/components/ui/Button';
+import { LockedButton, UsageMeter, useLimit } from '@/features/plans';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
@@ -22,7 +22,8 @@ export default function AccountsPage() {
     const workspaceId = useActiveWorkspaceId();
     const canCreate = usePermission('account.create');
     const canUpdate = usePermission('account.update');
-    const canDeactivate = usePermission('account.deactivate');
+const canDeactivate = usePermission('account.deactivate');
+    const { canCreate: withinLimit } = useLimit('maxAccounts');
 
     const { data: accounts, isLoading, error, refetch } = useAccounts(workspaceId);
     const { mutate: createAcc, isPending: isCreating } = useCreateAccount(workspaceId);
@@ -111,14 +112,19 @@ export default function AccountsPage() {
                         Bank accounts, cards, cash and wallets for this workspace.
                     </p>
                 </div>
-                {canCreate && (
-                    <PrimaryButton
-                        data-tour="accounts-add-btn"
-                        onClick={() => setFormState({ mode: 'create' })}
-                        leftIcon={<Plus className="h-4 w-4" />}
-                    >
-                        Add Account
-                    </PrimaryButton>
+               {canCreate && (
+                    <div className="flex items-center gap-3">
+                        <UsageMeter limitKey="maxAccounts" />
+                        <LockedButton
+                            data-tour="accounts-add-btn"
+                            locked={!withinLimit}
+                            lockedMessage="You've reached your account limit."
+                            onClick={() => setFormState({ mode: 'create' })}
+                            leftIcon={<Plus className="h-4 w-4" />}
+                        >
+                            Add Account
+                        </LockedButton>
+                    </div>
                 )}
             </div>
 
@@ -162,12 +168,14 @@ export default function AccountsPage() {
                     </p>
                     {canCreate && (
                         <div className="mt-4 flex justify-center">
-                            <PrimaryButton
+                          <LockedButton
+                                locked={!withinLimit}
+                                lockedMessage="You've reached your account limit."
                                 onClick={() => setFormState({ mode: 'create' })}
                                 leftIcon={<Plus className="h-4 w-4" />}
                             >
                                 Add Account
-                            </PrimaryButton>
+                            </LockedButton>
                         </div>
                     )}
                 </div>

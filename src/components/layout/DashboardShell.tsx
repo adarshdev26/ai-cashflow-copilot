@@ -35,6 +35,8 @@ import { MobileTabBar, type MobileTabItem } from '@/components/layout/MobileTabB
 import { PageTransitionOverlay } from '@/components/ui/PageTransitionOverlay';
 import { useTheme } from 'next-themes';
 import { usePublicSettings, useUserPreferences } from '@/features/settings/hooks/use-settings';
+import { PlanUpgradeListener, useLimit } from '@/features/plans';
+import { requestUpgrade } from '@/lib/plans/upgrade-event';
 
 const navigation = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -178,6 +180,7 @@ function WorkspaceSelector() {
     const { workspaces, active, setActiveWorkspaceId } = useWorkspace();
     const { data: user } = useCurrentUser();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const { canCreate } = useLimit('maxWorkspaces');
 
     return (
         <div
@@ -220,7 +223,11 @@ function WorkspaceSelector() {
                 type="button"
                 data-tour="new-workspace-btn"
                 aria-label="New workspace"
-                onClick={() => setIsCreateOpen(true)}
+                              onClick={() =>
+                    canCreate
+                        ? setIsCreateOpen(true)
+                        : requestUpgrade("You've reached your workspace limit.")
+                }
                 className="border-base-300 text-base-content/70 hover:bg-base-200 hover:text-base-content flex shrink-0 items-center gap-1 rounded-md border p-1.5 text-xs font-medium whitespace-nowrap transition-colors sm:px-2.5 sm:py-1"
             >
                 <Plus className="h-3.5 w-3.5" />
@@ -346,9 +353,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 onExit={() => void handleSignOut()}
                 isExiting={isSigningOut}
             />
-            <Suspense fallback={null}>
+                     <Suspense fallback={null}>
                 <OnboardingTour />
             </Suspense>
+            <PlanUpgradeListener />
 
             {/* Dashboard row = remaining height (100vh - banner). Sidebar + main sit side by side in here. */}
             <div className="flex min-h-0 flex-1">

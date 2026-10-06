@@ -15,7 +15,7 @@ import { BudgetPerformance } from '@/features/reports/components/BudgetPerforman
 import { TopExpenses } from '@/features/reports/components/TopExpenses';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { ChartCard, slugify } from '@/components/ui/chart';
-import { PrimaryButton } from '@/components/ui/Button';
+import { LockedButton, PlanGate, useFeature } from '@/features/plans';
 import { useUserPreferences, useWorkspaceSettings } from '@/features/settings/hooks/use-settings';
 
 const IncomeExpenseChart = dynamic(
@@ -98,8 +98,9 @@ function Section({
     );
 }
 
-function ReportsPageContent() {
+function ReportsContent() {
     const { active } = useWorkspace();
+    const { enabled: canExport } = useFeature('export');
     const { data: preferences } = useUserPreferences();
     const { data: workspaceSettings } = useWorkspaceSettings(active.workspaceId);
     const rawDefaultPreset = String(preferences?.defaultReportPreset ?? 'this_month');
@@ -191,15 +192,17 @@ function ReportsPageContent() {
                     </p>
                 </div>
 
-                <PrimaryButton
+              <LockedButton
                     data-tour={isLoading || !data || empty ? undefined : 'reports-export'}
+                    locked={!canExport}
+                    lockedMessage="Exporting reports isn't available on your plan."
                     onClick={handleExport}
                     leftIcon={<Download className="h-4 w-4" />}
                     loading={exporting}
                     disabled={isLoading || !data || empty}
                 >
                     Export CSV
-                </PrimaryButton>
+                </LockedButton>
             </div>
 
             <div className={card} data-tour="reports-filters">
@@ -383,8 +386,10 @@ function ReportsPageContent() {
 
 export default function ReportsPage() {
     return (
-        <Suspense fallback={<div className="bg-base-200 h-72 animate-pulse rounded-xl" />}>
-            <ReportsPageContent />
-        </Suspense>
+        <PlanGate feature="reports">
+            <Suspense fallback={<div className="bg-base-200 h-72 animate-pulse rounded-xl" />}>
+                <ReportsContent />
+            </Suspense>
+        </PlanGate>
     );
 }

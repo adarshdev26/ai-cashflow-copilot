@@ -10,6 +10,7 @@ import {
     AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { LockedButton, UsageMeter, useLimit } from '@/features/plans';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify } from '@/lib/ui/toast';
 import { usePermission } from '@/features/workspaces/hooks/use-permission';
@@ -23,7 +24,8 @@ import { useUserLocale, useWorkspaceSettings } from '@/features/settings/hooks/u
 import { SETTINGS_BY_KEY } from '@/lib/settings/registry';
 
 export default function BudgetsPage() {
-    const canManage = usePermission('budgets.manage');
+     const canManage = usePermission('budgets.manage');
+    const { canCreate: withinLimit } = useLimit('maxBudgets');
     const workspaceId = useActiveWorkspaceId();
     const locale = useUserLocale();
     const { data: workspaceSettings } = useWorkspaceSettings(workspaceId);
@@ -90,14 +92,19 @@ export default function BudgetsPage() {
                     <h1 className="text-base-content text-2xl font-bold tracking-tight">Budgets</h1>
                     <p className="text-base-content/60 text-sm">Track and control your spending.</p>
                 </div>
-                {canManage && (
-                    <Button
-                        data-tour={isPast ? undefined : 'budgets-add-btn'}
-                        onClick={openCreate}
-                        disabled={isPast}
-                    >
-                        + Create Budget
-                    </Button>
+            {canManage && (
+                    <div className="flex items-center gap-3">
+                        <UsageMeter limitKey="maxBudgets" />
+                        <LockedButton
+                            data-tour={isPast ? undefined : 'budgets-add-btn'}
+                            locked={!withinLimit}
+                            lockedMessage="You've reached your budget limit."
+                            onClick={openCreate}
+                            disabled={isPast}
+                        >
+                            + Create Budget
+                        </LockedButton>
+                    </div>
                 )}
             </div>
 
@@ -244,7 +251,13 @@ export default function BudgetsPage() {
                     </p>
                     {canManage && !isPast && (
                         <div className="mt-4 flex justify-center">
-                            <Button onClick={openCreate}>+ Create Budget</Button>
+                       <LockedButton
+                                locked={!withinLimit}
+                                lockedMessage="You've reached your budget limit."
+                                onClick={openCreate}
+                            >
+                                + Create Budget
+                            </LockedButton>
                         </div>
                     )}
                 </div>

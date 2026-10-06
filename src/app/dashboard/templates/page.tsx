@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { LockedButton, UsageMeter, useLimit } from '@/features/plans';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify } from '@/lib/ui/toast';
 import { usePermission } from '@/features/workspaces/hooks/use-permission';
@@ -14,7 +14,8 @@ import { TransactionTemplateTable } from '@/features/transaction-templates/compo
 import { TransactionTemplateModal } from '@/features/transaction-templates/components/TransactionTemplateModal';
 
 export default function TemplatesPage() {
-    const canManage = usePermission('templates.manage');
+  const canManage = usePermission('templates.manage');
+    const { canCreate: withinLimit } = useLimit('maxTemplates');
 
     const { data, isLoading, isFetching, isError, error } = useTransactionTemplates();
     const remove = useDeleteTemplate();
@@ -58,10 +59,18 @@ export default function TemplatesPage() {
                         Reusable transactions you can apply in a couple of clicks.
                     </p>
                 </div>
-                {canManage && (
-                    <Button data-tour="templates-add-btn" onClick={openCreate}>
-                        + Add Template
-                    </Button>
+            {canManage && (
+                    <div className="flex items-center gap-3">
+                        <UsageMeter limitKey="maxTemplates" />
+                        <LockedButton
+                            data-tour="templates-add-btn"
+                            locked={!withinLimit}
+                            lockedMessage="You've reached your template limit."
+                            onClick={openCreate}
+                        >
+                            + Add Template
+                        </LockedButton>
+                    </div>
                 )}
             </div>
 
@@ -78,7 +87,13 @@ export default function TemplatesPage() {
                     </p>
                     {canManage && (
                         <div className="mt-4 flex justify-center">
-                            <Button onClick={openCreate}>+ Add Template</Button>
+                     <LockedButton
+                                locked={!withinLimit}
+                                lockedMessage="You've reached your template limit."
+                                onClick={openCreate}
+                            >
+                                + Add Template
+                            </LockedButton>
                         </div>
                     )}
                 </div>
