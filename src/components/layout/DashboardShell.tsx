@@ -19,7 +19,7 @@ import {
     BarChart3,
     LifeBuoy,
     PiggyBank,
-     Sparkles,
+    Sparkles,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -308,7 +308,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         setCollapsedStored(!collapsed);
     }, [collapsed]);
 
-  const { data: user, isLoading: isUserLoading } = useCurrentUser();
+    const { data: user, isLoading: isUserLoading } = useCurrentUser();
     const { data: planData } = usePlan();
 
     const displayName = user?.name || user?.email?.split('@')[0] || 'User';
@@ -440,7 +440,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                                     </div>
                                 </>
                             )}
-                       </div>
+                        </div>
                         {planData?.plan && (
                             <div
                                 data-tour="plan-card"

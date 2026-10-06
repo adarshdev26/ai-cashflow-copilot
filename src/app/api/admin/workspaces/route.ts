@@ -8,13 +8,7 @@ import { getSystemNumber } from '@/lib/settings/server';
 // Sortable fields accepted from the query string. `memberCount`, `accountCount`
 // and `categoryCount` are not real columns — they are mapped to Prisma relation
 // `_count` orderings further down.
-const SORT_FIELDS = [
-    'createdAt',
-    'name',
-    'memberCount',
-    'accountCount',
-    'categoryCount',
-] as const;
+const SORT_FIELDS = ['createdAt', 'name', 'memberCount', 'accountCount', 'categoryCount'] as const;
 
 type SortField = (typeof SORT_FIELDS)[number];
 
@@ -49,12 +43,12 @@ export async function GET(req: Request) {
         ...(p.isActive !== undefined ? { isActive: p.isActive } : {}),
         ...(p.search
             ? {
-                OR: [
-                    { name: { contains: p.search, mode: 'insensitive' } },
-                    { slug: { contains: p.search, mode: 'insensitive' } },
-                    { owner: { email: { contains: p.search, mode: 'insensitive' } } },
-                ],
-            }
+                  OR: [
+                      { name: { contains: p.search, mode: 'insensitive' } },
+                      { slug: { contains: p.search, mode: 'insensitive' } },
+                      { owner: { email: { contains: p.search, mode: 'insensitive' } } },
+                  ],
+              }
             : {}),
     };
 
