@@ -66,9 +66,21 @@ export function WorkspacesTable({
             },
             {
                 id: 'memberCount',
+                accessorFn: (row) => row.memberCount,
                 header: 'Members',
-                enableSorting: false,
                 cell: ({ row }) => row.original.memberCount,
+            },
+            {
+                id: 'accountCount',
+                accessorFn: (row) => row.accountCount,
+                header: 'Accounts',
+                cell: ({ row }) => row.original.accountCount,
+            },
+            {
+                id: 'categoryCount',
+                accessorFn: (row) => row.categoryCount,
+                header: 'Categories',
+                cell: ({ row }) => row.original.categoryCount,
             },
             {
                 id: 'isActive',

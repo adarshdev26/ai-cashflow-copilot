@@ -10,6 +10,8 @@ export type AdminWorkspaceRow = {
     createdAt: string;
     owner: Person;
     memberCount: number;
+    accountCount: number;
+    categoryCount: number;
 };
 export type AdminWorkspaceMember = {
     userId: string;
@@ -21,5 +23,10 @@ export type AdminWorkspaceMember = {
 export type AdminWorkspaceDetail = Omit<AdminWorkspaceRow, 'memberCount'> & {
     members: AdminWorkspaceMember[];
 };
-export type AdminWorkspaceSortField = 'createdAt' | 'name';
+export type AdminWorkspaceSortField =
+    | 'name'
+    | 'createdAt'
+    | 'memberCount'
+    | 'accountCount'
+    | 'categoryCount';
 export type AdminWorkspaceFilters = { search?: string; isActive?: 'true' | 'false' };
