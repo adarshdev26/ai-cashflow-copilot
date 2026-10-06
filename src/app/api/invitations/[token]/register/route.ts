@@ -50,7 +50,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
 
         if (await findAccount()) return accountExistsResponse();
 
-        const blocked = await enforceWorkspaceLimit(invitation.workspaceId, 'maxCollaborators', 0)
+        const blocked = await enforceWorkspaceLimit(invitation.workspaceId, 'maxCollaborators', 0);
         if (blocked) return blocked;
 
         const hashedPassword = await hashPassword(password); // outside the tx: bcrypt is slow

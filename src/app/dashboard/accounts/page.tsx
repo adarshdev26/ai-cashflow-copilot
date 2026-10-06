@@ -22,7 +22,7 @@ export default function AccountsPage() {
     const workspaceId = useActiveWorkspaceId();
     const canCreate = usePermission('account.create');
     const canUpdate = usePermission('account.update');
-const canDeactivate = usePermission('account.deactivate');
+    const canDeactivate = usePermission('account.deactivate');
     const { canCreate: withinLimit } = useLimit('maxAccounts');
 
     const { data: accounts, isLoading, error, refetch } = useAccounts(workspaceId);
@@ -112,7 +112,7 @@ const canDeactivate = usePermission('account.deactivate');
                         Bank accounts, cards, cash and wallets for this workspace.
                     </p>
                 </div>
-               {canCreate && (
+                {canCreate && (
                     <div className="flex items-center gap-3">
                         <UsageMeter limitKey="maxAccounts" />
                         <LockedButton
@@ -168,7 +168,7 @@ const canDeactivate = usePermission('account.deactivate');
                     </p>
                     {canCreate && (
                         <div className="mt-4 flex justify-center">
-                          <LockedButton
+                            <LockedButton
                                 locked={!withinLimit}
                                 lockedMessage="You've reached your account limit."
                                 onClick={() => setFormState({ mode: 'create' })}

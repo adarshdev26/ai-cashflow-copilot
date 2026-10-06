@@ -66,9 +66,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
         ...(exists.email !== user.email
             ? { email: { before: exists.email, after: user.email } }
             : {}),
-        ...(exists.plan !== user.plan
-            ? { plan: { before: exists.plan, after: user.plan } }
-            : {}),
+        ...(exists.plan !== user.plan ? { plan: { before: exists.plan, after: user.plan } } : {}),
     };
     if (exists.name !== user.name || exists.email !== user.email) {
         await logAudit({

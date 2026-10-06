@@ -124,9 +124,7 @@ export function UserFormModal({
                         <Select
                             id="admin-user-plan"
                             value={plan}
-                            onChange={(e) =>
-                                setPlan(e.target.value as 'FREEMIUM' | 'PREMIUM')
-                            }
+                            onChange={(e) => setPlan(e.target.value as 'FREEMIUM' | 'PREMIUM')}
                         >
                             <option value="FREEMIUM">Free</option>
                             <option value="PREMIUM">Premium</option>

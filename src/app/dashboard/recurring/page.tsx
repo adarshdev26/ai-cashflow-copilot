@@ -19,7 +19,7 @@ import { useUserLocale } from '@/features/settings/hooks/use-settings';
 
 export default function RecurringPage() {
     const locale = useUserLocale();
- const canManage = usePermission('recurring.manage');
+    const canManage = usePermission('recurring.manage');
     const { canCreate: withinLimit } = useLimit('maxRecurring');
 
     const { data, isLoading, isFetching, isError, error } = useRecurring();
@@ -81,7 +81,7 @@ export default function RecurringPage() {
                         Manage your scheduled income and expenses.
                     </p>
                 </div>
-           {canManage && (
+                {canManage && (
                     <div className="flex items-center gap-3">
                         <UsageMeter limitKey="maxRecurring" />
                         <LockedButton
@@ -174,7 +174,7 @@ export default function RecurringPage() {
                     </p>
                     {canManage && (
                         <div className="mt-4 flex justify-center">
-                       <LockedButton
+                            <LockedButton
                                 locked={!withinLimit}
                                 lockedMessage="You've reached your recurring transactions limit."
                                 onClick={openCreate}

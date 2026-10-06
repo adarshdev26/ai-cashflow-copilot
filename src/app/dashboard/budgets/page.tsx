@@ -24,7 +24,7 @@ import { useUserLocale, useWorkspaceSettings } from '@/features/settings/hooks/u
 import { SETTINGS_BY_KEY } from '@/lib/settings/registry';
 
 export default function BudgetsPage() {
-     const canManage = usePermission('budgets.manage');
+    const canManage = usePermission('budgets.manage');
     const { canCreate: withinLimit } = useLimit('maxBudgets');
     const workspaceId = useActiveWorkspaceId();
     const locale = useUserLocale();
@@ -92,7 +92,7 @@ export default function BudgetsPage() {
                     <h1 className="text-base-content text-2xl font-bold tracking-tight">Budgets</h1>
                     <p className="text-base-content/60 text-sm">Track and control your spending.</p>
                 </div>
-            {canManage && (
+                {canManage && (
                     <div className="flex items-center gap-3">
                         <UsageMeter limitKey="maxBudgets" />
                         <LockedButton
@@ -251,7 +251,7 @@ export default function BudgetsPage() {
                     </p>
                     {canManage && !isPast && (
                         <div className="mt-4 flex justify-center">
-                       <LockedButton
+                            <LockedButton
                                 locked={!withinLimit}
                                 lockedMessage="You've reached your budget limit."
                                 onClick={openCreate}

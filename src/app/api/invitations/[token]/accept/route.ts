@@ -35,7 +35,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ token:
         }
         if (!emailsMatch(user.email, invitation.email)) throw new InvitationError('EMAIL_MISMATCH');
 
-        const blocked = await enforceWorkspaceLimit(invitation.workspaceId, 'maxCollaborators', 0)
+        const blocked = await enforceWorkspaceLimit(invitation.workspaceId, 'maxCollaborators', 0);
         if (blocked) return blocked;
 
         await prisma.$transaction((tx) => acceptInvitationTx(tx, invitation, user.id));

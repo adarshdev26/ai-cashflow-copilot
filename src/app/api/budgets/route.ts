@@ -62,17 +62,17 @@ export async function POST(request: NextRequest) {
 
         const budget = existing
             ? await prisma.budget.update({
-                where: { id: existing.id },
-                data: {
-                    amount: amount.amount,
-                    startDate: start.startDate,
-                    endDate: null,
-                    isActive: true,
-                },
-            })
+                  where: { id: existing.id },
+                  data: {
+                      amount: amount.amount,
+                      startDate: start.startDate,
+                      endDate: null,
+                      isActive: true,
+                  },
+              })
             : await prisma.budget.create({
-                data: { ...key, amount: amount.amount, startDate: start.startDate },
-            });
+                  data: { ...key, amount: amount.amount, startDate: start.startDate },
+              });
 
         const userId = await requireUserId();
         await logAudit({
@@ -85,11 +85,11 @@ export async function POST(request: NextRequest) {
                 categoryId: body.categoryId,
                 before: existing
                     ? {
-                        amount: existing.amount,
-                        startDate: existing.startDate,
-                        endDate: existing.endDate,
-                        isActive: existing.isActive,
-                    }
+                          amount: existing.amount,
+                          startDate: existing.startDate,
+                          endDate: existing.endDate,
+                          isActive: existing.isActive,
+                      }
                     : null,
                 after: {
                     amount: budget.amount,

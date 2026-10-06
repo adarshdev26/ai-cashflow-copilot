@@ -223,7 +223,7 @@ function WorkspaceSelector() {
                 type="button"
                 data-tour="new-workspace-btn"
                 aria-label="New workspace"
-                              onClick={() =>
+                onClick={() =>
                     canCreate
                         ? setIsCreateOpen(true)
                         : requestUpgrade("You've reached your workspace limit.")
@@ -353,7 +353,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 onExit={() => void handleSignOut()}
                 isExiting={isSigningOut}
             />
-                     <Suspense fallback={null}>
+            <Suspense fallback={null}>
                 <OnboardingTour />
             </Suspense>
             <PlanUpgradeListener />

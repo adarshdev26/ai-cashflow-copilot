@@ -56,9 +56,7 @@ function NewWorkspacesCard({
                     ))}
                 </div>
             ) : workspaces.length === 0 ? (
-                <p className="text-base-content/60 mt-4 text-center text-sm">
-                    No workspaces yet.
-                </p>
+                <p className="text-base-content/60 mt-4 text-center text-sm">No workspaces yet.</p>
             ) : (
                 <ul className="divide-base-300 mt-4 divide-y">
                     {workspaces.map((w) => (

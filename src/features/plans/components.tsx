@@ -6,8 +6,12 @@ import { Crown, Lock } from 'lucide-react';
 import { Button, PrimaryButton, type ButtonProps } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import {
-    PLAN_FEATURES, PLAN_LABELS, PLAN_LIMITS,
-    type PlanFeatureKey, type PlanId, type PlanLimitKey,
+    PLAN_FEATURES,
+    PLAN_LABELS,
+    PLAN_LIMITS,
+    type PlanFeatureKey,
+    type PlanId,
+    type PlanLimitKey,
 } from '@/lib/plans/constants';
 import { UPGRADE_EVENT, requestUpgrade } from '@/lib/plans/upgrade-event';
 import { useLimit, usePlan } from './hooks/use-plan';

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import {
-    requireWorkspaceAction,
-} from '@/lib/auth/workspaces';
+import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import { getSystemBool } from '@/lib/settings/server';
 import {
     generateInvitationToken,
@@ -14,10 +12,7 @@ import {
 } from '@/lib/users/invitations';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
-import {
-    enforceWorkspaceFeature,
-    enforceWorkspaceLimit,
-} from "@/lib/plans/server";
+import { enforceWorkspaceFeature, enforceWorkspaceLimit } from '@/lib/plans/server';
 
 type Ctx = { params: Promise<{ workspaceId: string }> };
 

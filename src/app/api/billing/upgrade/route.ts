@@ -35,7 +35,10 @@ export async function POST(req: Request) {
 
     let reference: string | undefined;
     if (target === 'PREMIUM') {
-        const { checkoutId } = await paymentProvider.createCheckout({ userId: user.id, plan: target });
+        const { checkoutId } = await paymentProvider.createCheckout({
+            userId: user.id,
+            plan: target,
+        });
         const result = await paymentProvider.confirmPayment({ checkoutId });
         if (!result.paid) return NextResponse.json({ error: 'Payment failed' }, { status: 402 });
         reference = result.reference;
@@ -46,7 +49,10 @@ export async function POST(req: Request) {
 
     await logAudit({
         actor: await userActor(user.id),
-        action: target === 'PREMIUM' ? AUDIT_ACTIONS.BILLING_UPGRADED : AUDIT_ACTIONS.BILLING_DOWNGRADED,
+        action:
+            target === 'PREMIUM'
+                ? AUDIT_ACTIONS.BILLING_UPGRADED
+                : AUDIT_ACTIONS.BILLING_DOWNGRADED,
         resourceType: 'user',
         resourceId: user.id,
         metadata: { before: { plan: before }, after: { plan: target }, reference },

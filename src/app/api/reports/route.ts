@@ -8,7 +8,7 @@ import {
     ReportSeriesTooLargeError,
     validateScopedIds,
 } from '@/features/reports/lib/report-queries';
-import { enforceWorkspaceFeature } from "@/lib/plans/server";
+import { enforceWorkspaceFeature } from '@/lib/plans/server';
 
 export const dynamic = 'force-dynamic';
 

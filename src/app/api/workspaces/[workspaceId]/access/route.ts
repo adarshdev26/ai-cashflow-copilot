@@ -73,7 +73,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ workspa
             return NextResponse.json({ error: 'User is already a member' }, { status: 409 });
         }
 
-        const blocked = await enforceWorkspaceLimit(workspaceId, 'maxCollaborators')
+        const blocked = await enforceWorkspaceLimit(workspaceId, 'maxCollaborators');
         if (blocked) return blocked;
 
         const newAccess = await prisma.workspaceAccess.create({

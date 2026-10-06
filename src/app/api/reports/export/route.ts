@@ -11,7 +11,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
-import { enforceWorkspaceFeature } from "@/lib/plans/server";
+import { enforceWorkspaceFeature } from '@/lib/plans/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
         const access = await requireWorkspaceAction(req, 'workspace.read');
         if (!access.ok) return access.response;
 
-        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'export')
+        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'export');
         if (blocked) return blocked;
 
         if (!(await getSystemBool('features.csvExportEnabled'))) {
@@ -74,8 +74,8 @@ export async function GET(req: Request) {
                 parsed.timeZone
                     ? localDateKey(r.createdAt, parsed.timeZone)
                     : new Date(r.createdAt.getTime() - parsed.tz * 60_000)
-                        .toISOString()
-                        .slice(0, 10),
+                          .toISOString()
+                          .slice(0, 10),
                 safe(r.description),
                 safe(r.account?.name),
                 safe(r.category?.name),

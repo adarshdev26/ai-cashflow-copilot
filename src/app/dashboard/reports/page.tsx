@@ -192,7 +192,7 @@ function ReportsContent() {
                     </p>
                 </div>
 
-              <LockedButton
+                <LockedButton
                     data-tour={isLoading || !data || empty ? undefined : 'reports-export'}
                     locked={!canExport}
                     lockedMessage="Exporting reports isn't available on your plan."

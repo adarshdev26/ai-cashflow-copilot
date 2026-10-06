@@ -60,7 +60,7 @@ export default function CategoriesPage() {
                         Default categories are shared. Custom ones belong to this workspace only.
                     </p>
                 </div>
-           {canCreate && (
+                {canCreate && (
                     <div className="flex items-center gap-3">
                         <UsageMeter limitKey="maxCustomCategories" />
                         <LockedButton

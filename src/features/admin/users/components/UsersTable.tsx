@@ -77,11 +77,11 @@ export function UsersTable({
                 cell: ({ row }) => <StatusBadge active={row.original.isActive} />,
             },
             {
-    id: 'plan',
-    header: 'Plan',
-    enableSorting: false,
-    cell: ({ row }) => <PlanBadge plan={row.original.plan} />,
-},
+                id: 'plan',
+                header: 'Plan',
+                enableSorting: false,
+                cell: ({ row }) => <PlanBadge plan={row.original.plan} />,
+            },
             {
                 id: 'workspaces',
                 header: 'Workspaces',

@@ -48,10 +48,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ workspa
         role === 'OWNER' && workspace?.ownerId !== user.id
             ? AUDIT_ACTIONS.WORKSPACE_OWNERSHIP_TRANSFERRED
             : existingAccess
-                ? existingAccess.role !== role
-                    ? AUDIT_ACTIONS.WORKSPACE_MEMBER_ROLE_CHANGED
-                    : null
-                : AUDIT_ACTIONS.WORKSPACE_MEMBER_ADDED;
+              ? existingAccess.role !== role
+                  ? AUDIT_ACTIONS.WORKSPACE_MEMBER_ROLE_CHANGED
+                  : null
+              : AUDIT_ACTIONS.WORKSPACE_MEMBER_ADDED;
     if (action) {
         await logAudit({
             actor: await adminActor(g.adminId),
@@ -65,9 +65,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ workspa
                 ...(action === AUDIT_ACTIONS.WORKSPACE_OWNERSHIP_TRANSFERRED
                     ? { previousOwnerEmail: workspace?.owner.email ?? null, role: 'OWNER' }
                     : {
-                        ...(existingAccess ? { before: { role: existingAccess.role } } : {}),
-                        after: { role },
-                    }),
+                          ...(existingAccess ? { before: { role: existingAccess.role } } : {}),
+                          after: { role },
+                      }),
             },
             request: req,
         });

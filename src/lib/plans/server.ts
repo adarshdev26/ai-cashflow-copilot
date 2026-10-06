@@ -3,8 +3,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
 import {
-    PLAN_FEATURES, PLAN_IDS, PLAN_LIMITS, isUnlimited, planSettingKey,
-    type PlanConfig, type PlanFeatureKey, type PlanId, type PlanLimitKey,
+    PLAN_FEATURES,
+    PLAN_IDS,
+    PLAN_LIMITS,
+    isUnlimited,
+    planSettingKey,
+    type PlanConfig,
+    type PlanFeatureKey,
+    type PlanId,
+    type PlanLimitKey,
 } from './constants';
 
 /** Anything that is not exactly PREMIUM is treated as FREEMIUM. */
@@ -30,10 +37,14 @@ export async function getPlanConfig(plan: PlanId): Promise<PlanConfig> {
     const featureKeys = Object.keys(PLAN_FEATURES) as PlanFeatureKey[];
     const [limits, features] = await Promise.all([
         Promise.all(
-            limitKeys.map(async (k) => [k, await getSystemNumber(planSettingKey(plan, k))] as const),
+            limitKeys.map(
+                async (k) => [k, await getSystemNumber(planSettingKey(plan, k))] as const,
+            ),
         ),
         Promise.all(
-            featureKeys.map(async (k) => [k, await getSystemBool(planSettingKey(plan, k))] as const),
+            featureKeys.map(
+                async (k) => [k, await getSystemBool(planSettingKey(plan, k))] as const,
+            ),
         ),
     ]);
     return {
@@ -43,7 +54,9 @@ export async function getPlanConfig(plan: PlanId): Promise<PlanConfig> {
 }
 
 export async function getPlanCatalog(): Promise<Record<PlanId, PlanConfig>> {
-    const entries = await Promise.all(PLAN_IDS.map(async (p) => [p, await getPlanConfig(p)] as const));
+    const entries = await Promise.all(
+        PLAN_IDS.map(async (p) => [p, await getPlanConfig(p)] as const),
+    );
     return Object.fromEntries(entries) as Record<PlanId, PlanConfig>;
 }
 
@@ -77,7 +90,9 @@ export async function getUsage(key: PlanLimitKey, ctx: UsageContext): Promise<nu
                 ? prisma.category.count({ where: { workspaceId, isActive: true } })
                 : 0;
         case 'maxBudgets':
-            return workspaceId ? prisma.budget.count({ where: { workspaceId, isActive: true } }) : 0;
+            return workspaceId
+                ? prisma.budget.count({ where: { workspaceId, isActive: true } })
+                : 0;
         case 'maxRecurring':
             return workspaceId
                 ? prisma.recurringTransaction.count({ where: { workspaceId, isActive: true } })
@@ -141,7 +156,12 @@ export async function enforceUserLimit(userId: string, key: PlanLimitKey) {
 
 /** For workspace-scoped limits. Uses the workspace OWNER's plan. */
 export async function enforceWorkspaceLimit(workspaceId: string, key: PlanLimitKey, add = 1) {
-    return enforceLimit({ key, plan: await getWorkspaceOwnerPlan(workspaceId), ctx: { workspaceId }, add });
+    return enforceLimit({
+        key,
+        plan: await getWorkspaceOwnerPlan(workspaceId),
+        ctx: { workspaceId },
+        add,
+    });
 }
 
 export async function enforceWorkspaceFeature(workspaceId: string, key: PlanFeatureKey) {

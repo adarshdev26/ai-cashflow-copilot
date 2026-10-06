@@ -1,7 +1,12 @@
+'use client';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActiveWorkspaceId } from '@/features/workspaces';
 import {
-    isUnlimited, type PlanFeatureKey, type PlanId, type PlanLimitKey,
+    isUnlimited,
+    type PlanFeatureKey,
+    type PlanId,
+    type PlanLimitKey,
 } from '@/lib/plans/constants';
 import { plansApi } from '../api/plans-api';
 

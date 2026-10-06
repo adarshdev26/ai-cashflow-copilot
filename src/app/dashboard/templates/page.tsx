@@ -14,7 +14,7 @@ import { TransactionTemplateTable } from '@/features/transaction-templates/compo
 import { TransactionTemplateModal } from '@/features/transaction-templates/components/TransactionTemplateModal';
 
 export default function TemplatesPage() {
-  const canManage = usePermission('templates.manage');
+    const canManage = usePermission('templates.manage');
     const { canCreate: withinLimit } = useLimit('maxTemplates');
 
     const { data, isLoading, isFetching, isError, error } = useTransactionTemplates();
@@ -59,7 +59,7 @@ export default function TemplatesPage() {
                         Reusable transactions you can apply in a couple of clicks.
                     </p>
                 </div>
-            {canManage && (
+                {canManage && (
                     <div className="flex items-center gap-3">
                         <UsageMeter limitKey="maxTemplates" />
                         <LockedButton
@@ -87,7 +87,7 @@ export default function TemplatesPage() {
                     </p>
                     {canManage && (
                         <div className="mt-4 flex justify-center">
-                     <LockedButton
+                            <LockedButton
                                 locked={!withinLimit}
                                 lockedMessage="You've reached your template limit."
                                 onClick={openCreate}

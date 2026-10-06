@@ -1,10 +1,18 @@
+'use client';
+
 import { Check, X } from 'lucide-react';
 import { Button, PrimaryButton } from '@/components/ui/Button';
 import { useCurrentUser } from '@/features/auth';
 import { PlanBadge, useChangePlan, usePlan } from '@/features/plans';
 import {
-    PLAN_FEATURES, PLAN_IDS, PLAN_LABELS, PLAN_LIMITS, isUnlimited,
-    type PlanFeatureKey, type PlanId, type PlanLimitKey,
+    PLAN_FEATURES,
+    PLAN_IDS,
+    PLAN_LABELS,
+    PLAN_LIMITS,
+    isUnlimited,
+    type PlanFeatureKey,
+    type PlanId,
+    type PlanLimitKey,
 } from '@/lib/plans/constants';
 import { getErrorMessage, notify } from '@/lib/ui/toast';
 
@@ -46,19 +54,27 @@ export default function UpgradePage() {
                                 current ? 'border-primary' : 'border-base-300'
                             }`}
                         >
-                            <p className="text-base-content text-lg font-semibold">{PLAN_LABELS[p]}</p>
+                            <p className="text-base-content text-lg font-semibold">
+                                {PLAN_LABELS[p]}
+                            </p>
                             <ul className="mt-4 space-y-2 text-sm">
                                 {limitKeys.map((k) => (
                                     <li key={k} className="flex justify-between gap-3">
-                                        <span className="text-base-content/70">{PLAN_LIMITS[k]}</span>
+                                        <span className="text-base-content/70">
+                                            {PLAN_LIMITS[k]}
+                                        </span>
                                         <span className="text-base-content font-medium">
-                                            {isUnlimited(cfg.limits[k]) ? 'Unlimited' : cfg.limits[k]}
+                                            {isUnlimited(cfg.limits[k])
+                                                ? 'Unlimited'
+                                                : cfg.limits[k]}
                                         </span>
                                     </li>
                                 ))}
                                 {featureKeys.map((k) => (
                                     <li key={k} className="flex justify-between gap-3">
-                                        <span className="text-base-content/70">{PLAN_FEATURES[k]}</span>
+                                        <span className="text-base-content/70">
+                                            {PLAN_FEATURES[k]}
+                                        </span>
                                         {cfg.features[k] ? (
                                             <Check className="text-success h-4 w-4" />
                                         ) : (
@@ -69,7 +85,9 @@ export default function UpgradePage() {
                             </ul>
                             <div className="mt-5">
                                 {current ? (
-                                    <p className="text-base-content/60 text-sm">Your current plan</p>
+                                    <p className="text-base-content/60 text-sm">
+                                        Your current plan
+                                    </p>
                                 ) : p === 'PREMIUM' ? (
                                     <PrimaryButton
                                         onClick={() => void run('PREMIUM')}
