@@ -24,8 +24,8 @@ export function useAdminUserMutations() {
     return {
         create: useMutation({ mutationFn: adminUsersApi.create, onSuccess }),
         update: useMutation({
-            mutationFn: (v: { id: string; name?: string; email?: string }) =>
-                adminUsersApi.update(v.id, { name: v.name, email: v.email }),
+            mutationFn: (v: { id: string; name?: string; email?: string; plan?: 'FREEMIUM' | 'PREMIUM' }) =>
+                adminUsersApi.update(v.id, { name: v.name, email: v.email, plan: v.plan }),
             onSuccess,
         }),
         setStatus: useMutation({

@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { Select } from '@/components/ui/Select';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { useAdminUserMutations } from '../../hooks/use-admin-users';
 import type { AdminUserRow } from '../../types';
@@ -19,6 +20,7 @@ export function UserFormModal({
     const { create, update } = useAdminUserMutations();
     const [name, setName] = useState(user?.name ?? '');
     const [email, setEmail] = useState(user?.email ?? '');
+    const [plan, setPlan] = useState<'FREEMIUM' | 'PREMIUM'>(user?.plan ?? 'FREEMIUM');
     const [password, setPassword] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const pending = create.isPending || update.isPending;
@@ -46,7 +48,7 @@ export function UserFormModal({
         if (!email.trim() || emailError || (!user && password.length < 8)) return;
         try {
             if (user) {
-                await update.mutateAsync({ id: user.id, name, email });
+                await update.mutateAsync({ id: user.id, name, email, plan });
                 notify.success('User updated');
             } else {
                 await create.mutateAsync({ name, email, password });
@@ -111,6 +113,26 @@ export function UserFormModal({
                     />
                     {emailError && <p className="text-error mt-1 text-xs">{emailError}</p>}
                 </div>
+                {user && (
+                    <div>
+                        <label
+                            htmlFor="admin-user-plan"
+                            className="text-base-content/80 mb-1 block text-sm font-medium"
+                        >
+                            Plan
+                        </label>
+                        <Select
+                            id="admin-user-plan"
+                            value={plan}
+                            onChange={(e) =>
+                                setPlan(e.target.value as 'FREEMIUM' | 'PREMIUM')
+                            }
+                        >
+                            <option value="FREEMIUM">Free</option>
+                            <option value="PREMIUM">Premium</option>
+                        </Select>
+                    </div>
+                )}
                 {!user && (
                     <div>
                         <label

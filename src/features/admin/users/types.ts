@@ -1,4 +1,5 @@
 import type { WorkspaceRole } from '../shared/types';
+import type { PlanId } from '@/lib/plans/constants';
 
 export type AdminUserWorkspace = {
     workspaceId: string;
@@ -12,6 +13,7 @@ export type AdminUserRow = {
     name: string | null;
     email: string;
     isActive: boolean;
+    plan: PlanId;
     createdAt: string;
     workspaces: AdminUserWorkspace[];
 };

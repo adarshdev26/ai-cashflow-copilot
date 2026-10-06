@@ -28,7 +28,16 @@ export async function PATCH(req: Request, { params }: Ctx) {
     const { userId } = await params;
     const body = await req.json().catch(() => null);
 
-    const data: { name?: string | null; email?: string } = {};
+    const data: { name?: string | null; email?: string; plan?: 'FREEMIUM' | 'PREMIUM' } = {};
+
+    let nextPlan: 'FREEMIUM' | 'PREMIUM' | undefined;
+
+    if (body?.plan !== undefined) {
+        if (body.plan !== 'FREEMIUM' && body.plan !== 'PREMIUM')
+            return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
+        nextPlan = body.plan;
+        data.plan = nextPlan;
+    }
     if (typeof body?.name === 'string') data.name = body.name.trim() || null;
     if (typeof body?.email === 'string') {
         const email = normalizeEmail(body.email);
@@ -43,28 +52,45 @@ export async function PATCH(req: Request, { params }: Ctx) {
 
     const exists = await prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, name: true, email: true },
+        select: { id: true, name: true, email: true, plan: true },
     });
     if (!exists) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const user = await prisma.user.update({
         where: { id: userId },
         data,
-        select: { id: true, name: true, email: true },
+        select: { id: true, name: true, email: true, plan: true },
     });
     const changes = {
         ...(exists.name !== user.name ? { name: { before: exists.name, after: user.name } } : {}),
         ...(exists.email !== user.email
             ? { email: { before: exists.email, after: user.email } }
             : {}),
+        ...(exists.plan !== user.plan
+            ? { plan: { before: exists.plan, after: user.plan } }
+            : {}),
     };
-    if (Object.keys(changes).length > 0) {
+    if (exists.name !== user.name || exists.email !== user.email) {
         await logAudit({
             actor: await adminActor(g.adminId),
             action: AUDIT_ACTIONS.USER_UPDATED,
             resourceType: 'user',
             resourceId: user.id,
             metadata: { targetName: user.name, targetEmail: user.email, changes },
+            request: req,
+        });
+    }
+    if (nextPlan && exists.plan !== nextPlan) {
+        await logAudit({
+            actor: await adminActor(g.adminId),
+            action: AUDIT_ACTIONS.USER_PLAN_CHANGED,
+            resourceType: 'user',
+            resourceId: userId,
+            metadata: {
+                targetEmail: exists.email,
+                before: { plan: exists.plan },
+                after: { plan: nextPlan },
+            },
             request: req,
         });
     }

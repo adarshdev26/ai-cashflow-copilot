@@ -13,7 +13,7 @@ export const adminUsersApi = {
     get: (id: string) => apiFetch<{ user: AdminUserRow }>(`/api/admin/users/${id}`),
     create: (body: { name?: string; email: string; password: string }) =>
         apiFetch('/api/admin/users', json('POST', body)),
-    update: (id: string, body: { name?: string; email?: string }) =>
+    update: (id: string, body: { name?: string; email?: string; plan?: 'FREEMIUM' | 'PREMIUM' }) =>
         apiFetch(`/api/admin/users/${id}`, json('PATCH', body)),
     setStatus: (id: string, isActive: boolean) =>
         apiFetch(`/api/admin/users/${id}/status`, json('PATCH', { isActive })),

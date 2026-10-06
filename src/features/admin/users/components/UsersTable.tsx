@@ -7,6 +7,7 @@ import { DataTable } from '@/components/ui/DataTable';
 import { StatusBadge } from '../../shared/components/StatusBadge';
 import { formatAdminDate } from '../../shared/lib/format-date';
 import type { AdminUserRow } from '../types';
+import { PlanBadge } from '@/features/plans';
 
 type Props = {
     data: AdminUserRow[];
@@ -75,6 +76,12 @@ export function UsersTable({
                 enableSorting: false,
                 cell: ({ row }) => <StatusBadge active={row.original.isActive} />,
             },
+            {
+    id: 'plan',
+    header: 'Plan',
+    enableSorting: false,
+    cell: ({ row }) => <PlanBadge plan={row.original.plan} />,
+},
             {
                 id: 'workspaces',
                 header: 'Workspaces',

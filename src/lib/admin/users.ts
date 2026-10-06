@@ -6,6 +6,7 @@ export const USER_ROW_SELECT = {
     name: true,
     email: true,
     isActive: true,
+    plan: true,
     createdAt: true,
     workspaceAccess: {
         orderBy: { createdAt: 'asc' },
@@ -23,6 +24,7 @@ export function toUserRow(u: UserRowDb) {
         name: u.name,
         email: u.email,
         isActive: u.isActive,
+        plan: u.plan,
         createdAt: u.createdAt,
         workspaces: u.workspaceAccess.map((a) => ({
             workspaceId: a.workspace.id,
