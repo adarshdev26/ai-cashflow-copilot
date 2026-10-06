@@ -8,6 +8,9 @@ import {
     validateTemplateInput,
     isTemplateNameTaken,
 } from '@/features/transaction-templates/lib/validate-transaction-template';
+import { requireUserId } from '@/lib/auth/auth';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export const dynamic = 'force-dynamic';
 type Ctx = { params: Promise<{ id: string }> };
@@ -91,6 +94,43 @@ export async function PATCH(request: Request, { params }: Ctx) {
             },
             include: TEMPLATE_INCLUDE,
         });
+        const changes = {
+            ...(existing.name !== updated.name
+                ? { name: { before: existing.name, after: updated.name } }
+                : {}),
+            ...(existing.type !== updated.type
+                ? { type: { before: existing.type, after: updated.type } }
+                : {}),
+            ...(existing.amount !== updated.amount
+                ? { amount: { before: existing.amount, after: updated.amount } }
+                : {}),
+            ...(existing.description !== updated.description
+                ? { description: { before: existing.description, after: updated.description } }
+                : {}),
+            ...(existing.accountId !== updated.accountId
+                ? { accountId: { before: existing.accountId, after: updated.accountId } }
+                : {}),
+            ...(existing.categoryId !== updated.categoryId
+                ? { categoryId: { before: existing.categoryId, after: updated.categoryId } }
+                : {}),
+            ...(existing.dateMode !== updated.dateMode
+                ? { dateMode: { before: existing.dateMode, after: updated.dateMode } }
+                : {}),
+            ...(existing.fixedDate?.getTime() !== updated.fixedDate?.getTime()
+                ? { fixedDate: { before: existing.fixedDate, after: updated.fixedDate } }
+                : {}),
+        };
+        if (Object.keys(changes).length > 0) {
+            const userId = await requireUserId();
+            await logAudit({
+                actor: userId ? await userActor(userId) : { type: 'USER' },
+                action: AUDIT_ACTIONS.TEMPLATE_UPDATED,
+                resourceType: 'template',
+                resourceId: updated.id,
+                workspaceId,
+                metadata: { targetName: updated.name, changes },
+            });
+        }
         return NextResponse.json(updated);
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -115,10 +155,25 @@ export async function DELETE(request: Request, { params }: Ctx) {
         if (!access.ok) return access.response;
         const { id } = await params;
 
+        const existing = await prisma.transactionTemplate.findFirst({
+            where: { id, workspaceId: access.workspaceId },
+            select: { id: true, name: true },
+        });
         const res = await prisma.transactionTemplate.deleteMany({
             where: { id, workspaceId: access.workspaceId },
         });
         if (res.count === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        if (existing) {
+            const userId = await requireUserId();
+            await logAudit({
+                actor: userId ? await userActor(userId) : { type: 'USER' },
+                action: AUDIT_ACTIONS.TEMPLATE_DELETED,
+                resourceType: 'template',
+                resourceId: existing.id,
+                workspaceId: access.workspaceId,
+                metadata: { targetName: existing.name },
+            });
+        }
         return NextResponse.json({ id });
     } catch (error) {
         console.error('Failed to delete template:', error);

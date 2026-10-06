@@ -3,6 +3,9 @@ import { prisma } from '@/lib/db/prisma';
 import { recurringAccess } from '@/lib/recurring/recurring-access';
 import { firstOccurrenceOnOrAfter, toScheduleDate } from '@/lib/recurring/recurring-dates';
 import { validateRecurringInput, checkTargets } from '@/features/recurring/lib/validate-recurring';
+import { requireUserId } from '@/lib/auth/auth';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export const dynamic = 'force-dynamic';
 type Ctx = { params: Promise<{ id: string }> };
@@ -97,6 +100,46 @@ export async function PATCH(request: Request, { params }: Ctx) {
         },
         include: INCLUDE,
     });
+    const changes = {
+        ...(existing.accountId !== updated.accountId
+            ? { accountId: { before: existing.accountId, after: updated.accountId } }
+            : {}),
+        ...(existing.categoryId !== updated.categoryId
+            ? { categoryId: { before: existing.categoryId, after: updated.categoryId } }
+            : {}),
+        ...(existing.description !== updated.description
+            ? { description: { before: existing.description, after: updated.description } }
+            : {}),
+        ...(existing.amount !== updated.amount
+            ? { amount: { before: existing.amount, after: updated.amount } }
+            : {}),
+        ...(existing.type !== updated.type
+            ? { type: { before: existing.type, after: updated.type } }
+            : {}),
+        ...(existing.frequency !== updated.frequency
+            ? { frequency: { before: existing.frequency, after: updated.frequency } }
+            : {}),
+        ...(existing.startDate.getTime() !== updated.startDate.getTime()
+            ? { startDate: { before: existing.startDate, after: updated.startDate } }
+            : {}),
+        ...(existing.endDate?.getTime() !== updated.endDate?.getTime()
+            ? { endDate: { before: existing.endDate, after: updated.endDate } }
+            : {}),
+        ...(existing.isActive !== updated.isActive
+            ? { isActive: { before: existing.isActive, after: updated.isActive } }
+            : {}),
+    };
+    if (Object.keys(changes).length > 0) {
+        const userId = await requireUserId();
+        await logAudit({
+            actor: userId ? await userActor(userId) : { type: 'USER' },
+            action: AUDIT_ACTIONS.RECURRING_UPDATED,
+            resourceType: 'recurring',
+            resourceId: updated.id,
+            workspaceId: access.workspaceId,
+            metadata: { targetName: updated.description, changes },
+        });
+    }
     return NextResponse.json(updated);
 }
 
@@ -105,9 +148,28 @@ export async function DELETE(request: Request, { params }: Ctx) {
     if (!access.ok) return access.response;
     const { id } = await params;
 
+    const existing = await prisma.recurringTransaction.findFirst({
+        where: { id, workspaceId: access.workspaceId },
+        select: { id: true, description: true, amount: true, type: true },
+    });
     const res = await prisma.recurringTransaction.deleteMany({
         where: { id, workspaceId: access.workspaceId },
     });
     if (res.count === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (existing) {
+        const userId = await requireUserId();
+        await logAudit({
+            actor: userId ? await userActor(userId) : { type: 'USER' },
+            action: AUDIT_ACTIONS.RECURRING_DELETED,
+            resourceType: 'recurring',
+            resourceId: existing.id,
+            workspaceId: access.workspaceId,
+            metadata: {
+                targetName: existing.description,
+                amount: existing.amount,
+                type: existing.type,
+            },
+        });
+    }
     return NextResponse.json({ ok: true });
 }

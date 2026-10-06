@@ -7,6 +7,8 @@ import {
     loadCustomCategory,
     parseCategoryInput,
 } from '@/lib/categories';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -23,6 +25,11 @@ export async function PATCH(req: Request, ctx: Ctx) {
 
         const parsed = parseCategoryInput(await req.json().catch(() => null), true);
         if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+
+        const existing = await prisma.category.findUnique({
+            where: { id },
+            select: { name: true, color: true, type: true, isActive: true },
+        });
 
         if (parsed.data.name) {
             const conflict = await findNameConflict(workspaceId, parsed.data.name, id);
@@ -58,6 +65,32 @@ export async function PATCH(req: Request, ctx: Ctx) {
             data: parsed.data,
             select: CATEGORY_SELECT,
         });
+        if (existing) {
+            const changes = {
+                ...(existing.name !== updated.name
+                    ? { name: { before: existing.name, after: updated.name } }
+                    : {}),
+                ...(existing.color !== updated.color
+                    ? { color: { before: existing.color, after: updated.color } }
+                    : {}),
+                ...(existing.type !== updated.type
+                    ? { type: { before: existing.type, after: updated.type } }
+                    : {}),
+                ...(existing.isActive !== updated.isActive
+                    ? { isActive: { before: existing.isActive, after: updated.isActive } }
+                    : {}),
+            };
+            if (Object.keys(changes).length > 0) {
+                await logAudit({
+                    actor: await userActor(access.userId),
+                    action: AUDIT_ACTIONS.CATEGORY_UPDATED,
+                    resourceType: 'category',
+                    resourceId: updated.id,
+                    workspaceId,
+                    metadata: { targetName: updated.name, changes },
+                });
+            }
+        }
         return NextResponse.json(updated);
     } catch (error) {
         if ((error as { code?: string }).code === 'P2002') {
@@ -108,6 +141,14 @@ export async function DELETE(req: Request, ctx: Ctx) {
             where: { categoryId: id, workspaceId },
         });
         await prisma.category.delete({ where: { id } }); // onDelete: SetNull leaves the transactions uncategorized
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.CATEGORY_DELETED,
+            resourceType: 'category',
+            resourceId: target.category.id,
+            workspaceId,
+            metadata: { targetName: target.category.name, affectedTransactions },
+        });
         return NextResponse.json({ id, affectedTransactions });
     } catch (error) {
         console.error('Failed to delete category:', error);

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { budgetAccess } from '@/lib/budgets/budget-access';
 import { validateAmount } from '@/lib/budgets/budgets';
+import { requireUserId } from '@/lib/auth/auth';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -24,6 +27,17 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
         where: { id: existing.id },
         data: { amount: amount.amount },
     });
+    if (existing.amount !== budget.amount) {
+        const userId = await requireUserId();
+        await logAudit({
+            actor: userId ? await userActor(userId) : { type: 'USER' },
+            action: AUDIT_ACTIONS.BUDGET_UPDATED,
+            resourceType: 'budget',
+            resourceId: budget.id,
+            workspaceId: access.workspaceId,
+            metadata: { before: { amount: existing.amount }, after: { amount: budget.amount } },
+        });
+    }
     return NextResponse.json({ budget });
 }
 
@@ -37,6 +51,23 @@ export async function DELETE(request: NextRequest, { params }: Ctx) {
     });
     if (!existing) return NextResponse.json({ error: 'Budget not found' }, { status: 404 });
 
-    await prisma.budget.update({ where: { id: existing.id }, data: { isActive: false } });
+    const budget = await prisma.budget.update({
+        where: { id: existing.id },
+        data: { isActive: false },
+    });
+    if (existing.isActive !== budget.isActive) {
+        const userId = await requireUserId();
+        await logAudit({
+            actor: userId ? await userActor(userId) : { type: 'USER' },
+            action: AUDIT_ACTIONS.BUDGET_DEACTIVATED,
+            resourceType: 'budget',
+            resourceId: budget.id,
+            workspaceId: access.workspaceId,
+            metadata: {
+                before: { isActive: existing.isActive },
+                after: { isActive: budget.isActive },
+            },
+        });
+    }
     return NextResponse.json({ success: true });
 }

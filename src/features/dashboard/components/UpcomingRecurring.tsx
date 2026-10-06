@@ -31,7 +31,7 @@ export function UpcomingRecurring() {
         const limit = today + (DAYS_AHEAD + 1) * DAY_MS;
         return (data ?? [])
             .filter((r) => {
-                if (!r.isActive || !r.nextRunAt) return false; // <- assumed field: nextRunAt
+                if (!r.isActive || !r.nextRunAt) return false;
                 const t = new Date(r.nextRunAt).getTime();
                 return t >= today && t < limit;
             })
@@ -40,7 +40,7 @@ export function UpcomingRecurring() {
 
     const totals = useMemo(() => {
         const sum = (type: 'CREDIT' | 'DEBIT') =>
-            upcoming.filter((r) => r.type === type).reduce((acc, r) => acc + Number(r.amount), 0); // <- assumed field: amount
+            upcoming.filter((r) => r.type === type).reduce((acc, r) => acc + Number(r.amount), 0); 
         return { income: sum('CREDIT'), expense: sum('DEBIT') };
     }, [upcoming]);
 

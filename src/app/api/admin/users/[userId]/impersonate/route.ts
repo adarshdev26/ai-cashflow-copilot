@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireAdmin } from '@/lib/admin/auth';
 import { setImpersonationCookie } from '@/lib/admin/impersonation';
+import { adminActor, logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Ctx = { params: Promise<{ userId: string }> };
 
-export async function POST(_req: Request, { params }: Ctx) {
+export async function POST(req: Request, { params }: Ctx) {
     const g = await requireAdmin();
     if (!g.ok) return g.response;
 
@@ -31,6 +33,15 @@ export async function POST(_req: Request, { params }: Ctx) {
     }
 
     await setImpersonationCookie({ id: user.id, email: user.email }, g.adminId);
+
+    await logAudit({
+        actor: await adminActor(g.adminId),
+        action: AUDIT_ACTIONS.IMPERSONATION_STARTED,
+        resourceType: 'user',
+        resourceId: user.id,
+        metadata: { targetEmail: user.email },
+        request: req,
+    });
 
     return NextResponse.json({ ok: true, redirectTo: '/dashboard' }, { status: 200 });
 }

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireAdmin } from '@/lib/admin/auth';
 import { CATEGORY_SELECT, parseCategoryInput } from '@/lib/categories';
+import { adminActor, logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Context = { params: Promise<{ categoryId: string }> };
 
@@ -13,7 +15,7 @@ export async function PATCH(req: Request, { params }: Context) {
         const { categoryId } = await params;
         const existing = await prisma.category.findFirst({
             where: { id: categoryId, workspaceId: null },
-            select: { id: true },
+            select: { id: true, name: true, color: true, type: true, isActive: true },
         });
         if (!existing) return NextResponse.json({ error: 'Category not found' }, { status: 404 });
 
@@ -58,6 +60,30 @@ export async function PATCH(req: Request, { params }: Context) {
             data: parsed.data,
             select: CATEGORY_SELECT,
         });
+        const changes = {
+            ...(existing.name !== category.name
+                ? { name: { before: existing.name, after: category.name } }
+                : {}),
+            ...(existing.color !== category.color
+                ? { color: { before: existing.color, after: category.color } }
+                : {}),
+            ...(existing.type !== category.type
+                ? { type: { before: existing.type, after: category.type } }
+                : {}),
+            ...(existing.isActive !== category.isActive
+                ? { isActive: { before: existing.isActive, after: category.isActive } }
+                : {}),
+        };
+        if (Object.keys(changes).length > 0) {
+            await logAudit({
+                actor: await adminActor(guard.adminId),
+                action: AUDIT_ACTIONS.CATEGORY_UPDATED,
+                resourceType: 'category',
+                resourceId: category.id,
+                metadata: { targetName: category.name, changes },
+                request: req,
+            });
+        }
         return NextResponse.json(category);
     } catch (error) {
         if ((error as { code?: string }).code === 'P2002') {
@@ -79,7 +105,7 @@ export async function DELETE(_req: Request, { params }: Context) {
         const { categoryId } = await params;
         const existing = await prisma.category.findFirst({
             where: { id: categoryId, workspaceId: null },
-            select: { id: true },
+            select: { id: true, name: true },
         });
         if (!existing) return NextResponse.json({ error: 'Category not found' }, { status: 404 });
 
@@ -102,6 +128,14 @@ export async function DELETE(_req: Request, { params }: Context) {
         }
 
         await prisma.category.delete({ where: { id: categoryId } });
+        await logAudit({
+            actor: await adminActor(guard.adminId),
+            action: AUDIT_ACTIONS.CATEGORY_DELETED,
+            resourceType: 'category',
+            resourceId: existing.id,
+            metadata: { targetName: existing.name, usage },
+            request: _req,
+        });
         return NextResponse.json({ id: categoryId, usage });
     } catch (error) {
         if ((error as { code?: string }).code === 'P2003') {

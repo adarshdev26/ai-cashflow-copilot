@@ -7,6 +7,8 @@ import {
     parseCategoryInput,
     visibleCategoryWhere,
 } from '@/lib/categories';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function GET(req: Request) {
     try {
@@ -50,6 +52,14 @@ export async function POST(req: Request) {
         const created = await prisma.category.create({
             data: { name: name!, color: color ?? null, type: type ?? 'BOTH', workspaceId },
             select: CATEGORY_SELECT,
+        });
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.CATEGORY_CREATED,
+            resourceType: 'category',
+            resourceId: created.id,
+            workspaceId,
+            metadata: { targetName: created.name },
         });
         return NextResponse.json(created, { status: 201 });
     } catch (error) {

@@ -12,6 +12,8 @@ import {
 } from '@/lib/admin/users';
 import { hashPassword, createUserWithPersonalWorkspaceTx } from '@/lib/users/users';
 import { getSystemNumber } from '@/lib/settings/server';
+import { adminActor, logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function GET(req: Request) {
     const g = await requireAdmin();
@@ -77,6 +79,15 @@ export async function POST(req: Request) {
     const user = await prisma.$transaction((tx) =>
         createUserWithPersonalWorkspaceTx(tx, { email, hashedPassword, name }),
     );
+
+    await logAudit({
+        actor: await adminActor(g.adminId),
+        action: AUDIT_ACTIONS.USER_CREATED,
+        resourceType: 'user',
+        resourceId: user.id,
+        metadata: { targetName: user.name, targetEmail: user.email },
+        request: req,
+    });
 
     return NextResponse.json(
         { user: { id: user.id, email: user.email, name: user.name } },

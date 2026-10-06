@@ -4,6 +4,8 @@ import { createUserWithPersonalWorkspaceTx, hashPassword } from '@/lib/users/use
 import { getSystemBool } from '@/lib/settings/server';
 import { getSystemNumber } from '@/lib/settings/server';
 import { validatePassword } from '@/lib/validations/auth';
+import { logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function POST(req: Request) {
     try {
@@ -40,6 +42,15 @@ export async function POST(req: Request) {
         const user = await prisma.$transaction((tx) =>
             createUserWithPersonalWorkspaceTx(tx, { email, hashedPassword, name }),
         );
+
+        await logAudit({
+            actor: { type: 'USER', id: user.id, name: user.name, email: user.email },
+            action: AUDIT_ACTIONS.USER_REGISTERED,
+            resourceType: 'user',
+            resourceId: user.id,
+            metadata: { targetName: user.name, targetEmail: user.email },
+            request: req,
+        });
 
         return NextResponse.json(
             { message: 'User created successfully', userId: user.id },

@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db/prisma';
 import { requireAdmin } from '@/lib/admin/auth';
 import { sendTicketStatusEmail } from '@/lib/email';
 import { canTransition, isTicketStatus } from '@/features/support-tickets/status';
+import { adminActor, logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ ticketId: string }> }) {
     const guard = await requireAdmin();
@@ -20,7 +22,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ ticket
 
     const current = await prisma.supportTicket.findUnique({
         where: { id: ticketId },
-        select: { status: true },
+        select: { status: true, subject: true },
     });
     if (!current) return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
 
@@ -48,6 +50,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ ticket
     const ticket = await prisma.supportTicket.findUniqueOrThrow({
         where: { id: ticketId },
         include: { user: { select: { id: true, name: true, email: true } } },
+    });
+
+    await logAudit({
+        actor: await adminActor(guard.adminId),
+        action: AUDIT_ACTIONS.SUPPORT_TICKET_STATUS_CHANGED,
+        resourceType: 'support_ticket',
+        resourceId: ticket.id,
+        metadata: {
+            targetName: ticket.subject,
+            targetEmail: ticket.user.email,
+            before: { status: current.status },
+            after: { status: ticket.status },
+        },
+        request: req,
     });
 
     try {

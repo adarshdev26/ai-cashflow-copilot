@@ -5,6 +5,8 @@ import { sendTicketCreatedEmail } from '@/lib/email';
 import { SUBJECT_MAX, MESSAGE_MAX } from '@/features/support-tickets/status';
 import type { Prisma } from '@/generated/prisma';
 import { isTicketStatus } from '@/features/support-tickets/status';
+import { logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 const SORTABLE = ['createdAt', 'updatedAt', 'status', 'subject'] as const;
 
@@ -92,6 +94,14 @@ export async function POST(req: Request) {
     const ticket = await prisma.supportTicket.create({
         data: { userId, subject, message },
         include: { user: { select: { email: true, name: true } } },
+    });
+
+    await logAudit({
+        actor: { type: 'USER', id: userId, name: ticket.user.name, email: ticket.user.email },
+        action: AUDIT_ACTIONS.SUPPORT_TICKET_CREATED,
+        resourceType: 'support_ticket',
+        resourceId: ticket.id,
+        metadata: { targetName: ticket.subject },
     });
 
     // Best-effort: a mail failure must not fail ticket creation.

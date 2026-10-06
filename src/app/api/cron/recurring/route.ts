@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { processSchedule } from '@/lib/recurring/create-recurring-occurrence';
 import { cleanupResetTokens } from '@/lib/auth/cleanup';
+import { logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -45,6 +47,20 @@ async function handle(request: Request) {
         resetTokensDeleted = await cleanupResetTokens();
     } catch (e) {
         console.error('cron cleanup failed', e);
+    }
+
+    if (due.length > 0) {
+        await logAudit({
+            actor: { type: 'SYSTEM' },
+            action: AUDIT_ACTIONS.RECURRING_PROCESSED,
+            resourceType: 'recurring',
+            metadata: {
+                processedCount: due.length,
+                generatedCount: generated,
+                skippedCount: skipped,
+                failedCount: failed,
+            },
+        });
     }
 
     return NextResponse.json({

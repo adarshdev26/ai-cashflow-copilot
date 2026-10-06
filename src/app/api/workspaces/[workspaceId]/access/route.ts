@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { WorkspaceRole } from '@/generated/prisma';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function GET(req: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
     try {
@@ -80,6 +82,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ workspa
                 user: {
                     select: { id: true, email: true },
                 },
+            },
+        });
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.WORKSPACE_MEMBER_ADDED,
+            resourceType: 'workspace',
+            resourceId: access.workspaceId,
+            workspaceId: access.workspaceId,
+            metadata: {
+                targetUserId: user.id,
+                targetEmail: newAccess.user.email,
+                role: newAccess.role,
             },
         });
 

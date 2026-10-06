@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { visibleCategoryWhere } from '@/lib/categories';
 import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function POST(req: Request) {
     try {
@@ -153,6 +155,15 @@ export async function POST(req: Request) {
         if (dryRun) return NextResponse.json({ ok: true, dryRun: true, total: data.length });
 
         const result = await prisma.transaction.createMany({ data });
+        if (result.count > 0) {
+            await logAudit({
+                actor: await userActor(access.userId),
+                action: AUDIT_ACTIONS.TRANSACTIONS_IMPORTED,
+                resourceType: 'transaction',
+                workspaceId,
+                metadata: { importedCount: result.count },
+            });
+        }
         return NextResponse.json({ ok: true, dryRun: false, imported: result.count });
     } catch (error) {
         console.error('Failed to import transactions:', error);

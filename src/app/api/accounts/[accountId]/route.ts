@@ -5,6 +5,8 @@ import { canWorkspaceAction } from '@/features/workspaces/permissions';
 import { Prisma } from '@/generated/prisma';
 import { validateUpdateAccount } from '@/features/accounts/lib/validate-account';
 import { getAccountTotals, toAccountWithBalance } from '@/features/accounts/lib/balance';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Ctx = { params: Promise<{ accountId: string }> };
 
@@ -101,6 +103,31 @@ export async function PATCH(req: Request, { params }: Ctx) {
             include: withCount,
         });
 
+        const changes = {
+            ...(existing.name !== updated.name
+                ? { name: { before: existing.name, after: updated.name } }
+                : {}),
+            ...(existing.type !== updated.type
+                ? { type: { before: existing.type, after: updated.type } }
+                : {}),
+            ...(existing.isActive !== updated.isActive
+                ? { isActive: { before: existing.isActive, after: updated.isActive } }
+                : {}),
+            ...(existing.currency !== updated.currency
+                ? { currency: { before: existing.currency, after: updated.currency } }
+                : {}),
+        };
+        if (Object.keys(changes).length > 0) {
+            await logAudit({
+                actor: await userActor(access.userId),
+                action: AUDIT_ACTIONS.ACCOUNT_UPDATED,
+                resourceType: 'account',
+                resourceId: updated.id,
+                workspaceId,
+                metadata: { targetName: updated.name, changes },
+            });
+        }
+
         const totals = await getAccountTotals(workspaceId, [accountId]);
         return NextResponse.json(toAccountWithBalance(updated, totals), { status: 200 });
     } catch (error) {
@@ -125,7 +152,7 @@ export async function DELETE(req: Request, { params }: Ctx) {
 
         const existing = await prisma.financialAccount.findFirst({
             where: { id: accountId, workspaceId },
-            select: { id: true },
+            select: { id: true, name: true },
         });
         if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
@@ -152,6 +179,14 @@ export async function DELETE(req: Request, { params }: Ctx) {
         }
 
         await prisma.financialAccount.delete({ where: { id: accountId } });
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.ACCOUNT_DELETED,
+            resourceType: 'account',
+            resourceId: existing.id,
+            workspaceId,
+            metadata: { targetName: existing.name },
+        });
         return NextResponse.json({ id: accountId }, { status: 200 });
     } catch (error) {
         // FK Restrict fired because a transaction was added between the count and the delete

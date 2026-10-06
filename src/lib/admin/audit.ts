@@ -58,6 +58,19 @@ export async function adminActor(adminId: string): Promise<AuditActor> {
     }
 }
 
+/** Builds the actor snapshot for a signed-in user when a route only has their id. */
+export async function userActor(userId: string): Promise<AuditActor> {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { name: true, email: true },
+        });
+        return { type: 'USER', id: userId, name: user?.name ?? null, email: user?.email ?? null };
+    } catch {
+        return { type: 'USER', id: userId };
+    }
+}
+
 /**
  * Best-effort audit write. NEVER throws, so it can't break the main action.
  * Always `await` it in route handlers; un-awaited promises can be dropped on serverless.

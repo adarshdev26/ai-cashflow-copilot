@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import { getSystemBool } from '@/lib/settings/server';
 import { generateInvitationToken, getExpiryDate, invitationSelect } from '@/lib/users/invitations';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Ctx = { params: Promise<{ workspaceId: string; invitationId: string }> };
 
@@ -21,7 +23,7 @@ export async function POST(req: Request, { params }: Ctx) {
 
         const existing = await prisma.workspaceInvitation.findFirst({
             where: { id: invitationId, workspaceId: access.workspaceId, status: 'PENDING' },
-            select: { id: true, email: true },
+            select: { id: true, email: true, role: true, expiresAt: true },
         });
         if (!existing) {
             return NextResponse.json({ error: 'Invitation not found' }, { status: 404 });
@@ -60,6 +62,20 @@ export async function POST(req: Request, { params }: Ctx) {
             }
             throw err;
         }
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.WORKSPACE_INVITATION_RESENT,
+            resourceType: 'invitation',
+            resourceId: invitation.id,
+            workspaceId: access.workspaceId,
+            metadata: {
+                targetEmail: invitation.email,
+                role: invitation.role,
+                before: { expiresAt: existing.expiresAt },
+                after: { expiresAt: invitation.expiresAt },
+            },
+        });
 
         return NextResponse.json(
             { invitation, token },

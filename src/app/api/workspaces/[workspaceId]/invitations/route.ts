@@ -10,6 +10,8 @@ import {
     isValidEmail,
     normalizeEmail,
 } from '@/lib/users/invitations';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Ctx = { params: Promise<{ workspaceId: string }> };
 
@@ -95,7 +97,7 @@ export async function POST(req: Request, { params }: Ctx) {
 
         // Only one live invite per (workspace, email): cancel older pending ones,
         // then create the new one, atomically.
-        const [, invitation] = await prisma.$transaction([
+        const [cancelled, invitation] = await prisma.$transaction([
             prisma.workspaceInvitation.updateMany({
                 where: { workspaceId: access.workspaceId, email, status: 'PENDING' },
                 data: { status: 'CANCELLED' },
@@ -112,6 +114,19 @@ export async function POST(req: Request, { params }: Ctx) {
                 select: invitationSelect,
             }),
         ]);
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.WORKSPACE_INVITATION_CREATED,
+            resourceType: 'invitation',
+            resourceId: invitation.id,
+            workspaceId: access.workspaceId,
+            metadata: {
+                targetEmail: invitation.email,
+                role: invitation.role,
+                replacedPendingCount: cancelled.count,
+            },
+        });
 
         return NextResponse.json(
             { invitation, token },

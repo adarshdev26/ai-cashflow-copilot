@@ -7,6 +7,8 @@ import { Prisma } from '@/generated/prisma';
 import { buildTransactionWhere } from '@/lib/transaction-filters';
 import { getCategoryError } from '@/lib/categories';
 import { getSystemNumber } from '@/lib/settings/server';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 // Offset pagination matches the existing numbered table controls and keeps this query compatible with useQuery.
 const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type'] as const;
@@ -173,6 +175,19 @@ export async function POST(req: Request) {
                 ...(date && { createdAt: date }),
             },
             include: TRANSACTION_INCLUDE,
+        });
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.TRANSACTION_CREATED,
+            resourceType: 'transaction',
+            resourceId: transaction.id,
+            workspaceId,
+            metadata: {
+                type: transaction.type,
+                amount: transaction.amount,
+                targetName: transaction.description,
+            },
         });
 
         return NextResponse.json(transaction, { status: 201 });

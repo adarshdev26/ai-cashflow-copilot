@@ -7,6 +7,9 @@ import {
     checkTemplateTargets,
     isTemplateNameTaken,
 } from '@/features/transaction-templates/lib/validate-transaction-template';
+import { requireUserId } from '@/lib/auth/auth';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +79,15 @@ export async function POST(request: Request) {
                 fixedDate: d.fixedDate ?? null,
             },
             include: TEMPLATE_INCLUDE,
+        });
+        const userId = await requireUserId();
+        await logAudit({
+            actor: userId ? await userActor(userId) : { type: 'USER' },
+            action: AUDIT_ACTIONS.TEMPLATE_CREATED,
+            resourceType: 'template',
+            resourceId: created.id,
+            workspaceId: access.workspaceId,
+            metadata: { targetName: created.name },
         });
         return NextResponse.json(created, { status: 201 });
     } catch (error) {

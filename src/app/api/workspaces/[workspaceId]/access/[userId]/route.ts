@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { WorkspaceRole } from '@/generated/prisma';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function PATCH(
     req: Request,
@@ -29,6 +31,7 @@ export async function PATCH(
                     userId: targetUserId,
                 },
             },
+            include: { user: { select: { id: true, email: true } } },
         });
 
         if (!targetAccess) {
@@ -57,6 +60,22 @@ export async function PATCH(
             },
         });
 
+        if (targetAccess.role !== updatedAccess.role) {
+            await logAudit({
+                actor: await userActor(access.userId),
+                action: AUDIT_ACTIONS.WORKSPACE_MEMBER_ROLE_CHANGED,
+                resourceType: 'workspace',
+                resourceId: access.workspaceId,
+                workspaceId: access.workspaceId,
+                metadata: {
+                    targetUserId: updatedAccess.user.id,
+                    targetEmail: updatedAccess.user.email,
+                    before: { role: targetAccess.role },
+                    after: { role: updatedAccess.role },
+                },
+            });
+        }
+
         return NextResponse.json(updatedAccess);
     } catch (error) {
         console.error('Failed to update member role:', error);
@@ -80,6 +99,7 @@ export async function DELETE(
                     userId: targetUserId,
                 },
             },
+            include: { user: { select: { id: true, email: true } } },
         });
 
         if (!targetAccess) {
@@ -100,6 +120,19 @@ export async function DELETE(
                     workspaceId: access.workspaceId,
                     userId: targetUserId,
                 },
+            },
+        });
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.WORKSPACE_MEMBER_REMOVED,
+            resourceType: 'workspace',
+            resourceId: access.workspaceId,
+            workspaceId: access.workspaceId,
+            metadata: {
+                targetUserId: targetAccess.user.id,
+                targetEmail: targetAccess.user.email,
+                previousRole: targetAccess.role,
             },
         });
 

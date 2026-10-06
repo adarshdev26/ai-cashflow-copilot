@@ -8,6 +8,8 @@ import {
     EMAIL_RE,
     emailTaken,
 } from '@/lib/admin/users';
+import { adminActor, logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Ctx = { params: Promise<{ userId: string }> };
 
@@ -39,7 +41,10 @@ export async function PATCH(req: Request, { params }: Ctx) {
     if (Object.keys(data).length === 0)
         return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
 
-    const exists = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    const exists = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true },
+    });
     if (!exists) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const user = await prisma.user.update({
@@ -47,6 +52,24 @@ export async function PATCH(req: Request, { params }: Ctx) {
         data,
         select: { id: true, name: true, email: true },
     });
+    const changes = {
+        ...(exists.name !== user.name
+            ? { name: { before: exists.name, after: user.name } }
+            : {}),
+        ...(exists.email !== user.email
+            ? { email: { before: exists.email, after: user.email } }
+            : {}),
+    };
+    if (Object.keys(changes).length > 0) {
+        await logAudit({
+            actor: await adminActor(g.adminId),
+            action: AUDIT_ACTIONS.USER_UPDATED,
+            resourceType: 'user',
+            resourceId: user.id,
+            metadata: { targetName: user.name, targetEmail: user.email, changes },
+            request: req,
+        });
+    }
     return NextResponse.json({ user });
 }
 
@@ -55,7 +78,10 @@ export async function DELETE(_req: Request, { params }: Ctx) {
     if (!g.ok) return g.response;
     const { userId } = await params;
 
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true },
+    });
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const owned = await prisma.workspace.findMany({
@@ -72,6 +98,14 @@ export async function DELETE(_req: Request, { params }: Ctx) {
     }
     try {
         await prisma.user.delete({ where: { id: userId } });
+        await logAudit({
+            actor: await adminActor(g.adminId),
+            action: AUDIT_ACTIONS.USER_DELETED,
+            resourceType: 'user',
+            resourceId: user.id,
+            metadata: { targetName: user.name, targetEmail: user.email },
+            request: _req,
+        });
         return new NextResponse(null, { status: 204 });
     } catch (error) {
         const code =

@@ -4,6 +4,8 @@ import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import { Prisma } from '@/generated/prisma';
 import { validateCreateAccount } from '@/features/accounts/lib/validate-account';
 import { getAccountTotals, toAccountWithBalance } from '@/features/accounts/lib/balance';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function GET(req: Request) {
     try {
@@ -71,6 +73,15 @@ export async function POST(req: Request) {
         const created = await prisma.financialAccount.create({
             data: { ...data, workspaceId },
             include: { _count: { select: { transactions: true } } },
+        });
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.ACCOUNT_CREATED,
+            resourceType: 'account',
+            resourceId: created.id,
+            workspaceId,
+            metadata: { targetName: created.name, type: created.type },
         });
 
         return NextResponse.json(toAccountWithBalance(created, new Map()), { status: 201 });

@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { prisma } from '@/lib/db/prisma';
 import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 // Stops Excel from running cells that start with = + - @
 const safe = (v: string | null | undefined) => (v && /^[=+\-@]/.test(v) ? `'${v}` : (v ?? ''));
@@ -70,6 +72,14 @@ export async function GET(req: Request) {
                 safe(t.category?.name),
                 safe(t.account?.name),
             ]),
+        });
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.TRANSACTIONS_EXPORTED,
+            resourceType: 'transaction',
+            workspaceId,
+            metadata: { exportType: 'transactions_csv', exportedCount: rows.length },
         });
 
         const stamp = new Date().toISOString().slice(0, 10);

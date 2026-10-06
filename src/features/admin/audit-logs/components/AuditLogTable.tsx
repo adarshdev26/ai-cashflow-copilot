@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
-import { DataTable } from '@/components/ui/DataTable'; // ASSUMED path: copy the import from UsersTable.tsx
+import { DataTable } from '@/components/ui/DataTable';
 import { auditActionLabel, auditResourceLabel } from '@/lib/admin/audit-events';
 import type { AuditLogRow } from '../types';
 import { auditActorLabel, formatAuditDateTime } from '../utils';

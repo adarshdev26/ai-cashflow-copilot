@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db/prisma';
 import { requireAdmin } from '@/lib/admin/auth';
 import { hashPassword } from '@/lib/users/users';
 import { getSystemNumber } from '@/lib/settings/server';
+import { adminActor, logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function POST(req: Request, { params }: { params: Promise<{ userId: string }> }) {
     const g = await requireAdmin();
@@ -17,7 +19,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ userId:
             { status: 400 },
         );
 
-    const exists = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    const exists = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true },
+    });
     if (!exists) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const hashed = await hashPassword(password);
@@ -28,5 +33,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ userId:
         }),
         prisma.passwordResetToken.deleteMany({ where: { userId } }),
     ]);
+    await logAudit({
+        actor: await adminActor(g.adminId),
+        action: AUDIT_ACTIONS.USER_PASSWORD_RESET,
+        resourceType: 'user',
+        resourceId: exists.id,
+        metadata: { targetName: exists.name, targetEmail: exists.email },
+        request: req,
+    });
     return NextResponse.json({ message: 'Password updated' });
 }

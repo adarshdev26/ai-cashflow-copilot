@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireAdmin } from '@/lib/admin/auth';
 import { getSystemNumber } from '@/lib/settings/server';
+import { adminActor, logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Ctx = { params: Promise<{ workspaceId: string }> };
 
@@ -80,7 +82,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
 
     const exists = await prisma.workspace.findUnique({
         where: { id: workspaceId },
-        select: { id: true },
+        select: { id: true, name: true, currency: true },
     });
     if (!exists) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
 
@@ -89,25 +91,65 @@ export async function PATCH(req: Request, { params }: Ctx) {
         data,
         select: { id: true, name: true, currency: true },
     });
+    const changes = {
+        ...(exists.name !== workspace.name
+            ? { name: { before: exists.name, after: workspace.name } }
+            : {}),
+        ...(exists.currency !== workspace.currency
+            ? { currency: { before: exists.currency, after: workspace.currency } }
+            : {}),
+    };
+    if (Object.keys(changes).length > 0) {
+        await logAudit({
+            actor: await adminActor(g.adminId),
+            action: AUDIT_ACTIONS.WORKSPACE_UPDATED,
+            resourceType: 'workspace',
+            resourceId: workspace.id,
+            workspaceId: workspace.id,
+            metadata: { targetName: workspace.name, changes },
+            request: req,
+        });
+    }
     return NextResponse.json({ workspace });
 }
 
-export async function DELETE(_req: Request, { params }: Ctx) {
+export async function DELETE(req: Request, { params }: Ctx) {
     const g = await requireAdmin();
     if (!g.ok) return g.response;
     const { workspaceId } = await params;
 
     const exists = await prisma.workspace.findUnique({
         where: { id: workspaceId },
-        select: { id: true },
+        select: { id: true, name: true },
     });
     if (!exists) return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
 
+    const [transactionCount, recurringCount, budgetCount] = await Promise.all([
+        prisma.transaction.count({ where: { workspaceId } }),
+        prisma.recurringTransaction.count({ where: { workspaceId } }),
+        prisma.budget.count({ where: { workspaceId } }),
+    ]);
     await prisma.$transaction([
         prisma.transaction.deleteMany({ where: { workspaceId } }),
         prisma.recurringTransaction.deleteMany({ where: { workspaceId } }),
         prisma.budget.deleteMany({ where: { workspaceId } }),
         prisma.workspace.delete({ where: { id: workspaceId } }),
     ]);
+    await logAudit({
+        actor: await adminActor(g.adminId),
+        action: AUDIT_ACTIONS.WORKSPACE_DELETED,
+        resourceType: 'workspace',
+        resourceId: exists.id,
+        workspaceId: exists.id,
+        metadata: {
+            targetName: exists.name,
+            deletedCounts: {
+                transactions: transactionCount,
+                recurring: recurringCount,
+                budgets: budgetCount,
+            },
+        },
+        request: req,
+    });
     return new NextResponse(null, { status: 204 });
 }

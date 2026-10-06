@@ -11,6 +11,8 @@ import { invitationErrorResponse } from '@/lib/users/invitation-http';
 import { getSystemNumber } from '@/lib/settings/server';
 import { validatePassword } from '@/lib/validations/auth';
 import { createUserWithPersonalWorkspaceTx, hashPassword } from '@/lib/users/users';
+import { logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 const accountExistsResponse = () =>
     NextResponse.json(
@@ -70,6 +72,28 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
         }
 
         await setAuthCookie(user);
+        await logAudit({
+            actor: { type: 'USER', id: user.id, name: user.name, email: user.email },
+            action: AUDIT_ACTIONS.USER_REGISTERED,
+            resourceType: 'user',
+            resourceId: user.id,
+            metadata: { targetName: user.name, targetEmail: user.email },
+            request: req,
+        });
+        await logAudit({
+            actor: { type: 'USER', id: user.id, name: user.name, email: user.email },
+            action: AUDIT_ACTIONS.WORKSPACE_INVITATION_ACCEPTED,
+            resourceType: 'workspace',
+            resourceId: invitation.workspaceId,
+            workspaceId: invitation.workspaceId,
+            metadata: {
+                targetUserId: user.id,
+                targetEmail: user.email,
+                role: invitation.role,
+                before: { status: 'PENDING' },
+                after: { status: 'ACCEPTED' },
+            },
+        });
         return NextResponse.json(
             { message: 'Account created', userId: user.id, workspaceId: invitation.workspaceId },
             { status: 201 },

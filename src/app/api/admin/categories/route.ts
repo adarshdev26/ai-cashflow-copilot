@@ -5,6 +5,8 @@ import { requireAdmin } from '@/lib/admin/auth';
 import { parseListParams, paginationMeta } from '@/lib/admin/list';
 import { CATEGORY_SELECT, CATEGORY_TYPES, parseCategoryInput } from '@/lib/categories';
 import { getSystemNumber } from '@/lib/settings/server';
+import { adminActor, logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function GET(req: Request) {
     const guard = await requireAdmin();
@@ -92,6 +94,14 @@ export async function POST(req: Request) {
         const category = await prisma.category.create({
             data: { name: name!, color: color ?? null, type: type ?? 'BOTH', workspaceId: null },
             select: CATEGORY_SELECT,
+        });
+        await logAudit({
+            actor: await adminActor(guard.adminId),
+            action: AUDIT_ACTIONS.CATEGORY_CREATED,
+            resourceType: 'category',
+            resourceId: category.id,
+            metadata: { targetName: category.name },
+            request: req,
         });
         return NextResponse.json(category, { status: 201 });
     } catch (error) {

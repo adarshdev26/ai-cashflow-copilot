@@ -3,6 +3,9 @@ import { prisma } from '@/lib/db/prisma';
 import { getCategoryError } from '@/lib/categories';
 import { budgetAccess } from '@/lib/budgets/budget-access';
 import { getBudgetUsage, parsePeriod, parseStartDate, validateAmount } from '@/lib/budgets/budgets';
+import { requireUserId } from '@/lib/auth/auth';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export async function GET(request: NextRequest) {
     const access = await budgetAccess(request, false);
@@ -66,6 +69,32 @@ export async function POST(request: NextRequest) {
             : await prisma.budget.create({
                   data: { ...key, amount: amount.amount, startDate: start.startDate },
               });
+
+        const userId = await requireUserId();
+        await logAudit({
+            actor: userId ? await userActor(userId) : { type: 'USER' },
+            action: AUDIT_ACTIONS.BUDGET_SAVED,
+            resourceType: 'budget',
+            resourceId: budget.id,
+            workspaceId,
+            metadata: {
+                categoryId: body.categoryId,
+                before: existing
+                    ? {
+                          amount: existing.amount,
+                          startDate: existing.startDate,
+                          endDate: existing.endDate,
+                          isActive: existing.isActive,
+                      }
+                    : null,
+                after: {
+                    amount: budget.amount,
+                    startDate: budget.startDate,
+                    endDate: budget.endDate,
+                    isActive: budget.isActive,
+                },
+            },
+        });
 
         return NextResponse.json({ budget }, { status: existing ? 200 : 201 });
     } catch (e) {

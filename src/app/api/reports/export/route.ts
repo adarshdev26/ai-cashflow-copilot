@@ -9,6 +9,8 @@ import {
 import { validateScopedIds } from '@/features/reports/lib/report-queries';
 import { prisma } from '@/lib/db/prisma';
 import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,6 +77,14 @@ export async function GET(req: Request) {
                 r.type,
                 r.amount.toFixed(2),
             ]),
+        });
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.TRANSACTIONS_EXPORTED,
+            resourceType: 'transaction',
+            workspaceId: access.workspaceId,
+            metadata: { exportType: 'report_csv', exportedCount: rows.length },
         });
 
         const { from, to } = parsed.filters;

@@ -3,6 +3,9 @@ import { prisma } from '@/lib/db/prisma';
 import { recurringAccess } from '@/lib/recurring/recurring-access';
 import { firstOccurrenceOnOrAfter, toScheduleDate } from '@/lib/recurring/recurring-dates';
 import { validateRecurringInput, checkTargets } from '@/features/recurring/lib/validate-recurring';
+import { requireUserId } from '@/lib/auth/auth';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,6 +70,15 @@ export async function POST(request: Request) {
             nextRunAt,
         },
         include: { account: { select: { id: true, name: true } } },
+    });
+    const userId = await requireUserId();
+    await logAudit({
+        actor: userId ? await userActor(userId) : { type: 'USER' },
+        action: AUDIT_ACTIONS.RECURRING_CREATED,
+        resourceType: 'recurring',
+        resourceId: created.id,
+        workspaceId: access.workspaceId,
+        metadata: { targetName: created.description, amount: created.amount, type: created.type },
     });
     return NextResponse.json(created, { status: 201 });
 }

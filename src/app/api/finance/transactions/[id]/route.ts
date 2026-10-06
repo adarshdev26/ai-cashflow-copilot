@@ -4,6 +4,8 @@ import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { getCategoryError } from '@/lib/categories';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 const TRANSACTION_INCLUDE = {
     category: { select: { id: true, name: true, color: true } },
@@ -89,6 +91,37 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             include: TRANSACTION_INCLUDE,
         });
 
+        const changes = {
+            ...(existing.amount !== updated.amount
+                ? { amount: { before: existing.amount, after: updated.amount } }
+                : {}),
+            ...(existing.type !== updated.type
+                ? { type: { before: existing.type, after: updated.type } }
+                : {}),
+            ...(existing.description !== updated.description
+                ? { description: { before: existing.description, after: updated.description } }
+                : {}),
+            ...(existing.categoryId !== updated.categoryId
+                ? { categoryId: { before: existing.categoryId, after: updated.categoryId } }
+                : {}),
+            ...(existing.accountId !== updated.accountId
+                ? { accountId: { before: existing.accountId, after: updated.accountId } }
+                : {}),
+            ...(existing.createdAt.getTime() !== updated.createdAt.getTime()
+                ? { date: { before: existing.createdAt, after: updated.createdAt } }
+                : {}),
+        };
+        if (Object.keys(changes).length > 0) {
+            await logAudit({
+                actor: await userActor(access.userId),
+                action: AUDIT_ACTIONS.TRANSACTION_UPDATED,
+                resourceType: 'transaction',
+                resourceId: updated.id,
+                workspaceId,
+                metadata: { changes },
+            });
+        }
+
         return NextResponse.json(updated, { status: 200 });
     } catch (error) {
         console.error('Failed to update transaction:', error);
@@ -114,6 +147,19 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         }
 
         await prisma.transaction.delete({ where: { id } });
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.TRANSACTION_DELETED,
+            resourceType: 'transaction',
+            resourceId: existing.id,
+            workspaceId,
+            metadata: {
+                type: existing.type,
+                amount: existing.amount,
+                targetName: existing.description,
+            },
+        });
 
         return NextResponse.json({ id }, { status: 200 });
     } catch (error) {

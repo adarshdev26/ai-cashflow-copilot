@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { isValidEmail } from '@/lib/validations/auth';
 import { requestPasswordReset } from '@/lib/auth/password-reset';
+import { logAudit } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 const GENERIC = {
     message: 'If an account exists for that email, a reset link has been sent.',
@@ -19,6 +21,13 @@ export async function POST(req: Request) {
         }
 
         await requestPasswordReset(email);
+        await logAudit({
+            actor: { type: 'USER', id: null, name: null, email },
+            action: AUDIT_ACTIONS.PASSWORD_RESET_REQUESTED,
+            resourceType: 'user',
+            metadata: { requestReceived: true },
+            request: req,
+        });
         return NextResponse.json(GENERIC, { status: 200 });
     } catch (error) {
         console.error('Forgot password error:', error);
