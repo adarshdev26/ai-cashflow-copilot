@@ -1,19 +1,17 @@
 'use client';
 
 import type { CurrentUser } from '@/features/auth/types';
-import { redirect } from 'next/dist/client/components/navigation';
 
-export function ImpersonationBanner({ user }: { user?: CurrentUser | null }) {
+export function ImpersonationBanner({
+  user,
+  onExit,
+  isExiting,
+}: {
+  user?: CurrentUser | null;
+  onExit: () => void;
+  isExiting: boolean;
+}) {
   if (!user?.impersonating) return null;
-
-  const handleExit = async () => {
-    try {
-      await fetch('/api/admin/impersonation/stop', { method: 'POST' });
-      redirect('/admin/users');
-    } catch (error) {
-      console.error('Failed to exit impersonation:', error);
-    }
-  };
 
   return (
     // In normal flow (not fixed): takes a fixed height, the rest of the page fills the remainder
@@ -25,10 +23,11 @@ export function ImpersonationBanner({ user }: { user?: CurrentUser | null }) {
         </span>
         <button
           type="button"
-          onClick={() => void handleExit()}
-          className="rounded-md border border-primary/30 bg-primary px-3 py-1.5 text-xs font-medium text-primary-content transition hover:opacity-90"
+          onClick={onExit}
+          disabled={isExiting}
+          className="rounded-md border border-primary/30 bg-primary px-3 py-1.5 text-xs font-medium text-primary-content transition hover:opacity-90 disabled:cursor-wait disabled:opacity-50"
         >
-          Exit
+          {isExiting ? 'Exiting…' : 'Exit'}
         </button>
       </div>
     </div>

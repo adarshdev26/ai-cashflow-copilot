@@ -18,6 +18,7 @@ import { tourHref } from '@/features/onboarding/lib/tour-steps';
 import { ActiveAccountSwitcher } from '@/features/accounts';
 import { ThemeMenu } from '@/components/ui/ThemePicker';
 import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner';
+import { PageTransitionOverlay } from '@/components/ui/PageTransitionOverlay';
 import { useTheme } from 'next-themes';
 import { usePublicSettings, useUserPreferences } from '@/features/settings/hooks/use-settings';
 
@@ -223,6 +224,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [signOutMessage, setSignOutMessage] = useState<string | null>(null);
   const defaultCollapsed = publicSettings?.['ui.sidebarCollapsedByDefault'] === true;
   const collapsed = useSyncExternalStore(subscribeCollapsed, () => getCollapsedSnapshot(defaultCollapsed), () => defaultCollapsed);
   const [mobileOpen, setMobileOpen] = useState(false); // mobile drawer
@@ -265,18 +268,29 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const initial = displayName.charAt(0).toUpperCase();
 
   const handleSignOut = useCallback(async () => {
+    if (isSigningOut) return;
+    const isImpersonating = Boolean(user?.impersonating);
+    setIsSigningOut(true);
+    setSignOutMessage(isImpersonating ? 'Returning to admin…' : 'Signing out…');
     try {
-      const endpoint = user?.impersonating ? '/api/admin/impersonation/stop' : '/api/auth/logout';
-      const redirectTo = user?.impersonating ? '/admin/users' : '/login';
-      await fetch(endpoint, { method: 'POST' });
-      queryClient.clear();
+      const endpoint = isImpersonating ? '/api/admin/impersonation/stop' : '/api/auth/logout';
+      const redirectTo = isImpersonating ? '/admin/users' : '/login';
+      if (isImpersonating) router.prefetch(redirectTo);
+      const response = await fetch(endpoint, { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to sign out');
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== 'settings' || query.queryKey[1] !== 'public',
+      });
+      setIsSignOutOpen(false);
       router.push(redirectTo);
-      notify.success(user?.impersonating ? 'Exited impersonation' : 'Signed out');
+      notify.success(isImpersonating ? 'Exited impersonation' : 'Signed out');
     } catch (error) {
+      setIsSigningOut(false);
+      setSignOutMessage(null);
       console.error('Failed to sign out:', error);
       notify.error(getErrorMessage(error, 'Failed to sign out'));
     }
-  }, [queryClient, router, user]);
+  }, [isSigningOut, queryClient, router, user]);
 
   const openSignOutDialog = useCallback(() => setIsSignOutOpen(true), []);
   const closeSignOutDialog = useCallback(() => setIsSignOutOpen(false), []);
@@ -289,7 +303,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     // Root = COLUMN: banner on top (fixed height), dashboard row below fills the rest.
     <div className="h-screen supports-[height:100dvh]:h-dvh overflow-hidden bg-base-200/50 flex flex-col">
-      <ImpersonationBanner user={user} />
+      <ImpersonationBanner user={user} onExit={() => void handleSignOut()} isExiting={isSigningOut} />
       <Suspense fallback={null}>
         <OnboardingTour />
       </Suspense>
@@ -435,6 +449,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         variant={user?.impersonating ? 'primary' : 'danger'}
         onConfirm={handleSignOut}
         onClose={closeSignOutDialog}
+        loading={isSigningOut}
+      />
+      <PageTransitionOverlay
+        isVisible={isSigningOut}
+        message={signOutMessage ?? 'Signing out…'}
       />
     </div>
   );

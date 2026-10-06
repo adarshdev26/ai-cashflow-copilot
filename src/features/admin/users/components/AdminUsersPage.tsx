@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { PageTransitionOverlay } from '@/components/ui/PageTransitionOverlay';
 import { Select } from '@/components/ui/Select';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
@@ -30,14 +31,19 @@ export function AdminUsersPage() {
   const mutations = useAdminUserMutations();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [confirmError, setConfirmError] = useState<string | undefined>();
+  const [openingAccount, setOpeningAccount] = useState<string | null>(null);
 
   const edit = useCallback((user: AdminUserRow) => setDialog({ kind: 'form', user }), []);
   const access = useCallback((user: AdminUserRow) => setDialog({ kind: 'access', user }), []);
   const openAccount = useCallback(async (user: AdminUserRow) => {
+    setOpeningAccount(user.email);
     try {
-      await mutations.impersonate.mutateAsync(user.id);
+      await mutations.impersonate.mutateAsync(user.id, {
+        onSuccess: () => router.prefetch('/dashboard'),
+      });
       router.push('/dashboard');
     } catch (err) {
+      setOpeningAccount(null);
       notify.error(getErrorMessage(err, 'Failed to open account'));
     }
   }, [mutations.impersonate, router]);
@@ -79,9 +85,14 @@ export function AdminUsersPage() {
       <Button variant="secondary" className="mt-3" onClick={() => void refetch()}>Try again</Button>
     </div> : empty ? <div className="rounded-xl border border-dashed border-base-300 bg-base-100 p-10 text-center">
       <p className="text-sm font-medium text-base-content">No users yet.</p><p className="mt-1 text-sm text-base-content/60">Add a user to manage their account and workspace access.</p>
-    </div> : <UsersTable data={data?.data ?? []} onEdit={edit} onAccess={access} onOpenAccount={openAccount} onPassword={password} onToggleStatus={toggleStatus} onDelete={remove}
+    </div> : <UsersTable data={data?.data ?? []} onEdit={edit} onAccess={access} onOpenAccount={openAccount} onPassword={password} onToggleStatus={toggleStatus} onDelete={remove} actionsDisabled={openingAccount !== null}
       pagination={table.paginationState} sorting={table.sortingState} globalFilter={table.globalFilter} onPaginationChange={table.onPaginationChange} onSortingChange={table.onSortingChange} onGlobalFilterChange={table.onGlobalFilterChange}
       pageCount={data?.pagination.totalPages ?? 1} totalCount={data?.pagination.totalCount ?? 0} isLoading={isLoading} isFetching={isFetching} />}
+
+    <PageTransitionOverlay
+      isVisible={openingAccount !== null}
+      message={`Opening ${openingAccount ?? ''}'s account…`}
+    />
 
     {dialog?.kind === 'form' && <UserFormModal key={dialog.user?.id ?? 'new'} user={dialog.user} onClose={closeDialog} />}
     {dialog?.kind === 'access' && <UserAccessModal key={dialog.user.id} userId={dialog.user.id} onClose={closeDialog} />}

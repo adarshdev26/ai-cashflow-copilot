@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { verifyPassword } from '@/lib/users/users';
 import { setAdminCookie } from '@/lib/admin/auth';
+import { getSystemNumber } from '@/lib/settings/server';
 
 export async function POST(req: Request) {
   try {
@@ -13,12 +14,17 @@ export async function POST(req: Request) {
     }
 
     const admin = await prisma.admin.findUnique({ where: { email } });
-    const valid = admin ? await verifyPassword(password, admin.password) : false;
+    const [valid, sessionHours] = admin
+      ? await Promise.all([
+        verifyPassword(password, admin.password),
+        getSystemNumber('auth.adminSessionHours'),
+      ])
+      : [false, undefined];
     if (!admin || !valid || !admin.isActive) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    await setAdminCookie(admin);
+    await setAdminCookie(admin, sessionHours);
     return NextResponse.json({ admin: { id: admin.id, name: admin.name, email: admin.email } });
   } catch (error) {
     console.error('Admin login error:', error);

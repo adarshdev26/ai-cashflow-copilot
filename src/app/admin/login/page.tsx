@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AuthShell } from '@/components/auth/AuthShell';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PrimaryButton } from '@/components/ui/Button';
+import { PageTransitionOverlay } from '@/components/ui/PageTransitionOverlay';
 import { authInputCls } from '@/components/ui/inputs';
 import { apiFetch } from '@/lib/api-client';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
@@ -19,13 +20,15 @@ export default function AdminLoginPage() {
     e.preventDefault(); setError(''); setLoading(true);
     try {
       await apiFetch('/api/admin/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-      router.replace('/admin/dashboard'); router.refresh();
+      router.prefetch('/admin/dashboard');
+      router.replace('/admin/dashboard');
     } catch (err) {
       const message = getErrorMessage(err, 'Login failed'); setError(message); notify.error(message); setLoading(false);
     }
   }, [email, password, router]);
 
   return <AuthShell>
+    <PageTransitionOverlay isVisible={loading} message="Signing in…" />
     <div className="w-full max-w-md rounded-xl border border-base-300 bg-base-100 p-8 shadow-2xl">
       <h1 className="mb-2 text-2xl font-bold tracking-tight text-base-content">Admin sign in</h1>
       <p className="mb-6 text-sm text-base-content/60">Sign in to manage users and workspaces.</p>

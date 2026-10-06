@@ -44,8 +44,8 @@ export async function requireAdmin(): Promise<AdminGuard> {
   return { ok: true, adminId: session.adminId };
 }
 
-export async function setAdminCookie(admin: { id: string }) {
-  const hours = await getSystemNumber('auth.adminSessionHours');
+export async function setAdminCookie(admin: { id: string }, sessionHours?: number) {
+  const hours = sessionHours ?? await getSystemNumber('auth.adminSessionHours');
   const token = jwt.sign({ adminId: admin.id }, getAdminSecret(), { expiresIn: `${hours}h`, audience: ADMIN_AUDIENCE });
   (await cookies()).set(ADMIN_COOKIE, token, {
     httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: hours * 3600, path: '/',

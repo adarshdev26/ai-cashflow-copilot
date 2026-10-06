@@ -18,7 +18,7 @@ export function useAdminUserMutations() {
     update: useMutation({ mutationFn: (v: { id: string; name?: string; email?: string }) => adminUsersApi.update(v.id, { name: v.name, email: v.email }), onSuccess }),
     setStatus: useMutation({ mutationFn: (v: { id: string; isActive: boolean }) => adminUsersApi.setStatus(v.id, v.isActive), onSuccess }),
     resetPassword: useMutation({ mutationFn: (v: { id: string; password: string }) => adminUsersApi.resetPassword(v.id, v.password), onSuccess }),
-    impersonate: useMutation({ mutationFn: (id: string) => adminUsersApi.impersonate(id), onSuccess }),
+    impersonate: useMutation({ mutationFn: (id: string) => adminUsersApi.impersonate(id) }),
     remove: useMutation({ mutationFn: (id: string) => adminUsersApi.remove(id), onSuccess }),
   };
 }
