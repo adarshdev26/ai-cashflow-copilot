@@ -47,7 +47,7 @@ export function UserAccessModal({ userId, onClose }: { userId: string; onClose: 
     (WORKSPACE_ROLES as readonly string[]).includes(current) ? [...WORKSPACE_ROLES] : [...WORKSPACE_ROLES, current];
 
   return <>
-    <Modal open={!transfer} onClose={close} size="lg" title="Workspace access" description={user?.email} footer={<Button type="button" variant="secondary" onClick={close} disabled={!!pendingKey}>Close</Button>}>
+    <Modal open={!transfer} onClose={close} size="xl" title="Workspace access" description={user?.email} footer={<Button type="button" variant="secondary" onClick={close} disabled={!!pendingKey}>Close</Button>}>
       {isLoading && !user ? <div className="space-y-3" aria-label="Loading workspace access">{[0, 1].map((i) => <div key={i} className="h-12 animate-pulse rounded-lg bg-base-200" />)}</div> : isError ? <div className="rounded-lg border border-error/30 bg-error/10 p-4 text-sm text-error">
         <p>{getErrorMessage(error, 'Failed to load workspace access.')}</p><Button type="button" variant="secondary" className="mt-3" onClick={() => void refetch()}>Try again</Button>
       </div> : !user ? <p className="text-sm text-base-content/60">User details are unavailable.</p> : user.workspaces.length === 0 ? <p className="text-sm text-base-content/60">This user has no workspace access.</p> : <div className="overflow-x-auto rounded-xl border border-base-300">
