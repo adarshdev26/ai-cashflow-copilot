@@ -23,6 +23,7 @@ import { StatCard, StatCardSkeleton } from '@/components/ui/StatCard';
 import { Button } from '@/components/ui/Button';
 import { getErrorMessage } from '@/lib/ui/toast';
 import { useAdminDashboard } from '../hooks/use-admin-dashboard';
+import { RecentActivityCard } from '../../audit-logs';
 
 const number = new Intl.NumberFormat('en-IN');
 const dateLabel = (value: string) =>
@@ -110,6 +111,8 @@ export function AdminDashboardPage() {
                     ? Array.from({ length: 8 }, (_, index) => <StatCardSkeleton key={index} />)
                     : stats.map((stat) => <StatCard key={stat.title} {...stat} />)}
             </div>
+
+            <RecentActivityCard/>
 
             <ChartCard
                 title="Daily activity and growth"

@@ -13,5 +13,6 @@ export function invalidateAdminData(qc: QueryClient) {
     return Promise.all([
         qc.invalidateQueries({ queryKey: ['admin-users'] }),
         qc.invalidateQueries({ queryKey: ['admin-workspaces'] }),
+        qc.invalidateQueries({ queryKey: ['admin-audit-logs'] }),
     ]);
 }

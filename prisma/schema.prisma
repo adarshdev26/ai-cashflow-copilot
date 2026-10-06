@@ -365,3 +365,37 @@ model SupportTicket {
   @@index([status, createdAt])
   @@index([userId, createdAt])
 }
+
+enum ActorType {
+  ADMIN
+  USER
+  SYSTEM
+}
+
+// General activity log. Append-only: never update or delete rows from app code.
+// actorId / resourceId / workspaceId are plain strings on purpose (no relations),
+// so history survives deletion of users, workspaces and other resources.
+model AuditLog {
+  id           String    @id @default(uuid())
+  createdAt    DateTime  @default(now())
+
+  actorId      String?
+  actorType    ActorType
+  actorName    String? // snapshot at time of action
+  actorEmail   String? // snapshot at time of action
+
+  action       String // e.g. "user.suspended"
+  resourceType String // e.g. "user", "workspace"
+  resourceId   String?
+  workspaceId  String?
+
+  metadata     Json? // safe before/after values, extra details
+  ip           String?
+  userAgent    String?
+
+  @@index([createdAt(sort: Desc), id(sort: Desc)])
+  @@index([resourceType, resourceId])
+  @@index([actorId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+  @@index([workspaceId, createdAt(sort: Desc)])
+}
