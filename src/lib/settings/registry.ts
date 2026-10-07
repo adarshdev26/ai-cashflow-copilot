@@ -34,12 +34,12 @@ export type SettingDef = Base &
         | { type: 'number'; default: number; min: number; max: number; unit?: string }
         | { type: 'boolean'; default: boolean }
         | {
-              type: 'string';
-              default: string;
-              minLength?: number;
-              maxLength: number;
-              format?: 'email';
-          }
+            type: 'string';
+            default: string;
+            minLength?: number;
+            maxLength: number;
+            format?: 'email';
+        }
         | { type: 'enum'; default: string | number; options: readonly EnumOption[] }
     );
 
@@ -597,6 +597,18 @@ export const SETTINGS: readonly SettingDef[] = [
         'Months shown on the dashboard.',
         6,
         [3, 6, 12, 24].map((v) => ({ value: v, label: `${v} months` })),
+    ),
+    opt(
+        'netWorthMonths',
+        'user',
+        'preferences',
+        'Net worth history range',
+        'Months shown in the net worth history chart.',
+        6,
+        [
+            ...[3, 6, 12, 24].map((v) => ({ value: v, label: `${v} months` })),
+            { value: 'all', label: 'All time' },
+        ],
     ),
     opt(
         'balanceTrendDays',

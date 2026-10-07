@@ -11,12 +11,23 @@ export type NetWorthAccount = {
     sharePercent: number | null;
 };
 
+export type NetWorthHistoryPoint = {
+    label: string;
+    month: string;
+    netWorth: number;
+    change: number;
+    changePercent: number | null;
+};
+
 export type NetWorthSummary = {
     totalAssets: number;
     totalLiabilities: number;
     netWorth: number;
+    monthlyChange: number;
+    monthlyChangePercent: number | null;
     assets: NetWorthAccount[];
     liabilities: NetWorthAccount[];
+    history: NetWorthHistoryPoint[];
 };
 
 export function round2(value: number): number {
@@ -72,12 +83,26 @@ export function splitAccounts(accounts: NetWorthAccount[]): NetWorthSummary {
                 : null,
     }));
 
+    const netWorth = round2(totalAssets - totalLiabilities);
+    const history: NetWorthHistoryPoint[] = [
+        {
+            label: 'Current',
+            month: 'current',
+            netWorth,
+            change: 0,
+            changePercent: null,
+        },
+    ];
+
     return {
         totalAssets,
         totalLiabilities,
-        netWorth: round2(totalAssets - totalLiabilities),
+        netWorth,
+        monthlyChange: 0,
+        monthlyChangePercent: null,
         assets: assetsWithShare,
         liabilities: liabilitiesWithShare,
+        history,
     };
 }
 
@@ -121,4 +146,30 @@ export function buildMonthEnds(
     }
 
     return points;
+}
+
+export function buildHistoryFromValues(
+    range: string,
+    values: Array<{ month: string; netWorth: number }>,
+    now = new Date(),
+): NetWorthHistoryPoint[] {
+    const monthMap = new Map(values.map((value) => [value.month, value.netWorth]));
+    const points = buildMonthEnds(range, now);
+
+    return points.map((point, index) => {
+        const monthKey = point.label;
+        const netWorth = monthMap.get(monthKey) ?? 0;
+        const previous = index === 0 ? null : points[index - 1];
+        const previousValue = previous ? monthMap.get(previous.label) ?? 0 : null;
+        const change = previousValue == null ? 0 : computeMonthlyChange(netWorth, previousValue);
+        const changePercent = previousValue == null || previousValue === 0 ? null : computeChangePercent(netWorth, previousValue);
+
+        return {
+            label: point.label,
+            month: point.label,
+            netWorth: round2(netWorth),
+            change: round2(change),
+            changePercent,
+        };
+    });
 }

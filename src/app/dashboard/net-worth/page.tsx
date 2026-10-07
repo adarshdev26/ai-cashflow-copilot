@@ -1,6 +1,7 @@
 'use client';
 
 import { useActiveWorkspaceId } from '@/features/workspaces';
+import { NetWorthHistoryChart } from '@/features/net-worth/components/NetWorthHistoryChart';
 import { NetWorthSummaryCard } from '@/features/net-worth/components/NetWorthSummary';
 import { useNetWorth } from '@/features/net-worth/hooks/use-net-worth';
 
@@ -9,7 +10,7 @@ export default function NetWorthPage() {
     const { data, isLoading, error } = useNetWorth(workspaceId);
 
     return (
-        <div className="mx-auto max-w-6xl space-y-6">
+        <div className="mx-auto max-w-7xl space-y-6">
             <div>
                 <h1 className="text-base-content text-2xl font-bold tracking-tight">Net Worth</h1>
                 <p className="text-base-content/60 mt-1 text-sm">
@@ -24,6 +25,8 @@ export default function NetWorthPage() {
             ) : (
                 <NetWorthSummaryCard data={isLoading ? null : data} />
             )}
+
+            <NetWorthHistoryChart />
 
             {data && (
                 <div className="grid gap-6 lg:grid-cols-2">

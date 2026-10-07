@@ -2,7 +2,13 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import { calcBalance, getAccountTotals } from '@/features/accounts/lib/balance';
-import { splitAccounts } from '@/features/net-worth/lib/net-worth';
+import {
+    buildHistoryFromValues,
+    buildMonthEnds,
+    computeChangePercent,
+    computeMonthlyChange,
+    splitAccounts,
+} from '@/features/net-worth/lib/net-worth';
 
 export async function GET(req: Request) {
     try {
@@ -40,6 +46,16 @@ export async function GET(req: Request) {
         });
 
         const summary = splitAccounts(rows);
+        const monthPoints = buildMonthEnds('6m', new Date());
+        const currentMonth = monthPoints[monthPoints.length - 1]?.label ?? 'current';
+        const history = buildHistoryFromValues(
+            '6m',
+            [{ month: currentMonth, netWorth: summary.netWorth }],
+            new Date(),
+        );
+        const previousValue = history.length > 1 ? history[history.length - 2]?.netWorth ?? summary.netWorth : summary.netWorth;
+        const monthlyChange = computeMonthlyChange(summary.netWorth, previousValue);
+        const monthlyChangePercent = computeChangePercent(summary.netWorth, previousValue);
 
         return NextResponse.json(
             {
@@ -48,6 +64,9 @@ export async function GET(req: Request) {
                     netWorth: summary.netWorth,
                     totalAssets: summary.totalAssets,
                     totalLiabilities: summary.totalLiabilities,
+                    monthlyChange,
+                    monthlyChangePercent,
+                    history,
                 },
             },
             { status: 200 },

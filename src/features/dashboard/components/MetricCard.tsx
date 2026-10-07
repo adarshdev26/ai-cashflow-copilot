@@ -1,10 +1,10 @@
 import { LucideIcon } from 'lucide-react';
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 
 interface MetricCardProps {
     title: string;
     value: string | number;
-    description?: string;
+    description?: ReactNode;
     icon: LucideIcon;
     trend?: string;
 }
