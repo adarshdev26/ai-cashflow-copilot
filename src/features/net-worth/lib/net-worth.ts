@@ -79,7 +79,10 @@ export function splitAccounts(accounts: NetWorthAccount[]): NetWorthSummary {
         ...account,
         sharePercent:
             totalLiabilities > 0
-                ? round2((Math.abs(account.amountOwed || account.balance || 0) / totalLiabilities) * 100)
+                ? round2(
+                      (Math.abs(account.amountOwed || account.balance || 0) / totalLiabilities) *
+                          100,
+                  )
                 : null,
     }));
 
@@ -111,11 +114,7 @@ export type MonthPoint = {
     month: Date;
 };
 
-export function buildMonthEnds(
-    range: string,
-    now = new Date(),
-    startFrom?: Date,
-): MonthPoint[] {
+export function buildMonthEnds(range: string, now = new Date(), startFrom?: Date): MonthPoint[] {
     const endMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
     const requested = range === 'all' ? 60 : Number.parseInt(range.replace(/\D/g, ''), 10) || 6;
     const maximum = Math.min(Math.max(requested, 1), 60);
@@ -124,7 +123,9 @@ export function buildMonthEnds(
     startMonth.setUTCMonth(endMonth.getUTCMonth() - (maximum - 1));
 
     if (startFrom) {
-        const explicitStart = new Date(Date.UTC(startFrom.getUTCFullYear(), startFrom.getUTCMonth(), 1));
+        const explicitStart = new Date(
+            Date.UTC(startFrom.getUTCFullYear(), startFrom.getUTCMonth(), 1),
+        );
         if (explicitStart > startMonth) {
             startMonth = explicitStart;
         }
@@ -160,9 +161,12 @@ export function buildHistoryFromValues(
         const monthKey = point.label;
         const netWorth = monthMap.get(monthKey) ?? 0;
         const previous = index === 0 ? null : points[index - 1];
-        const previousValue = previous ? monthMap.get(previous.label) ?? 0 : null;
+        const previousValue = previous ? (monthMap.get(previous.label) ?? 0) : null;
         const change = previousValue == null ? 0 : computeMonthlyChange(netWorth, previousValue);
-        const changePercent = previousValue == null || previousValue === 0 ? null : computeChangePercent(netWorth, previousValue);
+        const changePercent =
+            previousValue == null || previousValue === 0
+                ? null
+                : computeChangePercent(netWorth, previousValue);
 
         return {
             label: point.label,

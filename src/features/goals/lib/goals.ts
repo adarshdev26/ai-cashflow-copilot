@@ -35,7 +35,12 @@ function localCalendarDate(value: Date): CalendarDate | null {
     const year = value.getFullYear();
     const month = value.getMonth() + 1;
     const day = value.getDate();
-    return { year, month, day, key: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}` };
+    return {
+        year,
+        month,
+        day,
+        key: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+    };
 }
 
 export function getGoalProgress(currentAmount: number, targetAmount: number) {

@@ -74,7 +74,10 @@ export function validateCreateAccount(
     workspaceCurrency: string,
 ): ValidatedCreateAccount {
     if (typeof data !== 'object' || data === null) throw new Error('Invalid account data');
-    const { name, type, currency, openingBalance, classification } = data as Record<string, unknown>;
+    const { name, type, currency, openingBalance, classification } = data as Record<
+        string,
+        unknown
+    >;
 
     let finalCurrency = workspaceCurrency;
     if (!isBlank(currency)) {

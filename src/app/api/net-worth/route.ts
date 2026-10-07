@@ -53,7 +53,10 @@ export async function GET(req: Request) {
             [{ month: currentMonth, netWorth: summary.netWorth }],
             new Date(),
         );
-        const previousValue = history.length > 1 ? history[history.length - 2]?.netWorth ?? summary.netWorth : summary.netWorth;
+        const previousValue =
+            history.length > 1
+                ? (history[history.length - 2]?.netWorth ?? summary.netWorth)
+                : summary.netWorth;
         const monthlyChange = computeMonthlyChange(summary.netWorth, previousValue);
         const monthlyChangePercent = computeChangePercent(summary.netWorth, previousValue);
 

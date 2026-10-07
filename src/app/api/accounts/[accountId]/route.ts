@@ -114,11 +114,11 @@ export async function PATCH(req: Request, { params }: Ctx) {
                 : {}),
             ...(existing.classification !== updated.classification
                 ? {
-                    classification: {
-                        before: existing.classification,
-                        after: updated.classification,
-                    },
-                }
+                      classification: {
+                          before: existing.classification,
+                          after: updated.classification,
+                      },
+                  }
                 : {}),
             ...(existing.isActive !== updated.isActive
                 ? { isActive: { before: existing.isActive, after: updated.isActive } }

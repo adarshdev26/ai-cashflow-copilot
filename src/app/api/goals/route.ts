@@ -47,7 +47,11 @@ export async function POST(request: Request) {
             resourceType: 'goal',
             resourceId: goal.id,
             workspaceId: access.workspaceId,
-            metadata: { name: goal.name, targetAmount: goal.targetAmount, targetDate: goal.targetDate },
+            metadata: {
+                name: goal.name,
+                targetAmount: goal.targetAmount,
+                targetDate: goal.targetDate,
+            },
         });
         return NextResponse.json({ goal: toGoalView(goal) }, { status: 201 });
     } catch (error) {

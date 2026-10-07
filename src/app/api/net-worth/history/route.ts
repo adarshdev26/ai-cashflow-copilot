@@ -42,14 +42,13 @@ export async function GET(req: Request) {
 
         const accountIds = accounts.map((account) => account.id);
         const firstMonth = months[0].month;
-        const monthStart = new Date(Date.UTC(firstMonth.getUTCFullYear(), firstMonth.getUTCMonth(), 1));
+        const monthStart = new Date(
+            Date.UTC(firstMonth.getUTCFullYear(), firstMonth.getUTCMonth(), 1),
+        );
         const transactions = await prisma.transaction.findMany({
             where: {
                 workspaceId,
-                OR: [
-                    { accountId: { in: accountIds } },
-                    { toAccountId: { in: accountIds } },
-                ],
+                OR: [{ accountId: { in: accountIds } }, { toAccountId: { in: accountIds } }],
                 type: { in: FINANCIAL_TYPES },
                 createdAt: { gte: monthStart },
             },

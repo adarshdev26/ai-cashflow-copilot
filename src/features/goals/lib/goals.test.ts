@@ -27,7 +27,12 @@ test('monthly contribution counts the current month and rounds up to paise', () 
     );
     assert.equal(getRequiredMonthlyContribution(0, 10, '2026-11-30', new Date(2026, 9, 7)), 5);
     assert.equal(
-        getRequiredMonthlyContribution(0, 10_000, new Date('2026-11-30T12:00:00Z'), new Date(2026, 9, 7)),
+        getRequiredMonthlyContribution(
+            0,
+            10_000,
+            new Date('2026-11-30T12:00:00Z'),
+            new Date(2026, 9, 7),
+        ),
         5_000,
     );
 });
