@@ -15,10 +15,12 @@ type Props = { goal: Goal | null; mode: GoalContributionKind; onClose: () => voi
 
 export function GoalContributionModal({ goal, mode, onClose }: Props) {
     const [amount, setAmount] = useState('');
-    const [amountError, setAmountError] = useState('');
+    const [touched, setTouched] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
     const mutation = useContributeToGoal();
     const locale = useUserLocale();
+
     const enteredAmount = amount.trim() ? Number(amount) : 0;
     const previewAmount = Number.isFinite(enteredAmount) && enteredAmount > 0 ? enteredAmount : 0;
     const projectedCurrent = goal
@@ -28,18 +30,19 @@ export function GoalContributionModal({ goal, mode, onClose }: Props) {
         : 0;
     const projectedRemaining = goal ? Math.max(goal.targetAmount - projectedCurrent, 0) : 0;
 
+    const value = Number(amount);
+    const amountError =
+        amount.trim() === '' || !Number.isFinite(value) || value <= 0 || value > MAX_GOAL_AMOUNT
+            ? `Enter an amount greater than 0 and no more than ${MAX_GOAL_AMOUNT}`
+            : mode === 'REMOVE' && goal && value > goal.currentAmount
+              ? 'Cannot remove more than the current amount'
+              : '';
+    const showAmountError = Boolean((touched || submitted) && amountError);
+
     async function submit() {
-        const value = Number(amount);
-        if (!Number.isFinite(value) || value <= 0 || value > MAX_GOAL_AMOUNT) {
-            setAmountError(`Enter an amount greater than 0 and no more than ${MAX_GOAL_AMOUNT}`);
-            return;
-        }
-        if (mode === 'REMOVE' && goal && value > goal.currentAmount) {
-            setAmountError('Cannot remove more than the current amount');
-            return;
-        }
+        setSubmitted(true);
+        if (amountError) return;
         if (!goal) return;
-        setAmountError('');
         setError('');
         try {
             await mutation.mutateAsync({ id: goal.id, kind: mode, amount: value });
@@ -97,13 +100,13 @@ export function GoalContributionModal({ goal, mode, onClose }: Props) {
                         max={mode === 'REMOVE' ? goal?.currentAmount : MAX_GOAL_AMOUNT}
                         step="0.01"
                         value={amount}
-                        aria-invalid={!!amountError}
+                        aria-invalid={showAmountError}
                         onChange={(event) => {
                             setAmount(event.target.value);
-                            if (amountError) setAmountError('');
+                            if (!touched) setTouched(true);
                         }}
                     />
-                    {amountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
+                    {showAmountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
                 </div>
                 {error && (
                     <p role="alert" className="text-error text-sm">

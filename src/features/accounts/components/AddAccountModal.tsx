@@ -46,7 +46,10 @@ export function AddAccountModal({
     const [openingBalance, setOpeningBalance] = useState(
         account ? String(account.openingBalance) : '',
     );
-    const [touched, setTouched] = useState(false);
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [submitted, setSubmitted] = useState(false);
+
+    const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
 
     const trimmed = name.trim();
     const nameError =
@@ -55,13 +58,19 @@ export function AddAccountModal({
             : trimmed.length > 100
               ? 'Max 100 characters'
               : '';
-    const balanceInvalid = openingBalance !== '' && !Number.isFinite(Number(openingBalance));
+    const balanceError =
+        openingBalance !== '' && !Number.isFinite(Number(openingBalance))
+            ? 'Enter a valid amount'
+            : '';
+
+    const showNameError = Boolean((touched.name || submitted) && nameError);
+    const showBalanceError = Boolean((touched.balance || submitted) && balanceError);
 
     const handleSubmit = useCallback(
         (e: React.SyntheticEvent) => {
             e.preventDefault();
-            setTouched(true);
-            if (nameError || balanceInvalid || isSubmitting) return;
+            setSubmitted(true);
+            if (nameError || balanceError || isSubmitting) return;
             onSubmit({
                 name: trimmed,
                 type,
@@ -71,7 +80,7 @@ export function AddAccountModal({
         },
         [
             nameError,
-            balanceInvalid,
+            balanceError,
             isSubmitting,
             onSubmit,
             trimmed,
@@ -116,12 +125,16 @@ export function AddAccountModal({
                     <Input
                         type="text"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => {
+                            setName(e.target.value);
+                            markTouched('name');
+                        }}
                         placeholder="e.g., HDFC Savings"
                         maxLength={100}
                         autoFocus
+                        aria-invalid={showNameError}
                     />
-                    {touched && nameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
+                    {showNameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
                 </div>
 
                 <div>
@@ -176,15 +189,17 @@ export function AddAccountModal({
                         type="number"
                         step="0.01"
                         value={openingBalance}
-                        onChange={(e) => setOpeningBalance(e.target.value)}
+                        onChange={(e) => {
+                            setOpeningBalance(e.target.value);
+                            markTouched('balance');
+                        }}
                         placeholder="0.00"
+                        aria-invalid={showBalanceError}
                     />
                     <p className="text-base-content/60 mt-1 text-xs">
                         Use a negative amount for a credit card that starts with debt.
                     </p>
-                    {balanceInvalid && (
-                        <p className="text-error mt-1 text-xs">Enter a valid amount</p>
-                    )}
+                    {showBalanceError && <p className="text-error mt-1 text-xs">{balanceError}</p>}
                 </div>
             </form>
         </Modal>

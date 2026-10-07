@@ -14,31 +14,24 @@ export function SupportTicketFormModal({ onClose }: { onClose: () => void }) {
     const create = useCreateSupportTicket();
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
-    const [subjectError, setSubjectError] = useState<string | null>(null);
-    const [messageError, setMessageError] = useState<string | null>(null);
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const busy = create.isPending;
 
+    const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
+
+    const subjectError = !subject.trim() ? 'Subject is required' : '';
+    const messageError = !message.trim() ? 'Please describe your issue' : '';
+    const showSubjectError = Boolean((touched.subject || submitted) && subjectError);
+    const showMessageError = Boolean((touched.message || submitted) && messageError);
+
     const submit = async () => {
-        const s = subject.trim();
-        const m = message.trim();
-        let ok = true;
-        if (!s) {
-            setSubjectError('Subject is required');
-            ok = false;
-        } else {
-            setSubjectError(null);
-        }
-        if (!m) {
-            setMessageError('Please describe your issue');
-            ok = false;
-        } else {
-            setMessageError(null);
-        }
-        if (!ok) return;
+        setSubmitted(true);
+        if (subjectError || messageError) return;
         setError(null);
         try {
-            await create.mutateAsync({ subject: s, message: m });
+            await create.mutateAsync({ subject: subject.trim(), message: message.trim() });
             notify.success("Ticket submitted. We'll email you with updates.");
             onClose();
         } catch (cause) {
@@ -79,15 +72,15 @@ export function SupportTicketFormModal({ onClose }: { onClose: () => void }) {
                         className={field}
                         value={subject}
                         maxLength={SUBJECT_MAX}
-                        aria-invalid={!!subjectError}
+                        aria-invalid={showSubjectError}
                         onChange={(e) => {
                             setSubject(e.target.value);
-                            if (subjectError) setSubjectError(null);
+                            markTouched('subject');
                         }}
                         disabled={busy}
                         placeholder="Short summary"
                     />
-                    {subjectError && <p className="text-error mt-1 text-xs">{subjectError}</p>}
+                    {showSubjectError && <p className="text-error mt-1 text-xs">{subjectError}</p>}
                 </div>
                 <div className="space-y-1">
                     <label
@@ -101,15 +94,15 @@ export function SupportTicketFormModal({ onClose }: { onClose: () => void }) {
                         className={`${field} min-h-32`}
                         value={message}
                         maxLength={MESSAGE_MAX}
-                        aria-invalid={!!messageError}
+                        aria-invalid={showMessageError}
                         onChange={(e) => {
                             setMessage(e.target.value);
-                            if (messageError) setMessageError(null);
+                            markTouched('message');
                         }}
                         disabled={busy}
                         placeholder="Describe your issue"
                     />
-                    {messageError && <p className="text-error mt-1 text-xs">{messageError}</p>}
+                    {showMessageError && <p className="text-error mt-1 text-xs">{messageError}</p>}
                     <p className="text-base-content/50 text-right text-xs">
                         {message.length}/{MESSAGE_MAX}
                     </p>

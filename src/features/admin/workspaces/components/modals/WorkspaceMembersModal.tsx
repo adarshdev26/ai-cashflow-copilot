@@ -127,13 +127,8 @@ export function WorkspaceMembersModal({
                 title="Members"
                 description={ws?.name}
                 footer={
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={close}
-                        disabled={!!pendingKey}
-                    >
-                        <p className="text-error">Close</p>
+                    <Button type="button" variant="danger" onClick={close} disabled={!!pendingKey}>
+                        Close
                     </Button>
                 }
             >

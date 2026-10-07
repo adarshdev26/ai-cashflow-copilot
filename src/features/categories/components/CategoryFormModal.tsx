@@ -12,9 +12,9 @@ type Props = {
     open: boolean;
     onClose: () => void;
     workspaceId: string;
-    category?: CategoryItem | null; // set = edit mode
-    defaultType?: CategoryKind; // preselected type for a new category
-    onSaved?: (category: CategoryItem) => void; // inline add uses this to select the new category
+    category?: CategoryItem | null;
+    defaultType?: CategoryKind;
+    onSaved?: (category: CategoryItem) => void;
 };
 
 export function CategoryFormModal({
@@ -29,20 +29,21 @@ export function CategoryFormModal({
     const [name, setName] = useState(category?.name ?? '');
     const [color, setColor] = useState(category?.color ?? CATEGORY_COLORS[0]);
     const [kind, setKind] = useState<CategoryKind>(category?.type ?? defaultType ?? 'BOTH');
-    const [nameError, setNameError] = useState<string | null>(null);
+    const [nameTouched, setNameTouched] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const { mutateAsync: create, isPending: creating } = useCreateCategory(workspaceId);
     const { mutateAsync: update, isPending: updating } = useUpdateCategory(workspaceId);
     const busy = creating || updating;
 
+    const trimmed = name.trim();
+    const nameError = !trimmed ? 'Name is required' : '';
+    const showNameError = Boolean((nameTouched || submitted) && nameError);
+
     const handleSubmit = async () => {
-        const trimmed = name.trim();
-        if (!trimmed) {
-            setNameError('Name is required');
-            return;
-        }
-        setNameError(null);
+        setSubmitted(true);
+        if (nameError) return;
         setError(null);
         try {
             const saved = isEdit
@@ -77,12 +78,12 @@ export function CategoryFormModal({
             <div className="space-y-4">
                 <CategoryFormFields
                     name={name}
-                    nameError={nameError}
+                    nameError={showNameError ? nameError : null}
                     color={color}
                     kind={kind}
                     onNameChange={(value) => {
                         setName(value);
-                        if (nameError) setNameError(null);
+                        if (!nameTouched) setNameTouched(true);
                     }}
                     onColorChange={setColor}
                     onKindChange={setKind}

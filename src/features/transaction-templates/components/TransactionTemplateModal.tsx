@@ -23,7 +23,6 @@ const DATE_MODES: { value: TemplateDateMode; title: string; hint: string }[] = [
     { value: 'FIXED', title: 'Fixed date', hint: 'Always uses the date you pick' },
 ];
 
-/** Fixed dates are stored at 12:00 UTC, so the UTC date part is the calendar day. */
 const dateOnly = (iso: string) => iso.slice(0, 10);
 
 export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
@@ -37,67 +36,49 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
     const [fixedDate, setFixedDate] = useState(
         editing?.fixedDate ? dateOnly(editing.fixedDate) : '',
     );
-
-    const [nameError, setNameError] = useState('');
-    const [amountError, setAmountError] = useState('');
-    const [fixedDateError, setFixedDateError] = useState('');
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
+
+    const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
 
     const create = useCreateTemplate();
     const update = useUpdateTemplate();
     const busy = create.isPending || update.isPending;
 
+    const trimmedName = name.trim();
+    const nameError = !trimmedName ? 'Give the template a name' : '';
+    const amountNum = Number(amount);
+    const amountError =
+        amount.trim() !== '' && (!Number.isFinite(amountNum) || amountNum <= 0)
+            ? 'Amount must be greater than 0, or leave it empty'
+            : '';
+    const fixedDateError = dateMode === 'FIXED' && !fixedDate ? 'Choose a fixed date' : '';
+
+    const showNameError = Boolean((touched.name || submitted) && nameError);
+    const showAmountError = Boolean((touched.amount || submitted) && amountError);
+    const showFixedDateError = Boolean((touched.fixedDate || submitted) && fixedDateError);
+
     function changeType(next: FinancialTransactionType) {
         if (next === type) return;
         setType(next);
-        setCategoryId(''); // category list is filtered by type
+        setCategoryId('');
     }
 
     function changeDateMode(next: TemplateDateMode) {
         setDateMode(next);
         if (next === 'FIXED' && !fixedDate) setFixedDate(localTodayISO());
-        if (fixedDateError) setFixedDateError('');
     }
 
     async function handleSubmit() {
-        const trimmedName = name.trim();
-        let ok = true;
-
-        if (!trimmedName) {
-            setNameError('Give the template a name');
-            ok = false;
-        } else {
-            setNameError('');
-        }
-
-        let value: number | null = null;
-        if (amount.trim() !== '') {
-            const n = Number(amount);
-            if (!Number.isFinite(n) || n <= 0) {
-                setAmountError('Amount must be greater than 0, or leave it empty');
-                ok = false;
-            } else {
-                setAmountError('');
-                value = n;
-            }
-        } else {
-            setAmountError('');
-        }
-
-        if (dateMode === 'FIXED' && !fixedDate) {
-            setFixedDateError('Choose a fixed date');
-            ok = false;
-        } else {
-            setFixedDateError('');
-        }
-
-        if (!ok) return;
+        setSubmitted(true);
+        if (nameError || amountError || fixedDateError) return;
         setError('');
 
         const payload = {
             name: trimmedName,
             type,
-            amount: value,
+            amount: amount.trim() === '' ? null : amountNum,
             description: description.trim() || null,
             accountId: accountId || null,
             categoryId: categoryId || null,
@@ -138,7 +119,6 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
             }
         >
             <div className="min-h-96 space-y-4">
-                {/* Type toggle */}
                 <div className="bg-base-200 grid grid-cols-2 gap-2 rounded-lg p-1">
                     {(['DEBIT', 'CREDIT'] as const).map((t) => (
                         <button
@@ -170,13 +150,13 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
                         maxLength={80}
                         placeholder="e.g. Morning coffee, Monthly rent"
                         value={name}
-                        aria-invalid={!!nameError}
+                        aria-invalid={showNameError}
                         onChange={(e) => {
                             setName(e.target.value);
-                            if (nameError) setNameError('');
+                            markTouched('name');
                         }}
                     />
-                    {nameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
+                    {showNameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
                 </div>
 
                 <div>
@@ -212,13 +192,15 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
                             step="0.01"
                             placeholder="Ask each time"
                             value={amount}
-                            aria-invalid={!!amountError}
+                            aria-invalid={showAmountError}
                             onChange={(e) => {
                                 setAmount(e.target.value);
-                                if (amountError) setAmountError('');
+                                markTouched('amount');
                             }}
                         />
-                        {amountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
+                        {showAmountError && (
+                            <p className="text-error mt-1 text-xs">{amountError}</p>
+                        )}
                     </div>
                     <div>
                         <div className="mb-1 flex items-center justify-between">
@@ -289,13 +271,13 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
                                 type="date"
                                 aria-label="Fixed date"
                                 value={fixedDate}
-                                aria-invalid={!!fixedDateError}
+                                aria-invalid={showFixedDateError}
                                 onChange={(e) => {
                                     setFixedDate(e.target.value);
-                                    if (fixedDateError) setFixedDateError('');
+                                    markTouched('fixedDate');
                                 }}
                             />
-                            {fixedDateError && (
+                            {showFixedDateError && (
                                 <p className="text-error mt-1 text-xs">{fixedDateError}</p>
                             )}
                         </div>

@@ -16,43 +16,37 @@ export function GoalFormModal({ isOpen, onClose, editing }: Props) {
     const [targetAmount, setTargetAmount] = useState(editing ? String(editing.targetAmount) : '');
     const [targetDate, setTargetDate] = useState(editing?.targetDate.slice(0, 10) ?? '');
     const [description, setDescription] = useState(editing?.description ?? '');
-
-    const [nameError, setNameError] = useState('');
-    const [targetAmountError, setTargetAmountError] = useState('');
-    const [targetDateError, setTargetDateError] = useState('');
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
+
+    const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
 
     const create = useCreateGoal();
     const update = useUpdateGoal();
     const busy = create.isPending || update.isPending;
 
+    const amount = Number(targetAmount);
+    const nameError = !name.trim() ? 'Enter a goal name' : '';
+    const targetAmountError =
+        targetAmount.trim() === '' ||
+        !Number.isFinite(amount) ||
+        amount <= 0 ||
+        amount > MAX_GOAL_AMOUNT
+            ? `Enter a target greater than 0 and no more than ${MAX_GOAL_AMOUNT}`
+            : '';
+    const targetDateError = !targetDate ? 'Choose a target date' : '';
+
+    const showNameError = Boolean((touched.name || submitted) && nameError);
+    const showTargetAmountError = Boolean((touched.targetAmount || submitted) && targetAmountError);
+    const showTargetDateError = Boolean((touched.targetDate || submitted) && targetDateError);
+
     async function submit() {
-        const amount = Number(targetAmount);
-        let ok = true;
-        if (!name.trim()) {
-            setNameError('Enter a goal name');
-            ok = false;
-        } else {
-            setNameError('');
-        }
-        if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_GOAL_AMOUNT) {
-            setTargetAmountError(
-                `Enter a target greater than 0 and no more than ${MAX_GOAL_AMOUNT}`,
-            );
-            ok = false;
-        } else {
-            setTargetAmountError('');
-        }
-        if (!targetDate) {
-            setTargetDateError('Choose a target date');
-            ok = false;
-        } else {
-            setTargetDateError('');
-        }
-        if (!ok) return;
+        setSubmitted(true);
+        if (nameError || targetAmountError || targetDateError) return;
         setError('');
 
-        const input = { name, targetAmount: amount, targetDate, description };
+        const input = { name: name.trim(), targetAmount: amount, targetDate, description };
         try {
             if (editing) {
                 await update.mutateAsync({ id: editing.id, ...input });
@@ -99,13 +93,13 @@ export function GoalFormModal({ isOpen, onClose, editing }: Props) {
                         id="goal-name"
                         value={name}
                         maxLength={100}
-                        aria-invalid={!!nameError}
+                        aria-invalid={showNameError}
                         onChange={(event) => {
                             setName(event.target.value);
-                            if (nameError) setNameError('');
+                            markTouched('name');
                         }}
                     />
-                    {nameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
+                    {showNameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
                 </div>
                 <div>
                     <label
@@ -121,13 +115,13 @@ export function GoalFormModal({ isOpen, onClose, editing }: Props) {
                         max={MAX_GOAL_AMOUNT}
                         step="0.01"
                         value={targetAmount}
-                        aria-invalid={!!targetAmountError}
+                        aria-invalid={showTargetAmountError}
                         onChange={(event) => {
                             setTargetAmount(event.target.value);
-                            if (targetAmountError) setTargetAmountError('');
+                            markTouched('targetAmount');
                         }}
                     />
-                    {targetAmountError && (
+                    {showTargetAmountError && (
                         <p className="text-error mt-1 text-xs">{targetAmountError}</p>
                     )}
                 </div>
@@ -142,13 +136,13 @@ export function GoalFormModal({ isOpen, onClose, editing }: Props) {
                         id="goal-date"
                         type="date"
                         value={targetDate}
-                        aria-invalid={!!targetDateError}
+                        aria-invalid={showTargetDateError}
                         onChange={(event) => {
                             setTargetDate(event.target.value);
-                            if (targetDateError) setTargetDateError('');
+                            markTouched('targetDate');
                         }}
                     />
-                    {targetDateError && (
+                    {showTargetDateError && (
                         <p className="text-error mt-1 text-xs">{targetDateError}</p>
                     )}
                 </div>

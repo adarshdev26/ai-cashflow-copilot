@@ -20,30 +20,28 @@ type Props = {
 export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props) {
     const [categoryId, setCategoryId] = useState(editing?.categoryId ?? '');
     const [amount, setAmount] = useState(editing ? String(editing.amount) : '');
-    const [categoryError, setCategoryError] = useState('');
-    const [amountError, setAmountError] = useState('');
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
+
+    const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
 
     const create = useCreateBudget();
     const update = useUpdateBudget();
     const busy = create.isPending || update.isPending;
 
+    const value = Number(amount);
+    const categoryError = !editing && !categoryId ? 'Select a category' : '';
+    const amountError =
+        amount.trim() === '' || !Number.isFinite(value) || value <= 0
+            ? 'Enter an amount greater than 0'
+            : '';
+    const showCategoryError = Boolean((touched.category || submitted) && categoryError);
+    const showAmountError = Boolean((touched.amount || submitted) && amountError);
+
     async function handleSubmit() {
-        const value = Number(amount);
-        let hasError = false;
-        if (!editing && !categoryId) {
-            setCategoryError('Select a category');
-            hasError = true;
-        } else {
-            setCategoryError('');
-        }
-        if (!Number.isFinite(value) || value <= 0) {
-            setAmountError('Enter an amount greater than 0');
-            hasError = true;
-        } else {
-            setAmountError('');
-        }
-        if (hasError) return;
+        setSubmitted(true);
+        if (categoryError || amountError) return;
         setError('');
 
         try {
@@ -92,11 +90,11 @@ export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props
                             value={categoryId}
                             onChange={(id) => {
                                 setCategoryId(id ?? '');
-                                if (categoryError) setCategoryError('');
+                                markTouched('category');
                             }}
                             transactionType="DEBIT"
                         />
-                        {categoryError && (
+                        {showCategoryError && (
                             <p className="text-error mt-1 text-xs">{categoryError}</p>
                         )}
                     </div>
@@ -115,13 +113,13 @@ export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props
                         min="0"
                         step="0.01"
                         value={amount}
-                        aria-invalid={!!amountError}
+                        aria-invalid={showAmountError}
                         onChange={(e) => {
                             setAmount(e.target.value);
-                            if (amountError) setAmountError('');
+                            markTouched('amount');
                         }}
                     />
-                    {amountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
+                    {showAmountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
                 </div>
 
                 {error && <p className="text-error text-sm">{error}</p>}

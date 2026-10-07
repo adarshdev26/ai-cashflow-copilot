@@ -11,17 +11,25 @@ import type { AdminUserRow } from '../../types';
 export function ResetPasswordModal({ user, onClose }: { user: AdminUserRow; onClose: () => void }) {
     const { resetPassword } = useAdminUserMutations();
     const [password, setPassword] = useState('');
+    const [touched, setTouched] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const pending = resetPassword.isPending;
-    const passwordError =
-        password.length > 0 && password.length < 8 ? 'Password must be at least 8 characters.' : '';
+
+    const passwordError = !password
+        ? 'Enter a new password.'
+        : password.length < 8
+          ? 'Password must be at least 8 characters.'
+          : '';
+    const showError = Boolean((touched || submitted) && passwordError);
+
     const close = () => {
         if (!pending) onClose();
     };
+
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitted(true);
-        if (password.length < 8) return;
+        if (passwordError) return;
         try {
             await resetPassword.mutateAsync({ id: user.id, password });
             notify.success('Password updated. The user was signed out everywhere.');
@@ -30,6 +38,7 @@ export function ResetPasswordModal({ user, onClose }: { user: AdminUserRow; onCl
             notify.error(getErrorMessage(err, 'Failed to reset password'));
         }
     };
+
     return (
         <Modal
             open
@@ -60,14 +69,15 @@ export function ResetPasswordModal({ user, onClose }: { user: AdminUserRow; onCl
                     autoFocus
                     autoComplete="new-password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (!touched) setTouched(true);
+                    }}
                     disabled={pending}
-                    aria-invalid={!!passwordError}
+                    aria-invalid={showError}
                     className="border-base-300 bg-base-100 focus:border-primary focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
                 />
-                {(passwordError || (submitted && !password)) && (
-                    <p className="text-error text-xs">{passwordError || 'Enter a new password.'}</p>
-                )}
+                {showError && <p className="text-error text-xs">{passwordError}</p>}
                 <p className="text-base-content/60 text-xs">Use at least 8 characters.</p>
             </form>
         </Modal>

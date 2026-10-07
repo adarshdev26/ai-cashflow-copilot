@@ -87,13 +87,8 @@ export function UserAccessModal({ userId, onClose }: { userId: string; onClose: 
                 title="Workspace access"
                 description={user?.email}
                 footer={
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={close}
-                        disabled={!!pendingKey}
-                    >
-                        <p className="text-error">Close</p>
+                    <Button type="button" variant="danger" onClick={close} disabled={!!pendingKey}>
+                        Close
                     </Button>
                 }
             >

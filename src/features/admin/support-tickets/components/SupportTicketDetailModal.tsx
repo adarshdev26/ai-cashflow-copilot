@@ -43,8 +43,13 @@ export function SupportTicketDetailModal({
             title={ticket?.subject ?? 'Support ticket'}
             footer={
                 <div className="flex justify-end gap-2">
-                    <Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>
-                        <p className="text-error">Close</p>
+                    <Button
+                        type="button"
+                        variant="danger"
+                        onClick={onClose}
+                        disabled={mutation.isPending}
+                    >
+                        Close
                     </Button>
                     {next.map((status) => (
                         <PrimaryButton

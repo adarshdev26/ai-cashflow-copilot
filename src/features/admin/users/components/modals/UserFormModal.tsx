@@ -22,22 +22,30 @@ export function UserFormModal({
     const [email, setEmail] = useState(user?.email ?? '');
     const [plan, setPlan] = useState<'FREEMIUM' | 'PREMIUM'>(user?.plan ?? 'FREEMIUM');
     const [password, setPassword] = useState('');
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [submitted, setSubmitted] = useState(false);
     const pending = create.isPending || update.isPending;
-    const emailError = email.trim()
-        ? !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-            ? 'Enter a valid email address.'
-            : ''
-        : submitted
-          ? 'Email is required.'
+
+    const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
+
+    const nameError = !name.trim() ? 'Name is required.' : '';
+    const emailError = !email.trim()
+        ? 'Email is required.'
+        : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+          ? 'Enter a valid email address.'
           : '';
-    const passwordError =
-        !user &&
-        (password.length > 0 && password.length < 8
-            ? 'Password must be at least 8 characters.'
-            : submitted && !password
-              ? 'Password is required.'
-              : '');
+    const passwordError = !user
+        ? !password
+            ? 'Password is required.'
+            : password.length < 8
+              ? 'Password must be at least 8 characters.'
+              : ''
+        : '';
+
+    const showNameError = Boolean((touched.name || submitted) && nameError);
+    const showEmailError = Boolean(!user && (touched.email || submitted) && emailError);
+    const showPasswordError = Boolean((touched.password || submitted) && passwordError);
+
     const close = () => {
         if (!pending) onClose();
     };
@@ -45,13 +53,13 @@ export function UserFormModal({
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitted(true);
-        if (!email.trim() || emailError || (!user && password.length < 8)) return;
+        if (nameError || emailError || passwordError) return;
         try {
             if (user) {
-                await update.mutateAsync({ id: user.id, name, email, plan });
+                await update.mutateAsync({ id: user.id, name: name.trim(), email, plan });
                 notify.success('User updated');
             } else {
-                await create.mutateAsync({ name, email, password });
+                await create.mutateAsync({ name: name.trim(), email, password });
                 notify.success('User created');
             }
             onClose();
@@ -89,10 +97,15 @@ export function UserFormModal({
                         id="admin-user-name"
                         autoFocus
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => {
+                            setName(e.target.value);
+                            markTouched('name');
+                        }}
                         disabled={pending}
+                        aria-invalid={showNameError}
                         className="bg-base-100"
                     />
+                    {showNameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
                 </div>
                 <div>
                     <label
@@ -106,12 +119,21 @@ export function UserFormModal({
                         type="email"
                         autoComplete="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={pending}
-                        aria-invalid={!!(emailError && (submitted || email))}
-                        className="bg-base-100"
+                        onChange={(e) => {
+                            setEmail(e.target.value);
+                            markTouched('email');
+                        }}
+                        disabled={pending || !!user}
+                        aria-invalid={showEmailError}
+                        className="bg-base-100 disabled:cursor-not-allowed disabled:opacity-60"
                     />
-                    {emailError && <p className="text-error mt-1 text-xs">{emailError}</p>}
+                    {user ? (
+                        <p className="text-base-content/60 mt-1 text-xs">
+                            Email cannot be changed after the user is created.
+                        </p>
+                    ) : (
+                        showEmailError && <p className="text-error mt-1 text-xs">{emailError}</p>
+                    )}
                 </div>
                 {user && (
                     <div>
@@ -143,12 +165,15 @@ export function UserFormModal({
                             id="admin-user-password"
                             autoComplete="new-password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                                setPassword(e.target.value);
+                                markTouched('password');
+                            }}
                             disabled={pending}
-                            aria-invalid={!!passwordError}
+                            aria-invalid={showPasswordError}
                             className="border-base-300 bg-base-100 focus:border-primary focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
                         />
-                        {passwordError && (
+                        {showPasswordError && (
                             <p className="text-error mt-1 text-xs">{passwordError}</p>
                         )}
                         <p className="text-base-content/60 mt-1 text-xs">

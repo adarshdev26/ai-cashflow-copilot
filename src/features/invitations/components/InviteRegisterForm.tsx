@@ -22,18 +22,31 @@ export function InviteRegisterForm({ token, email }: Props) {
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
-    const [confirmError, setConfirmError] = useState('');
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
     const { mutate: register, isPending } = useRegisterViaInvitation();
+
+    const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
+
+    const passwordError = !password
+        ? 'Enter a password'
+        : password.length < 8
+          ? 'Password must be at least 8 characters'
+          : '';
+    const confirmError = !confirm
+        ? 'Confirm your password'
+        : confirm !== password
+          ? 'Passwords do not match'
+          : '';
+    const showPasswordError = Boolean((touched.password || submitted) && passwordError);
+    const showConfirmError = Boolean((touched.confirm || submitted) && confirmError);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (password !== confirm) {
-            setConfirmError('Passwords do not match');
-            return;
-        }
-        setConfirmError('');
+        setSubmitted(true);
+        if (passwordError || confirmError) return;
 
         register(
             { token, name: name.trim() || undefined, password },
@@ -45,7 +58,6 @@ export function InviteRegisterForm({ token, email }: Props) {
                 },
                 onError: (err) => {
                     if (err instanceof ApiError && err.code === 'ACCOUNT_EXISTS') {
-                        // Someone registered this email meanwhile: refresh so the page shows "Sign in".
                         notify.error(err.message);
                         queryClient.invalidateQueries({ queryKey: invitationKeys.preview(token) });
                         return;
@@ -108,13 +120,16 @@ export function InviteRegisterForm({ token, email }: Props) {
                     value={password}
                     onChange={(e) => {
                         setPassword(e.target.value);
-                        if (confirmError) setConfirmError('');
+                        markTouched('password');
+                        if (confirm) markTouched('confirm');
                     }}
                     disabled={isPending}
                     autoComplete="new-password"
                     required
+                    aria-invalid={showPasswordError}
                     className={inputClass}
                 />
+                {showPasswordError && <p className="text-error mt-1 text-xs">{passwordError}</p>}
             </div>
             <div>
                 <label
@@ -128,15 +143,15 @@ export function InviteRegisterForm({ token, email }: Props) {
                     value={confirm}
                     onChange={(e) => {
                         setConfirm(e.target.value);
-                        if (confirmError) setConfirmError('');
+                        markTouched('confirm');
                     }}
                     disabled={isPending}
                     autoComplete="new-password"
                     required
-                    aria-invalid={!!confirmError}
+                    aria-invalid={showConfirmError}
                     className={inputClass}
                 />
-                {confirmError && <p className="text-error mt-1 text-xs">{confirmError}</p>}
+                {showConfirmError && <p className="text-error mt-1 text-xs">{confirmError}</p>}
             </div>
             <PrimaryButton type="submit" loading={isPending} className="w-full">
                 Create account and join

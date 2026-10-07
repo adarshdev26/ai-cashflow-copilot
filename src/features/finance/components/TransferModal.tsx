@@ -44,70 +44,55 @@ export function TransferModal({
     const [date, setDate] = useState(transfer ? transfer.createdAt.slice(0, 10) : today());
     const [note, setNote] = useState(transfer?.description ?? '');
 
-    const [fromError, setFromError] = useState('');
-    const [toError, setToError] = useState('');
-    const [amountError, setAmountError] = useState('');
-    const [dateError, setDateError] = useState('');
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [submitted, setSubmitted] = useState(false);
+
+    const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
 
     const activeAccounts = useMemo(() => accounts.filter((a) => a.isActive), [accounts]);
     const fromAccount = activeAccounts.find((a) => a.id === fromId);
 
-    // To list: not the chosen From account, and same currency as From.
     const toAccounts = activeAccounts.filter(
         (a) => a.id !== fromId && (!fromAccount || a.currency === fromAccount.currency),
     );
 
     const amountNum = Number(amount);
+    const fromError = !fromId ? 'Select a source account' : '';
+    const toError = !toId
+        ? 'Select a destination account'
+        : toId === fromId
+          ? 'Choose a different account'
+          : '';
+    const amountError =
+        amount.trim() === '' || !(amountNum > 0) ? 'Enter an amount greater than 0' : '';
+    const dateError = !date ? 'Choose a date' : '';
+
+    const showFromError = Boolean((touched.from || submitted) && fromError);
+    const showToError = Boolean((touched.to || submitted) && toError);
+    const showAmountError = Boolean((touched.amount || submitted) && amountError);
+    const showDateError = Boolean((touched.date || submitted) && dateError);
 
     const handleFromChange = (nextId: string) => {
         setFromId(nextId);
-        if (fromError) setFromError('');
+        markTouched('from');
         const nextFrom = activeAccounts.find((a) => a.id === nextId);
         const selectedTo = activeAccounts.find((a) => a.id === toId);
         if (nextId === toId || (selectedTo && nextFrom?.currency !== selectedTo.currency)) {
             setToId('');
-            if (toError) setToError('');
         }
     };
 
     const swap = () => {
         setFromId(toId);
         setToId(fromId);
-        setFromError('');
-        setToError('');
+        markTouched('from');
+        markTouched('to');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        let ok = true;
-        if (!fromId) {
-            setFromError('Select a source account');
-            ok = false;
-        } else {
-            setFromError('');
-        }
-        if (!toId) {
-            setToError('Select a destination account');
-            ok = false;
-        } else if (toId === fromId) {
-            setToError('Choose a different account');
-            ok = false;
-        } else {
-            setToError('');
-        }
-        if (!(amountNum > 0)) {
-            setAmountError('Enter an amount greater than 0');
-            ok = false;
-        } else {
-            setAmountError('');
-        }
-        if (!date) {
-            setDateError('Choose a date');
-            ok = false;
-        } else {
-            setDateError('');
-        }
-        if (!ok) return;
+        setSubmitted(true);
+        if (fromError || toError || amountError || dateError) return;
 
         await onSubmit({
             type: 'TRANSFER',
@@ -151,7 +136,7 @@ export function TransferModal({
                             value={fromId}
                             onChange={(e) => handleFromChange(e.target.value)}
                             disabled={isLoading}
-                            aria-invalid={!!fromError}
+                            aria-invalid={showFromError}
                         >
                             <option value="" disabled>
                                 {isLoading ? 'Loading…' : 'Select account'}
@@ -162,7 +147,7 @@ export function TransferModal({
                                 </option>
                             ))}
                         </Select>
-                        {fromError && <p className="text-error mt-1 text-xs">{fromError}</p>}
+                        {showFromError && <p className="text-error mt-1 text-xs">{fromError}</p>}
                     </div>
 
                     <button
@@ -187,10 +172,10 @@ export function TransferModal({
                             value={toId}
                             onChange={(e) => {
                                 setToId(e.target.value);
-                                if (toError) setToError('');
+                                markTouched('to');
                             }}
                             disabled={isLoading || !fromId}
-                            aria-invalid={!!toError}
+                            aria-invalid={showToError}
                         >
                             <option value="" disabled>
                                 Select account
@@ -201,7 +186,7 @@ export function TransferModal({
                                 </option>
                             ))}
                         </Select>
-                        {toError && <p className="text-error mt-1 text-xs">{toError}</p>}
+                        {showToError && <p className="text-error mt-1 text-xs">{toError}</p>}
                     </div>
                 </div>
 
@@ -222,13 +207,15 @@ export function TransferModal({
                             value={amount}
                             onChange={(e) => {
                                 setAmount(e.target.value);
-                                if (amountError) setAmountError('');
+                                markTouched('amount');
                             }}
                             placeholder="0.00"
                             required
-                            aria-invalid={!!amountError}
+                            aria-invalid={showAmountError}
                         />
-                        {amountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
+                        {showAmountError && (
+                            <p className="text-error mt-1 text-xs">{amountError}</p>
+                        )}
                     </div>
                     <div>
                         <label
@@ -243,12 +230,12 @@ export function TransferModal({
                             value={date}
                             onChange={(e) => {
                                 setDate(e.target.value);
-                                if (dateError) setDateError('');
+                                markTouched('date');
                             }}
                             required
-                            aria-invalid={!!dateError}
+                            aria-invalid={showDateError}
                         />
-                        {dateError && <p className="text-error mt-1 text-xs">{dateError}</p>}
+                        {showDateError && <p className="text-error mt-1 text-xs">{dateError}</p>}
                     </div>
                 </div>
 

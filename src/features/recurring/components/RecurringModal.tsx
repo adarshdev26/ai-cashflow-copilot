@@ -22,7 +22,6 @@ const FREQUENCIES: { value: RecurringFrequency; label: string }[] = [
     { value: 'YEARLY', label: 'Yearly' },
 ];
 
-/** Local calendar date as YYYY-MM-DD (toISOString would shift the day in some timezones). */
 function todayLocal(): string {
     const d = new Date();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -30,7 +29,6 @@ function todayLocal(): string {
     return `${d.getFullYear()}-${m}-${day}`;
 }
 
-/** Schedule dates are stored at 12:00 UTC, so the UTC date part is the calendar day. */
 const dateOnly = (iso: string) => iso.slice(0, 10);
 
 export function formatScheduleDate(iso: string, locale = 'en-IN'): string {
@@ -58,50 +56,40 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
     );
     const [endDate, setEndDate] = useState(editing?.endDate ? dateOnly(editing.endDate) : '');
 
-    const [accountError, setAccountError] = useState('');
-    const [amountError, setAmountError] = useState('');
-    const [startDateError, setStartDateError] = useState('');
-    const [endDateError, setEndDateError] = useState('');
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
+
+    const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
 
     const create = useCreateRecurring();
     const update = useUpdateRecurring();
     const busy = create.isPending || update.isPending;
 
+    const value = Number(amount);
+    const accountError = !accountId ? 'Select an account' : '';
+    const amountError =
+        amount.trim() === '' || !Number.isFinite(value) || value <= 0
+            ? 'Enter an amount greater than 0'
+            : '';
+    const startDateError = !startDate ? 'Choose a start date' : '';
+    const endDateError =
+        endDate && endDate < startDate ? 'End date must be on or after the start date' : '';
+
+    const showAccountError = Boolean((touched.account || submitted) && accountError);
+    const showAmountError = Boolean((touched.amount || submitted) && amountError);
+    const showStartDateError = Boolean((touched.startDate || submitted) && startDateError);
+    const showEndDateError = Boolean((touched.endDate || submitted) && endDateError);
+
     function changeType(next: TxType) {
         if (next === type) return;
         setType(next);
-        setCategoryId(''); // category list is filtered by type
+        setCategoryId('');
     }
 
     async function handleSubmit() {
-        const value = Number(amount);
-        let ok = true;
-        if (!accountId) {
-            setAccountError('Select an account');
-            ok = false;
-        } else {
-            setAccountError('');
-        }
-        if (!Number.isFinite(value) || value <= 0) {
-            setAmountError('Enter an amount greater than 0');
-            ok = false;
-        } else {
-            setAmountError('');
-        }
-        if (!startDate) {
-            setStartDateError('Choose a start date');
-            ok = false;
-        } else {
-            setStartDateError('');
-        }
-        if (endDate && endDate < startDate) {
-            setEndDateError('End date must be on or after the start date');
-            ok = false;
-        } else {
-            setEndDateError('');
-        }
-        if (!ok) return;
+        setSubmitted(true);
+        if (accountError || amountError || startDateError || endDateError) return;
         setError('');
 
         const payload = {
@@ -112,7 +100,7 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
             type,
             frequency,
             startDate,
-            endDate: endDate || null, // explicit null so a cleared end date is saved
+            endDate: endDate || null,
         };
 
         try {
@@ -148,7 +136,6 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
             }
         >
             <div className="min-h-96 space-y-4">
-                {/* Type toggle */}
                 <div className="bg-base-200 grid grid-cols-2 gap-2 rounded-lg p-1">
                     {(['DEBIT', 'CREDIT'] as const).map((t) => (
                         <button
@@ -198,13 +185,15 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
                             min="0"
                             step="0.01"
                             value={amount}
-                            aria-invalid={!!amountError}
+                            aria-invalid={showAmountError}
                             onChange={(e) => {
                                 setAmount(e.target.value);
-                                if (amountError) setAmountError('');
+                                markTouched('amount');
                             }}
                         />
-                        {amountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
+                        {showAmountError && (
+                            <p className="text-error mt-1 text-xs">{amountError}</p>
+                        )}
                     </div>
                     <div>
                         <label
@@ -237,10 +226,12 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
                             value={accountId || null}
                             onChange={(id) => {
                                 setAccountId(id ?? '');
-                                if (accountError) setAccountError('');
+                                markTouched('account');
                             }}
                         />
-                        {accountError && <p className="text-error mt-1 text-xs">{accountError}</p>}
+                        {showAccountError && (
+                            <p className="text-error mt-1 text-xs">{accountError}</p>
+                        )}
                     </div>
                     <div>
                         <label className="text-base-content/80 mb-1 block text-sm font-medium">
@@ -266,14 +257,13 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
                             id="rec-start"
                             type="date"
                             value={startDate}
-                            aria-invalid={!!startDateError}
+                            aria-invalid={showStartDateError}
                             onChange={(e) => {
                                 setStartDate(e.target.value);
-                                if (startDateError) setStartDateError('');
-                                if (endDateError) setEndDateError('');
+                                markTouched('startDate');
                             }}
                         />
-                        {startDateError && (
+                        {showStartDateError && (
                             <p className="text-error mt-1 text-xs">{startDateError}</p>
                         )}
                     </div>
@@ -290,13 +280,15 @@ export function RecurringModal({ isOpen, onClose, editing }: Props) {
                             type="date"
                             min={startDate}
                             value={endDate}
-                            aria-invalid={!!endDateError}
+                            aria-invalid={showEndDateError}
                             onChange={(e) => {
                                 setEndDate(e.target.value);
-                                if (endDateError) setEndDateError('');
+                                markTouched('endDate');
                             }}
                         />
-                        {endDateError && <p className="text-error mt-1 text-xs">{endDateError}</p>}
+                        {showEndDateError && (
+                            <p className="text-error mt-1 text-xs">{endDateError}</p>
+                        )}
                     </div>
                 </div>
 
