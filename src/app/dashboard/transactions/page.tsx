@@ -86,7 +86,7 @@ export default function TransactionsPage() {
     const canUpdate = usePermission('transaction.update');
     const canDelete = usePermission('transaction.delete');
     const { data: categories, isLoading: categoriesLoading } = useCategories();
-    const { data: accounts, isLoading: accountsLoading } = useAccounts(workspaceId);
+    const { data: accounts } = useAccounts(workspaceId);
 
     const [activeAccountId] = useActiveAccountId();
     const queryParams = useMemo(
@@ -218,13 +218,6 @@ export default function TransactionsPage() {
     const handleCategoryChange = useCallback(
         (value: string) => {
             setFilter('categoryId', value || undefined);
-        },
-        [setFilter],
-    );
-
-    const handleAccountChange = useCallback(
-        (value: string) => {
-            setFilter('accountId', value || undefined);
         },
         [setFilter],
     );
