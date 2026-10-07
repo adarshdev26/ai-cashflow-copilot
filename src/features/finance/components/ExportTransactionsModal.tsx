@@ -67,13 +67,21 @@ export function ExportTransactionsModal({ open, onClose, workspaceId, initialFil
                     value={filters.dateFrom ?? ''}
                     onChange={(e) => set('dateFrom', e.target.value)}
                 />
-                <Input
-                    aria-label="To date"
-                    type="date"
-                    min={filters.dateFrom}
-                    value={filters.dateTo ?? ''}
-                    onChange={(e) => set('dateTo', e.target.value)}
-                />
+                <div>
+                    <Input
+                        aria-label="To date"
+                        type="date"
+                        min={filters.dateFrom}
+                        value={filters.dateTo ?? ''}
+                        aria-invalid={invalidRange}
+                        onChange={(e) => set('dateTo', e.target.value)}
+                    />
+                    {invalidRange && (
+                        <p className="text-error mt-1 text-xs">
+                            &quot;From&quot; date must be on or before the &quot;To&quot; date.
+                        </p>
+                    )}
+                </div>
                 <Select
                     aria-label="Type"
                     value={filters.type ?? ''}
@@ -116,11 +124,6 @@ export function ExportTransactionsModal({ open, onClose, workspaceId, initialFil
                     value={filters.search ?? ''}
                     onChange={(e) => set('search', e.target.value)}
                 />
-                {invalidRange && (
-                    <p className="text-error text-xs md:col-span-2">
-                        &quot;From&quot; date must be on or before the &quot;To&quot; date.
-                    </p>
-                )}
             </div>
         </Modal>
     );

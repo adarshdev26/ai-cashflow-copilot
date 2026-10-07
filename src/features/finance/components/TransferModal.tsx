@@ -43,7 +43,11 @@ export function TransferModal({
     const [amount, setAmount] = useState(transfer ? String(transfer.amount) : '');
     const [date, setDate] = useState(transfer ? transfer.createdAt.slice(0, 10) : today());
     const [note, setNote] = useState(transfer?.description ?? '');
-    const [error, setError] = useState('');
+
+    const [fromError, setFromError] = useState('');
+    const [toError, setToError] = useState('');
+    const [amountError, setAmountError] = useState('');
+    const [dateError, setDateError] = useState('');
 
     const activeAccounts = useMemo(() => accounts.filter((a) => a.isActive), [accounts]);
     const fromAccount = activeAccounts.find((a) => a.id === fromId);
@@ -54,26 +58,57 @@ export function TransferModal({
     );
 
     const amountNum = Number(amount);
-    const invalid = !fromId || !toId || fromId === toId || !(amountNum > 0) || !date;
 
     const handleFromChange = (nextId: string) => {
         setFromId(nextId);
+        if (fromError) setFromError('');
         const nextFrom = activeAccounts.find((a) => a.id === nextId);
         const selectedTo = activeAccounts.find((a) => a.id === toId);
         if (nextId === toId || (selectedTo && nextFrom?.currency !== selectedTo.currency)) {
             setToId('');
+            if (toError) setToError('');
         }
     };
 
     const swap = () => {
         setFromId(toId);
         setToId(fromId);
+        setFromError('');
+        setToError('');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (invalid) return setError('Select two different accounts and enter a valid amount');
-        setError('');
+        let ok = true;
+        if (!fromId) {
+            setFromError('Select a source account');
+            ok = false;
+        } else {
+            setFromError('');
+        }
+        if (!toId) {
+            setToError('Select a destination account');
+            ok = false;
+        } else if (toId === fromId) {
+            setToError('Choose a different account');
+            ok = false;
+        } else {
+            setToError('');
+        }
+        if (!(amountNum > 0)) {
+            setAmountError('Enter an amount greater than 0');
+            ok = false;
+        } else {
+            setAmountError('');
+        }
+        if (!date) {
+            setDateError('Choose a date');
+            ok = false;
+        } else {
+            setDateError('');
+        }
+        if (!ok) return;
+
         await onSubmit({
             type: 'TRANSFER',
             fromAccountId: fromId,
@@ -87,15 +122,6 @@ export function TransferModal({
     return (
         <Modal open={open} onClose={onClose} title={transfer ? 'Edit Transfer' : 'Transfer Money'}>
             <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                    <div
-                        role="alert"
-                        className="bg-error/10 text-error border-error/20 rounded-lg border p-3 text-sm"
-                    >
-                        {error}
-                    </div>
-                )}
-
                 <div>
                     <label
                         htmlFor="transfer-note"
@@ -125,6 +151,7 @@ export function TransferModal({
                             value={fromId}
                             onChange={(e) => handleFromChange(e.target.value)}
                             disabled={isLoading}
+                            aria-invalid={!!fromError}
                         >
                             <option value="" disabled>
                                 {isLoading ? 'Loading…' : 'Select account'}
@@ -135,6 +162,7 @@ export function TransferModal({
                                 </option>
                             ))}
                         </Select>
+                        {fromError && <p className="text-error mt-1 text-xs">{fromError}</p>}
                     </div>
 
                     <button
@@ -157,8 +185,12 @@ export function TransferModal({
                         <Select
                             id="transfer-to"
                             value={toId}
-                            onChange={(e) => setToId(e.target.value)}
+                            onChange={(e) => {
+                                setToId(e.target.value);
+                                if (toError) setToError('');
+                            }}
                             disabled={isLoading || !fromId}
+                            aria-invalid={!!toError}
                         >
                             <option value="" disabled>
                                 Select account
@@ -169,6 +201,7 @@ export function TransferModal({
                                 </option>
                             ))}
                         </Select>
+                        {toError && <p className="text-error mt-1 text-xs">{toError}</p>}
                     </div>
                 </div>
 
@@ -187,10 +220,15 @@ export function TransferModal({
                             min="0"
                             step="0.01"
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            onChange={(e) => {
+                                setAmount(e.target.value);
+                                if (amountError) setAmountError('');
+                            }}
                             placeholder="0.00"
                             required
+                            aria-invalid={!!amountError}
                         />
+                        {amountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
                     </div>
                     <div>
                         <label
@@ -203,16 +241,21 @@ export function TransferModal({
                             id="transfer-date"
                             type="date"
                             value={date}
-                            onChange={(e) => setDate(e.target.value)}
+                            onChange={(e) => {
+                                setDate(e.target.value);
+                                if (dateError) setDateError('');
+                            }}
                             required
+                            aria-invalid={!!dateError}
                         />
+                        {dateError && <p className="text-error mt-1 text-xs">{dateError}</p>}
                     </div>
                 </div>
 
                 <PrimaryButton
                     type="submit"
                     loading={isSubmitting}
-                    disabled={isLoading || isSubmitting || invalid}
+                    disabled={isLoading || isSubmitting}
                     className="w-full"
                 >
                     {transfer ? 'Save Transfer' : 'Transfer'}

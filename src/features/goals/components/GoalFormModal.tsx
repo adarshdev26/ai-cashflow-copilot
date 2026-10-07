@@ -16,19 +16,42 @@ export function GoalFormModal({ isOpen, onClose, editing }: Props) {
     const [targetAmount, setTargetAmount] = useState(editing ? String(editing.targetAmount) : '');
     const [targetDate, setTargetDate] = useState(editing?.targetDate.slice(0, 10) ?? '');
     const [description, setDescription] = useState(editing?.description ?? '');
+
+    const [nameError, setNameError] = useState('');
+    const [targetAmountError, setTargetAmountError] = useState('');
+    const [targetDateError, setTargetDateError] = useState('');
     const [error, setError] = useState('');
+
     const create = useCreateGoal();
     const update = useUpdateGoal();
     const busy = create.isPending || update.isPending;
 
     async function submit() {
         const amount = Number(targetAmount);
-        if (!name.trim()) return setError('Enter a goal name');
-        if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_GOAL_AMOUNT) {
-            return setError(`Enter a target greater than 0 and no more than ${MAX_GOAL_AMOUNT}`);
+        let ok = true;
+        if (!name.trim()) {
+            setNameError('Enter a goal name');
+            ok = false;
+        } else {
+            setNameError('');
         }
-        if (!targetDate) return setError('Choose a target date');
+        if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_GOAL_AMOUNT) {
+            setTargetAmountError(
+                `Enter a target greater than 0 and no more than ${MAX_GOAL_AMOUNT}`,
+            );
+            ok = false;
+        } else {
+            setTargetAmountError('');
+        }
+        if (!targetDate) {
+            setTargetDateError('Choose a target date');
+            ok = false;
+        } else {
+            setTargetDateError('');
+        }
+        if (!ok) return;
         setError('');
+
         const input = { name, targetAmount: amount, targetDate, description };
         try {
             if (editing) {
@@ -76,8 +99,13 @@ export function GoalFormModal({ isOpen, onClose, editing }: Props) {
                         id="goal-name"
                         value={name}
                         maxLength={100}
-                        onChange={(event) => setName(event.target.value)}
+                        aria-invalid={!!nameError}
+                        onChange={(event) => {
+                            setName(event.target.value);
+                            if (nameError) setNameError('');
+                        }}
                     />
+                    {nameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
                 </div>
                 <div>
                     <label
@@ -93,8 +121,15 @@ export function GoalFormModal({ isOpen, onClose, editing }: Props) {
                         max={MAX_GOAL_AMOUNT}
                         step="0.01"
                         value={targetAmount}
-                        onChange={(event) => setTargetAmount(event.target.value)}
+                        aria-invalid={!!targetAmountError}
+                        onChange={(event) => {
+                            setTargetAmount(event.target.value);
+                            if (targetAmountError) setTargetAmountError('');
+                        }}
                     />
+                    {targetAmountError && (
+                        <p className="text-error mt-1 text-xs">{targetAmountError}</p>
+                    )}
                 </div>
                 <div>
                     <label
@@ -107,8 +142,15 @@ export function GoalFormModal({ isOpen, onClose, editing }: Props) {
                         id="goal-date"
                         type="date"
                         value={targetDate}
-                        onChange={(event) => setTargetDate(event.target.value)}
+                        aria-invalid={!!targetDateError}
+                        onChange={(event) => {
+                            setTargetDate(event.target.value);
+                            if (targetDateError) setTargetDateError('');
+                        }}
                     />
+                    {targetDateError && (
+                        <p className="text-error mt-1 text-xs">{targetDateError}</p>
+                    )}
                 </div>
                 <div>
                     <label

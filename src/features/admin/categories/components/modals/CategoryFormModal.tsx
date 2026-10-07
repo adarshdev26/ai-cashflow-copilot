@@ -21,15 +21,17 @@ export function CategoryFormModal({
     const [name, setName] = useState(category?.name ?? '');
     const [color, setColor] = useState(category?.color ?? CATEGORY_COLORS[0]);
     const [kind, setKind] = useState(category?.type ?? 'BOTH');
+    const [nameError, setNameError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const busy = mutations.create.isPending || mutations.update.isPending;
 
     const submit = async () => {
         const trimmed = name.trim();
         if (!trimmed) {
-            setError('Name is required');
+            setNameError('Name is required');
             return;
         }
+        setNameError(null);
         setError(null);
         const input: CategoryInput = { name: trimmed, color, type: kind };
         try {
@@ -63,9 +65,13 @@ export function CategoryFormModal({
             <div className="space-y-4">
                 <CategoryFormFields
                     name={name}
+                    nameError={nameError}
                     color={color}
                     kind={kind}
-                    onNameChange={setName}
+                    onNameChange={(value) => {
+                        setName(value);
+                        if (nameError) setNameError(null);
+                    }}
                     onColorChange={setColor}
                     onKindChange={setKind}
                     onSubmit={submit}

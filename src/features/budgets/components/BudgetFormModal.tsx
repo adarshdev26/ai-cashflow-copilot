@@ -20,6 +20,8 @@ type Props = {
 export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props) {
     const [categoryId, setCategoryId] = useState(editing?.categoryId ?? '');
     const [amount, setAmount] = useState(editing ? String(editing.amount) : '');
+    const [categoryError, setCategoryError] = useState('');
+    const [amountError, setAmountError] = useState('');
     const [error, setError] = useState('');
 
     const create = useCreateBudget();
@@ -28,9 +30,20 @@ export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props
 
     async function handleSubmit() {
         const value = Number(amount);
-        if (!editing && !categoryId) return setError('Select a category');
-        if (!Number.isFinite(value) || value <= 0)
-            return setError('Enter an amount greater than 0');
+        let hasError = false;
+        if (!editing && !categoryId) {
+            setCategoryError('Select a category');
+            hasError = true;
+        } else {
+            setCategoryError('');
+        }
+        if (!Number.isFinite(value) || value <= 0) {
+            setAmountError('Enter an amount greater than 0');
+            hasError = true;
+        } else {
+            setAmountError('');
+        }
+        if (hasError) return;
         setError('');
 
         try {
@@ -77,9 +90,15 @@ export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props
                         </label>
                         <CategorySelect
                             value={categoryId}
-                            onChange={(id) => setCategoryId(id ?? '')}
+                            onChange={(id) => {
+                                setCategoryId(id ?? '');
+                                if (categoryError) setCategoryError('');
+                            }}
                             transactionType="DEBIT"
                         />
+                        {categoryError && (
+                            <p className="text-error mt-1 text-xs">{categoryError}</p>
+                        )}
                     </div>
                 )}
 
@@ -96,8 +115,13 @@ export function BudgetFormModal({ isOpen, onClose, periodStart, editing }: Props
                         min="0"
                         step="0.01"
                         value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
+                        aria-invalid={!!amountError}
+                        onChange={(e) => {
+                            setAmount(e.target.value);
+                            if (amountError) setAmountError('');
+                        }}
                     />
+                    {amountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
                 </div>
 
                 {error && <p className="text-error text-sm">{error}</p>}

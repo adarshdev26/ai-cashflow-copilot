@@ -22,6 +22,7 @@ export function InviteRegisterForm({ token, email }: Props) {
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
+    const [confirmError, setConfirmError] = useState('');
     const [error, setError] = useState('');
     const { mutate: register, isPending } = useRegisterViaInvitation();
 
@@ -29,9 +30,10 @@ export function InviteRegisterForm({ token, email }: Props) {
         e.preventDefault();
         setError('');
         if (password !== confirm) {
-            setError('Passwords do not match');
+            setConfirmError('Passwords do not match');
             return;
         }
+        setConfirmError('');
 
         register(
             { token, name: name.trim() || undefined, password },
@@ -104,7 +106,10 @@ export function InviteRegisterForm({ token, email }: Props) {
                 <PasswordInput
                     id={ids.password}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (confirmError) setConfirmError('');
+                    }}
                     disabled={isPending}
                     autoComplete="new-password"
                     required
@@ -121,12 +126,17 @@ export function InviteRegisterForm({ token, email }: Props) {
                 <PasswordInput
                     id={ids.confirm}
                     value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
+                    onChange={(e) => {
+                        setConfirm(e.target.value);
+                        if (confirmError) setConfirmError('');
+                    }}
                     disabled={isPending}
                     autoComplete="new-password"
                     required
+                    aria-invalid={!!confirmError}
                     className={inputClass}
                 />
+                {confirmError && <p className="text-error mt-1 text-xs">{confirmError}</p>}
             </div>
             <PrimaryButton type="submit" loading={isPending} className="w-full">
                 Create account and join

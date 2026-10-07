@@ -15,6 +15,7 @@ type Props = { goal: Goal | null; mode: GoalContributionKind; onClose: () => voi
 
 export function GoalContributionModal({ goal, mode, onClose }: Props) {
     const [amount, setAmount] = useState('');
+    const [amountError, setAmountError] = useState('');
     const [error, setError] = useState('');
     const mutation = useContributeToGoal();
     const locale = useUserLocale();
@@ -26,14 +27,19 @@ export function GoalContributionModal({ goal, mode, onClose }: Props) {
             : goal.currentAmount + previewAmount
         : 0;
     const projectedRemaining = goal ? Math.max(goal.targetAmount - projectedCurrent, 0) : 0;
+
     async function submit() {
         const value = Number(amount);
         if (!Number.isFinite(value) || value <= 0 || value > MAX_GOAL_AMOUNT) {
-            return setError(`Enter an amount greater than 0 and no more than ${MAX_GOAL_AMOUNT}`);
+            setAmountError(`Enter an amount greater than 0 and no more than ${MAX_GOAL_AMOUNT}`);
+            return;
         }
-        if (mode === 'REMOVE' && goal && value > goal.currentAmount)
-            return setError('Cannot remove more than the current amount');
+        if (mode === 'REMOVE' && goal && value > goal.currentAmount) {
+            setAmountError('Cannot remove more than the current amount');
+            return;
+        }
         if (!goal) return;
+        setAmountError('');
         setError('');
         try {
             await mutation.mutateAsync({ id: goal.id, kind: mode, amount: value });
@@ -46,6 +52,7 @@ export function GoalContributionModal({ goal, mode, onClose }: Props) {
             notify.error(message);
         }
     }
+
     return (
         <Modal
             open={!!goal}
@@ -90,8 +97,13 @@ export function GoalContributionModal({ goal, mode, onClose }: Props) {
                         max={mode === 'REMOVE' ? goal?.currentAmount : MAX_GOAL_AMOUNT}
                         step="0.01"
                         value={amount}
-                        onChange={(event) => setAmount(event.target.value)}
+                        aria-invalid={!!amountError}
+                        onChange={(event) => {
+                            setAmount(event.target.value);
+                            if (amountError) setAmountError('');
+                        }}
                     />
+                    {amountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
                 </div>
                 {error && (
                     <p role="alert" className="text-error text-sm">

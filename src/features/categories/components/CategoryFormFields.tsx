@@ -7,6 +7,7 @@ import type { CategoryKind } from '../types';
 
 type Props = {
     name: string;
+    nameError?: string | null;
     color: string;
     kind: CategoryKind;
     onNameChange: (value: string) => void;
@@ -17,6 +18,7 @@ type Props = {
 
 export function CategoryFormFields({
     name,
+    nameError,
     color,
     kind,
     onNameChange,
@@ -36,11 +38,13 @@ export function CategoryFormFields({
                     maxLength={40}
                     placeholder="e.g. Gym"
                     autoFocus
+                    aria-invalid={!!nameError}
                     onChange={(e) => onNameChange(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') onSubmit();
                     }}
                 />
+                {nameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
             </div>
 
             <div className="space-y-1">

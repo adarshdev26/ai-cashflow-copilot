@@ -29,6 +29,7 @@ export function CategoryFormModal({
     const [name, setName] = useState(category?.name ?? '');
     const [color, setColor] = useState(category?.color ?? CATEGORY_COLORS[0]);
     const [kind, setKind] = useState<CategoryKind>(category?.type ?? defaultType ?? 'BOTH');
+    const [nameError, setNameError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const { mutateAsync: create, isPending: creating } = useCreateCategory(workspaceId);
@@ -37,7 +38,11 @@ export function CategoryFormModal({
 
     const handleSubmit = async () => {
         const trimmed = name.trim();
-        if (!trimmed) return setError('Name is required');
+        if (!trimmed) {
+            setNameError('Name is required');
+            return;
+        }
+        setNameError(null);
         setError(null);
         try {
             const saved = isEdit
@@ -72,9 +77,13 @@ export function CategoryFormModal({
             <div className="space-y-4">
                 <CategoryFormFields
                     name={name}
+                    nameError={nameError}
                     color={color}
                     kind={kind}
-                    onNameChange={setName}
+                    onNameChange={(value) => {
+                        setName(value);
+                        if (nameError) setNameError(null);
+                    }}
                     onColorChange={setColor}
                     onKindChange={setKind}
                     onSubmit={handleSubmit}

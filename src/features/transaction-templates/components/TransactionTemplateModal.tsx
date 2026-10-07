@@ -37,6 +37,10 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
     const [fixedDate, setFixedDate] = useState(
         editing?.fixedDate ? dateOnly(editing.fixedDate) : '',
     );
+
+    const [nameError, setNameError] = useState('');
+    const [amountError, setAmountError] = useState('');
+    const [fixedDateError, setFixedDateError] = useState('');
     const [error, setError] = useState('');
 
     const create = useCreateTemplate();
@@ -52,21 +56,42 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
     function changeDateMode(next: TemplateDateMode) {
         setDateMode(next);
         if (next === 'FIXED' && !fixedDate) setFixedDate(localTodayISO());
+        if (fixedDateError) setFixedDateError('');
     }
 
     async function handleSubmit() {
         const trimmedName = name.trim();
-        if (!trimmedName) return setError('Give the template a name');
+        let ok = true;
+
+        if (!trimmedName) {
+            setNameError('Give the template a name');
+            ok = false;
+        } else {
+            setNameError('');
+        }
 
         let value: number | null = null;
         if (amount.trim() !== '') {
             const n = Number(amount);
             if (!Number.isFinite(n) || n <= 0) {
-                return setError('Amount must be greater than 0, or leave it empty');
+                setAmountError('Amount must be greater than 0, or leave it empty');
+                ok = false;
+            } else {
+                setAmountError('');
+                value = n;
             }
-            value = n;
+        } else {
+            setAmountError('');
         }
-        if (dateMode === 'FIXED' && !fixedDate) return setError('Choose a fixed date');
+
+        if (dateMode === 'FIXED' && !fixedDate) {
+            setFixedDateError('Choose a fixed date');
+            ok = false;
+        } else {
+            setFixedDateError('');
+        }
+
+        if (!ok) return;
         setError('');
 
         const payload = {
@@ -145,8 +170,13 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
                         maxLength={80}
                         placeholder="e.g. Morning coffee, Monthly rent"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        aria-invalid={!!nameError}
+                        onChange={(e) => {
+                            setName(e.target.value);
+                            if (nameError) setNameError('');
+                        }}
                     />
+                    {nameError && <p className="text-error mt-1 text-xs">{nameError}</p>}
                 </div>
 
                 <div>
@@ -182,8 +212,13 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
                             step="0.01"
                             placeholder="Ask each time"
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            aria-invalid={!!amountError}
+                            onChange={(e) => {
+                                setAmount(e.target.value);
+                                if (amountError) setAmountError('');
+                            }}
                         />
+                        {amountError && <p className="text-error mt-1 text-xs">{amountError}</p>}
                     </div>
                     <div>
                         <div className="mb-1 flex items-center justify-between">
@@ -254,8 +289,15 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
                                 type="date"
                                 aria-label="Fixed date"
                                 value={fixedDate}
-                                onChange={(e) => setFixedDate(e.target.value)}
+                                aria-invalid={!!fixedDateError}
+                                onChange={(e) => {
+                                    setFixedDate(e.target.value);
+                                    if (fixedDateError) setFixedDateError('');
+                                }}
                             />
+                            {fixedDateError && (
+                                <p className="text-error mt-1 text-xs">{fixedDateError}</p>
+                            )}
                         </div>
                     )}
                 </div>
