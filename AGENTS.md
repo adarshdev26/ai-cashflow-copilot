@@ -10,6 +10,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Cashflow Copilot agent instructions
 
+## Transfers
+
+A transfer is one transaction row with `type = TRANSFER`, the source in `accountId`, the destination in `toAccountId`, and no category. It moves balance between active, same-currency accounts in one workspace. Totals, reports, charts, budgets, and category summaries must filter with `FINANCIAL_TYPES` (`CREDIT` and `DEBIT`); recurring transactions and templates remain income/expense only.
+
 Follow the code that is already in the repo. Do not add a service layer, repository layer, Zod, React Hook Form, or a component library. Do not treat habits, notes, settings, admin role, or workspace switching as implemented features.
 
 ## Project architecture

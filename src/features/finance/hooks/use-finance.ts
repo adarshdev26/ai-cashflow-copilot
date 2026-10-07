@@ -4,8 +4,10 @@ import {
     createTransaction,
     updateTransaction,
     deleteTransaction,
+    createTransfer,
+    updateTransfer,
 } from '../api/finance-api';
-import { CreateTransactionInput, TransactionListParams, UpdateTransactionInput } from '../types';
+import { CreateTransactionInput, TransactionListParams, TransferInput, UpdateTransactionInput } from '../types';
 import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
 
 export const financeKeys = {
@@ -48,6 +50,35 @@ export function useUpdateTransaction(workspaceId: string) {
     return useMutation({
         mutationFn: ({ id, data }: { id: string; data: UpdateTransactionInput }) =>
             updateTransaction(workspaceId, id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+            invalidateReports(queryClient);
+        },
+    });
+}
+
+export function useCreateTransfer(workspaceId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (input: TransferInput) => createTransfer(workspaceId, input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+            invalidateReports(queryClient);
+        },
+    });
+}
+
+export function useUpdateTransfer(workspaceId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string; data: TransferInput }) =>
+            updateTransfer(workspaceId, id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });

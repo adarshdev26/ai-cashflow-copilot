@@ -90,6 +90,10 @@ The sidebar reads the session through `useCurrentUser` → `GET /api/auth/me`.
 
 The signed-in user’s id comes from the JWT. The client sends the selected workspace in the `X-Workspace-Id` header; each handler checks that the user has the required access role before reading or writing workspace data.
 
+#### Transfers
+
+A transfer is stored as one transaction row: `type = TRANSFER`, source account in `accountId`, destination in `toAccountId`, and no category. Both accounts must be active, belong to the same workspace, and use the same currency. Account balances include outgoing and incoming transfers; financial totals, reports, charts, budgets, and category summaries filter with `FINANCIAL_TYPES` (`CREDIT` and `DEBIT`). Recurring transactions and templates remain income/expense only.
+
 ### Dashboard
 
 ```text

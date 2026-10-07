@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { prisma } from '@/lib/db/prisma';
+import { FINANCIAL_TYPES } from '@/lib/transaction-filters';
 
 type Totals = { income: number; expense: number; net: number; count: number };
 
@@ -22,6 +23,7 @@ async function totalsFor(
         by: ['type'],
         where: {
             workspaceId,
+            type: { in: FINANCIAL_TYPES },
             ...(accountId ? { accountId } : {}),
             ...(range ? { createdAt: range } : {}),
         },

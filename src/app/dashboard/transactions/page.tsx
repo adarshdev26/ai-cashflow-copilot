@@ -10,6 +10,8 @@ import {
     TransactionTable,
     FinanceStats,
 } from '@/features/finance';
+import { useCreateTransfer, useUpdateTransfer } from '@/features/finance/hooks/use-finance';
+import { TransferModal } from '@/features/finance/components/TransferModal';
 import {
     templateToInitialValues,
     type TransactionTemplateDTO,
@@ -23,6 +25,7 @@ import {
     TransactionSortField,
     TransactionType,
     UpdateTransactionInput,
+    TransferInput,
 } from '@/features/finance/types';
 import { CategoryStatsTooltip } from '@/resources/components/CategoryStats';
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
@@ -109,11 +112,16 @@ export default function TransactionsPage() {
     const { mutate: addTx, isPending: isAdding } = useCreateTransaction(workspaceId);
     const { mutate: updateTx, isPending: isUpdating } = useUpdateTransaction(workspaceId);
     const { mutate: deleteTx, isPending: isDeleting } = useDeleteTransaction(workspaceId);
+    const { mutate: addTransfer, isPending: isAddingTransfer } = useCreateTransfer(workspaceId);
+    const { mutate: updateTransfer, isPending: isUpdatingTransfer } =
+        useUpdateTransfer(workspaceId);
 
     const [formState, setFormState] = useState<TransactionFormState>(null);
     const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
     const [exportOpen, setExportOpen] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
+    const [transferOpen, setTransferOpen] = useState(false);
+    const [editingTransfer, setEditingTransfer] = useState<Transaction | null>(null);
 
     const isSubmitting = isAdding || isUpdating;
 
@@ -178,9 +186,24 @@ export default function TransactionsPage() {
         [],
     );
     const closeModal = useCallback(() => setFormState(null), []);
-    const openEditModal = useCallback(
-        (tx: Transaction) => setFormState({ mode: 'edit', transaction: tx }),
-        [],
+    const openEditModal = useCallback((tx: Transaction) => {
+        if (tx.type === 'TRANSFER') setEditingTransfer(tx);
+        else setFormState({ mode: 'edit', transaction: tx });
+    }, []);
+    const handleTransferSubmit = useCallback(
+        (input: TransferInput) => {
+            const editing = editingTransfer;
+            const onSuccess = () => {
+                setTransferOpen(false);
+                setEditingTransfer(null);
+                notify.success(editing ? 'Transfer updated' : 'Transfer created');
+            };
+            const onError = (error: Error) =>
+                notify.error(getErrorMessage(error, 'Transfer failed'));
+            if (editing) updateTransfer({ id: editing.id, data: input }, { onSuccess, onError });
+            else addTransfer(input, { onSuccess, onError });
+        },
+        [addTransfer, editingTransfer, updateTransfer],
     );
     const openDeleteTarget = useCallback((tx: Transaction) => setDeleteTarget(tx), []);
     const closeDeleteTarget = useCallback(() => setDeleteTarget(null), []);
@@ -230,6 +253,10 @@ export default function TransactionsPage() {
                 onUseTemplate={openCreateFromTemplate}
                 onOpenExport={() => setExportOpen(true)}
                 onOpenImport={() => setImportOpen(true)}
+                onTransfer={() => {
+                    setEditingTransfer(null);
+                    setTransferOpen(true);
+                }}
             />
             <FinanceStats netBalance={false} thisMonthNet={false} lastMonthNet={false} />
 
@@ -245,6 +272,7 @@ export default function TransactionsPage() {
                 onDelete={openDeleteTarget}
                 isLoading={isLoading}
                 isFetching={isFetching}
+                activeAccountId={activeAccountId ?? null}
                 filters={
                     <TransactionFiltersBar
                         filters={filters}
@@ -263,6 +291,21 @@ export default function TransactionsPage() {
                 activeFilterCount={activeFilterCount}
                 onClearFilters={clearFilters}
             />
+
+            {transferOpen && (
+                <TransferModal
+                    key={editingTransfer?.id ?? (transferOpen ? 'new-transfer' : 'closed-transfer')}
+                    open={transferOpen || Boolean(editingTransfer)}
+                    workspaceId={workspaceId}
+                    onClose={() => {
+                        setTransferOpen(false);
+                        setEditingTransfer(null);
+                    }}
+                    onSubmit={handleTransferSubmit}
+                    isSubmitting={isAddingTransfer || isUpdatingTransfer}
+                    transfer={editingTransfer}
+                />
+            )}
 
             <TransactionDialogs
                 formState={formState}

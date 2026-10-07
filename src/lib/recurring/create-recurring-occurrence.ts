@@ -6,6 +6,9 @@ import type { RecurringTransaction } from '@/generated/prisma';
 import { getSystemNumber } from '@/lib/settings/server';
 
 async function targetError(s: RecurringTransaction): Promise<string | null> {
+    // Recurring schedules are income/expense only; transfers are not supported here.
+    if (s.type === 'TRANSFER') return 'Recurring transfers are not supported';
+
     const a = await getAccountError(s.workspaceId, s.accountId, { requireActive: true });
     if (a) return a;
     if (s.categoryId) {

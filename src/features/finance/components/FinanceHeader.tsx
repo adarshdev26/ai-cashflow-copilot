@@ -1,4 +1,4 @@
-import { Plus, Download, Upload } from 'lucide-react';
+import { Plus, Download, Upload, ArrowLeftRight } from 'lucide-react';
 import { memo } from 'react';
 import { Button } from '@/components/ui/Button';
 
@@ -6,6 +6,7 @@ type FinanceHeaderProps = {
     onOpenModal: () => void;
     onOpenExport?: () => void;
     onOpenImport?: () => void;
+    onTransfer?: () => void;
     onUseTemplate?: (template: TransactionTemplateDTO) => void;
 };
 
@@ -19,6 +20,7 @@ export const FinanceHeader = memo(function FinanceHeader({
     onOpenModal,
     onOpenExport,
     onOpenImport,
+    onTransfer,
     onUseTemplate,
 }: FinanceHeaderProps) {
     const canCreate = usePermission('transaction.create');
@@ -57,6 +59,11 @@ export const FinanceHeader = memo(function FinanceHeader({
                     </Button>
                 )}
                 {canCreate && onUseTemplate && <UseTemplateMenu onSelect={onUseTemplate} />}
+                {canCreate && onTransfer && (
+                    <Button variant="secondary" onClick={onTransfer} leftIcon={<ArrowLeftRight className="h-4 w-4" />}>
+                        Transfer Money
+                    </Button>
+                )}
                 {canCreate && (
                     <PrimaryButton
                         data-tour="add-transaction-btn"

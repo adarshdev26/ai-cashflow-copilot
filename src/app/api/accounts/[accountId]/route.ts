@@ -10,7 +10,9 @@ import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 type Ctx = { params: Promise<{ accountId: string }> };
 
-const withCount = { _count: { select: { transactions: true } } } as const;
+const withCount = {
+    _count: { select: { transactions: true, incomingTransfers: true } },
+} as const;
 
 export async function GET(req: Request, { params }: Ctx) {
     try {
@@ -156,7 +158,14 @@ export async function DELETE(req: Request, { params }: Ctx) {
         });
         if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-        const txCount = await prisma.transaction.count({ where: { accountId, workspaceId } });
+        // Count both outgoing (accountId) and incoming (toAccountId) transfers, so a
+        // transfer-only account can't be hard-deleted and orphan its transfers.
+        const txCount = await prisma.transaction.count({
+            where: {
+                workspaceId,
+                OR: [{ accountId }, { toAccountId: accountId }],
+            },
+        });
         if (txCount > 0) {
             return NextResponse.json(
                 {
@@ -189,7 +198,6 @@ export async function DELETE(req: Request, { params }: Ctx) {
         });
         return NextResponse.json({ id: accountId }, { status: 200 });
     } catch (error) {
-        // FK Restrict fired because a transaction was added between the count and the delete
         // FK Restrict fired because a transaction or recurring schedule was added between the count and the delete
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
             return NextResponse.json(

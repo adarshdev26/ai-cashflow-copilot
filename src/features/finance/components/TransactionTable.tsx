@@ -3,7 +3,15 @@
 import { useMemo, useCallback, memo } from 'react';
 import type { ReactNode } from 'react';
 import { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
-import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2, Repeat, LayoutTemplate } from 'lucide-react';
+import {
+    ArrowUpRight,
+    ArrowDownLeft,
+    ArrowLeftRight,
+    Pencil,
+    Trash2,
+    Repeat,
+    LayoutTemplate,
+} from 'lucide-react';
 import { Transaction } from '../types';
 import { DataTable } from '@/components/ui/DataTable';
 import { CategoryBadge } from '@/resources/components/CategoryBadge';
@@ -13,6 +21,7 @@ import { useCreateTemplate } from '@/features/transaction-templates';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { useUserLocale } from '@/features/settings/hooks/use-settings';
 import { formatINR } from '@/features/budgets/utils';
+import { transferAccountLabel } from '../lib/transfer-display';
 
 interface TransactionTableProps {
     transactions?: Transaction[];
@@ -32,6 +41,7 @@ interface TransactionTableProps {
     filters?: ReactNode;
     activeFilterCount?: number;
     onClearFilters?: () => void;
+    activeAccountId?: string | null;
 }
 
 export const TransactionTable = memo(function TransactionTable({
@@ -52,6 +62,7 @@ export const TransactionTable = memo(function TransactionTable({
     filters,
     activeFilterCount,
     onClearFilters,
+    activeAccountId,
 }: TransactionTableProps) {
     const canEdit = usePermission('transaction.update');
     const canDelete = usePermission('transaction.delete');
@@ -64,6 +75,8 @@ export const TransactionTable = memo(function TransactionTable({
 
     const handleSaveAsTemplate = useCallback(
         (tx: Transaction) => {
+            if (tx.type === 'TRANSFER') return;
+
             const name = window.prompt('Template name:', tx.description || 'New template');
             if (!name) return;
             createTemplate(
@@ -97,12 +110,16 @@ export const TransactionTable = memo(function TransactionTable({
                         <div className="text-base-content flex items-center gap-3 font-medium">
                             <div
                                 className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                                    tx.type === 'CREDIT'
-                                        ? 'bg-success/10 text-success'
-                                        : 'bg-error/10 text-error'
+                                    tx.type === 'TRANSFER'
+                                        ? 'bg-info/10 text-info'
+                                        : tx.type === 'CREDIT'
+                                          ? 'bg-success/10 text-success'
+                                          : 'bg-error/10 text-error'
                                 }`}
                             >
-                                {tx.type === 'CREDIT' ? (
+                                {tx.type === 'TRANSFER' ? (
+                                    <ArrowLeftRight className="h-4 w-4" />
+                                ) : tx.type === 'CREDIT' ? (
                                     <ArrowUpRight className="h-4 w-4" />
                                 ) : (
                                     <ArrowDownLeft className="h-4 w-4" />
@@ -124,6 +141,13 @@ export const TransactionTable = memo(function TransactionTable({
                 header: 'Account',
                 accessorFn: (row) => row.account?.name ?? '',
                 cell: ({ row }) => {
+                    if (row.original.type === 'TRANSFER') {
+                        return (
+                            <span className="text-base-content/80">
+                                {transferAccountLabel(row.original, activeAccountId)}
+                            </span>
+                        );
+                    }
                     const account = row.original.account;
                     if (!account) return <span className="text-base-content/50">None</span>;
                     return (
@@ -144,6 +168,8 @@ export const TransactionTable = memo(function TransactionTable({
                 accessorFn: (row) => row.category?.name ?? '',
                 enableSorting: false,
                 cell: ({ row }) => {
+                    if (row.original.type === 'TRANSFER')
+                        return <span className="text-base-content/40">—</span>;
                     return <CategoryBadge category={row.original.category} />;
                 },
             },
@@ -155,9 +181,11 @@ export const TransactionTable = memo(function TransactionTable({
                     return (
                         <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                                type === 'CREDIT'
-                                    ? 'bg-success/10 text-success'
-                                    : 'bg-error/10 text-error'
+                                type === 'TRANSFER'
+                                    ? 'bg-info/10 text-info'
+                                    : type === 'CREDIT'
+                                      ? 'bg-success/10 text-success'
+                                      : 'bg-error/10 text-error'
                             }`}
                         >
                             {type}
@@ -182,10 +210,14 @@ export const TransactionTable = memo(function TransactionTable({
                     return (
                         <div
                             className={`text-right font-semibold ${
-                                tx.type === 'CREDIT' ? 'text-success' : 'text-error'
+                                tx.type === 'TRANSFER'
+                                    ? 'text-base-content'
+                                    : tx.type === 'CREDIT'
+                                      ? 'text-success'
+                                      : 'text-error'
                             }`}
                         >
-                            {tx.type === 'CREDIT' ? '+' : '-'}
+                            {tx.type === 'TRANSFER' ? '' : tx.type === 'CREDIT' ? '+' : '-'}
                             {formatINR(tx.amount, locale)}
                         </div>
                     );
@@ -204,7 +236,7 @@ export const TransactionTable = memo(function TransactionTable({
                     const tx = row.original;
                     return (
                         <div className="flex items-center justify-end gap-1">
-                            {canManageTemplates && (
+                            {canManageTemplates && tx.type !== 'TRANSFER' && (
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -249,6 +281,7 @@ export const TransactionTable = memo(function TransactionTable({
         handleSaveAsTemplate,
         isCreatingTemplate,
         locale,
+        activeAccountId,
     ]);
 
     return (

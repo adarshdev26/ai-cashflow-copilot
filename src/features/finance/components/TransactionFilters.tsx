@@ -43,6 +43,7 @@ export function TransactionFilters({
                 <option value="">All types</option>
                 <option value="CREDIT">Credit</option>
                 <option value="DEBIT">Debit</option>
+                <option value="TRANSFER">Transfer</option>
             </FilterSelect>
             <FilterSelect
                 aria-label="Filter by account"

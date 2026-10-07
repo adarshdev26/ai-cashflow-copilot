@@ -50,7 +50,7 @@ export async function POST(req: Request) {
         const [accounts, categories] = await Promise.all([
             prisma.financialAccount.findMany({
                 where: { workspaceId },
-                select: { id: true, name: true, isActive: true },
+                select: { id: true, name: true, isActive: true, currency: true },
             }),
             prisma.category.findMany({
                 where: visibleCategoryWhere(workspaceId),
@@ -75,8 +75,9 @@ export async function POST(req: Request) {
         const data: {
             workspaceId: string;
             accountId: string;
+            toAccountId: string | null;
             categoryId: string | null;
-            type: 'CREDIT' | 'DEBIT';
+            type: 'CREDIT' | 'DEBIT' | 'TRANSFER';
             amount: number;
             description: string | null;
             createdAt: Date;
@@ -115,8 +116,35 @@ export async function POST(req: Request) {
                 continue;
             }
 
+            let toAccountId: string | null = null;
+            if (r.type === 'TRANSFER') {
+                if (!r.toAccount) {
+                    errors.push({ row: r.row, message: 'To Account is required for transfers' });
+                    continue;
+                }
+                const destination =
+                    accountById.get(r.toAccount) ?? accountByName.get(r.toAccount.toLowerCase());
+                if (!destination || destination === 'AMBIGUOUS') {
+                    errors.push({ row: r.row, message: `To Account "${r.toAccount}" not found or ambiguous` });
+                    continue;
+                }
+                if (destination.id === account.id) {
+                    errors.push({ row: r.row, message: 'Source and destination must differ' });
+                    continue;
+                }
+                if (!destination.isActive) {
+                    errors.push({ row: r.row, message: `To Account "${destination.name}" is inactive` });
+                    continue;
+                }
+                if (destination.currency !== account.currency) {
+                    errors.push({ row: r.row, message: 'Transfers between different currencies are not supported' });
+                    continue;
+                }
+                toAccountId = destination.id;
+            }
+
             let categoryId: string | null = null;
-            if (r.category) {
+            if (r.type !== 'TRANSFER' && r.category) {
                 const c = categoryByName.get(r.category.toLowerCase());
                 if (!c) {
                     errors.push({ row: r.row, message: `Category "${r.category}" does not exist` });
@@ -143,7 +171,8 @@ export async function POST(req: Request) {
             data.push({
                 workspaceId,
                 accountId: account.id,
-                categoryId,
+                toAccountId,
+                categoryId: r.type === 'TRANSFER' ? null : categoryId,
                 type: r.type,
                 amount: r.amount,
                 description: r.description,

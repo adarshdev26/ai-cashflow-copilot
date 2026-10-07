@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { AccountSelect } from '@/features/accounts/components/AccountSelect';
 import { CategorySelect } from '@/resources/components/CategorySelect';
 import { notify } from '@/lib/ui/toast';
-import type { TransactionType } from '@/features/finance/types';
+import type { FinancialTransactionType } from '@/features/finance/types';
 import { useCreateTemplate, useUpdateTemplate } from '../hooks/use-transaction-templates';
 import { localTodayISO } from '../lib/template-date';
 import type { TemplateDateMode, TransactionTemplateDTO } from '../types';
@@ -28,7 +28,7 @@ const dateOnly = (iso: string) => iso.slice(0, 10);
 
 export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
     const [name, setName] = useState(editing?.name ?? '');
-    const [type, setType] = useState<TransactionType>(editing?.type ?? 'DEBIT');
+    const [type, setType] = useState<FinancialTransactionType>(editing?.type ?? 'DEBIT');
     const [description, setDescription] = useState(editing?.description ?? '');
     const [amount, setAmount] = useState(editing?.amount != null ? String(editing.amount) : '');
     const [accountId, setAccountId] = useState(editing?.accountId ?? '');
@@ -43,7 +43,7 @@ export function TransactionTemplateModal({ isOpen, onClose, editing }: Props) {
     const update = useUpdateTemplate();
     const busy = create.isPending || update.isPending;
 
-    function changeType(next: TransactionType) {
+    function changeType(next: FinancialTransactionType) {
         if (next === type) return;
         setType(next);
         setCategoryId(''); // category list is filtered by type

@@ -1,7 +1,8 @@
 import { Category } from '@/resources/types';
 import type { AccountType } from '@/features/accounts/types';
 
-export type TransactionType = 'CREDIT' | 'DEBIT';
+export type TransactionType = 'CREDIT' | 'DEBIT' | 'TRANSFER';
+export type FinancialTransactionType = 'CREDIT' | 'DEBIT';
 
 export type TransactionSortBy =
     | 'createdAt'
@@ -30,6 +31,15 @@ export interface TransactionAccount {
     isActive: boolean;
 }
 
+export interface TransferInput {
+    type: 'TRANSFER';
+    fromAccountId: string;
+    toAccountId: string;
+    amount: number;
+    date: string;
+    note: string | null;
+}
+
 export interface Transaction {
     id: string;
     amount: number;
@@ -40,6 +50,7 @@ export interface Transaction {
     category: Category | null;
     accountId: string;
     account: TransactionAccount;
+    toAccount?: { id: string; name: string } | null;
     createdAt: string;
     updatedAt?: string;
 
@@ -78,7 +89,7 @@ export interface TransactionListResponse {
 
 export interface CreateTransactionInput {
     amount: number;
-    type: TransactionType;
+    type: FinancialTransactionType;
     description?: string;
     categoryId?: string | null;
     accountId: string;

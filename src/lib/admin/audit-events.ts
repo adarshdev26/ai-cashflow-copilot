@@ -62,6 +62,9 @@ export const AUDIT_ACTIONS = {
     USER_PLAN_CHANGED: 'user.plan_changed',
     BILLING_UPGRADED: 'billing.upgraded',
     BILLING_DOWNGRADED: 'billing.downgraded',
+    TRANSFER_CREATED: 'transfer.created',
+    TRANSFER_UPDATED: 'transfer.updated',
+    TRANSFER_DELETED: 'transfer.deleted',
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
@@ -130,6 +133,9 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     'user.plan_changed': 'Changed user plan',
     'billing.upgraded': 'Upgraded plan',
     'billing.downgraded': 'Downgraded plan',
+    'transfer.created': 'Transfer created',
+    'transfer.updated': 'Transfer updated',
+    'transfer.deleted': 'Transfer deleted',
 };
 
 export const AUDIT_RESOURCE_TYPES = {

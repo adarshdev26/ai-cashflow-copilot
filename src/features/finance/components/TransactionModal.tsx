@@ -64,7 +64,9 @@ export function TransactionModal({
               : '',
     );
     const [type, setType] = useState<'CREDIT' | 'DEBIT'>(
-        transaction?.type || initialValues?.type || 'CREDIT',
+        (transaction?.type === 'DEBIT' ? 'DEBIT' : transaction?.type === 'CREDIT' ? 'CREDIT' : null) ??
+            initialValues?.type ??
+            'CREDIT',
     );
     const [categoryId, setCategoryId] = useState<string | null>(
         transaction?.categoryId || initialValues?.categoryId || null,

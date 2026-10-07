@@ -7,6 +7,7 @@ export const CSV_COLUMNS = [
     'Description',
     'Category',
     'Financial Account',
+    'To Account',
 ] as const;
 export const MAX_IMPORT_ROWS = 5000;
 export const MAX_IMPORT_CHARS = 5 * 1024 * 1024;
@@ -14,11 +15,12 @@ export const MAX_IMPORT_CHARS = 5 * 1024 * 1024;
 export type ParsedCsvRow = {
     row: number; // spreadsheet row number (header is row 1)
     date: string; // ISO string
-    type: 'CREDIT' | 'DEBIT';
+    type: 'CREDIT' | 'DEBIT' | 'TRANSFER';
     amount: number;
     description: string | null;
     category: string | null;
     account: string | null; // name or id, resolved on the server
+    toAccount: string | null;
 };
 
 export type CsvRowError = { row: number; message: string };
@@ -59,8 +61,8 @@ export function parseTransactionCsv(
             errors.push({ row, message: 'Invalid Date (use e.g. 2026-09-30T09:15:00.000Z)' });
             return;
         }
-        if (type !== 'CREDIT' && type !== 'DEBIT') {
-            errors.push({ row, message: 'Type must be CREDIT or DEBIT' });
+        if (type !== 'CREDIT' && type !== 'DEBIT' && type !== 'TRANSFER') {
+            errors.push({ row, message: 'Type must be CREDIT, DEBIT or TRANSFER' });
             return;
         }
         if (!Number.isFinite(amount) || amount <= 0) {
@@ -80,6 +82,7 @@ export function parseTransactionCsv(
             description: description || null,
             category: (raw['category'] ?? '').trim() || null,
             account: (raw['financial account'] ?? '').trim() || null,
+            toAccount: (raw['to account'] ?? '').trim() || null,
         });
     });
 

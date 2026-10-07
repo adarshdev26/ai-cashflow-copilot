@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { getSystemNumber, getUserPreferences } from '@/lib/settings/server';
+import { FINANCIAL_TYPES } from '@/lib/transaction-filters';
 
 const DEFAULT_MONTHS = 6;
 
@@ -32,7 +33,7 @@ export async function GET(req: Request) {
         if (requested === 'all') {
             // Start from the workspace's first transaction
             const first = await prisma.transaction.aggregate({
-                where: { workspaceId },
+                where: { workspaceId, type: { in: FINANCIAL_TYPES } },
                 _min: { createdAt: true },
             });
             const firstDate = first._min.createdAt;
@@ -55,7 +56,7 @@ export async function GET(req: Request) {
         const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
         const rows = await prisma.transaction.findMany({
-            where: { workspaceId, createdAt: { gte: start } },
+            where: { workspaceId, type: { in: FINANCIAL_TYPES }, createdAt: { gte: start } },
             select: { type: true, amount: true, createdAt: true },
         });
 

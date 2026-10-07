@@ -20,6 +20,12 @@ export async function PATCH(request: Request, { params }: Ctx) {
         where: { id, workspaceId: access.workspaceId },
     });
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (existing.type !== 'CREDIT' && existing.type !== 'DEBIT') {
+        return NextResponse.json(
+            { error: 'Transfers cannot be used as recurring transactions' },
+            { status: 400 },
+        );
+    }
 
     let body: unknown;
     try {
