@@ -1,72 +1,113 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireWorkspaceAction } from '@/lib/workspaces';
+import { prisma } from '@/lib/db/prisma';
+import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import { Prisma } from '@/generated/prisma';
 import { validateCreateAccount } from '@/features/accounts/lib/validate-account';
 import { getAccountTotals, toAccountWithBalance } from '@/features/accounts/lib/balance';
+import { logAudit, userActor } from '@/lib/admin/audit';
+import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceLimit } from '@/lib/plans/server';
 
 export async function GET(req: Request) {
-  try {
-    const access = await requireWorkspaceAction(req, 'workspace.read');
-    if (!access.ok) return access.response;
+    try {
+        const access = await requireWorkspaceAction(req, 'workspace.read');
+        if (!access.ok) return access.response;
 
-    const { workspaceId } = access;
-    const onlyActive = new URL(req.url).searchParams.get('active') === 'true';
+        const { workspaceId } = access;
+        const onlyActive = new URL(req.url).searchParams.get('active') === 'true';
 
-    const accounts = await prisma.financialAccount.findMany({
-      where: { workspaceId, ...(onlyActive ? { isActive: true } : {}) },
-      include: { _count: { select: { transactions: true } } },
-      orderBy: [{ isActive: 'desc' }, { createdAt: 'asc' }],
-    });
+        const accounts = await prisma.financialAccount.findMany({
+            where: { workspaceId, ...(onlyActive ? { isActive: true } : {}) },
+            include: {
+                _count: {
+                    select: {
+                        transactions: true,
+                        // Incoming transfers are a separate relation (Transaction.toAccount),
+                        // so they must be counted separately.
+                        incomingTransfers: true,
+                    },
+                },
+            },
+            orderBy: [{ isActive: 'desc' }, { createdAt: 'asc' }],
+        });
 
-    const totals = await getAccountTotals(workspaceId, accounts.map((a) => a.id));
-    return NextResponse.json({ data: accounts.map((a) => toAccountWithBalance(a, totals)) }, { status: 200 });
-  } catch (error) {
-    console.error('Failed to fetch accounts:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
+        const totals = await getAccountTotals(
+            workspaceId,
+            accounts.map((a) => a.id),
+        );
+        return NextResponse.json(
+            { data: accounts.map((a) => toAccountWithBalance(a, totals)) },
+            { status: 200 },
+        );
+    } catch (error) {
+        console.error('Failed to fetch accounts:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
 }
 
 export async function POST(req: Request) {
-  try {
-    const access = await requireWorkspaceAction(req, 'account.create');
-    if (!access.ok) return access.response;
-
-    const { workspaceId } = access;
-    const body = await req.json().catch(() => null);
-
-    const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      select: { currency: true },
-    });
-    if (!workspace) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-
-    let data;
     try {
-      data = validateCreateAccount(body, workspace.currency);
-    } catch (err: unknown) {
-      return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid account data' }, { status: 400 });
-    }
+        const access = await requireWorkspaceAction(req, 'account.create');
+        if (!access.ok) return access.response;
 
-    const duplicate = await prisma.financialAccount.findFirst({
-      where: { workspaceId, name: { equals: data.name, mode: 'insensitive' } },
-      select: { id: true },
-    });
-    if (duplicate) {
-      return NextResponse.json({ error: 'An account with this name already exists' }, { status: 409 });
-    }
+        const { workspaceId } = access;
+        const body = await req.json().catch(() => null);
 
-    const created = await prisma.financialAccount.create({
-      data: { ...data, workspaceId },
-      include: { _count: { select: { transactions: true } } },
-    });
+        const workspace = await prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: { currency: true },
+        });
+        if (!workspace) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    return NextResponse.json(toAccountWithBalance(created, new Map()), { status: 201 });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-      return NextResponse.json({ error: 'An account with this name already exists' }, { status: 409 });
+        let data;
+        try {
+            data = validateCreateAccount(body, workspace.currency);
+        } catch (err: unknown) {
+            return NextResponse.json(
+                { error: err instanceof Error ? err.message : 'Invalid account data' },
+                { status: 400 },
+            );
+        }
+
+        const duplicate = await prisma.financialAccount.findFirst({
+            where: { workspaceId, name: { equals: data.name, mode: 'insensitive' } },
+            select: { id: true },
+        });
+        if (duplicate) {
+            return NextResponse.json(
+                { error: 'An account with this name already exists' },
+                { status: 409 },
+            );
+        }
+
+        const blocked = await enforceWorkspaceLimit(workspaceId, 'maxAccounts');
+        if (blocked) return blocked;
+
+        const created = await prisma.financialAccount.create({
+            data: { ...data, workspaceId },
+            include: {
+                _count: { select: { transactions: true, incomingTransfers: true } },
+            },
+        });
+
+        await logAudit({
+            actor: await userActor(access.userId),
+            action: AUDIT_ACTIONS.ACCOUNT_CREATED,
+            resourceType: 'account',
+            resourceId: created.id,
+            workspaceId,
+            metadata: { targetName: created.name, type: created.type },
+        });
+
+        return NextResponse.json(toAccountWithBalance(created, new Map()), { status: 201 });
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            return NextResponse.json(
+                { error: 'An account with this name already exists' },
+                { status: 409 },
+            );
+        }
+        console.error('Failed to create account:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-    console.error('Failed to create account:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
 }

@@ -7,7 +7,7 @@
  * means "this is mine". /api/workspaces returns oldest first, so this is Personal.
  */
 export function getOnboardingWorkspace<T extends { role: string }>(
-  workspaces: T[] | undefined
+    workspaces: T[] | undefined,
 ): T | undefined {
-  return workspaces?.find((w) => w.role === 'OWNER');
+    return workspaces?.find((w) => w.role === 'OWNER');
 }
