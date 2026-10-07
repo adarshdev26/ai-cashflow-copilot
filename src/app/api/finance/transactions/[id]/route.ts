@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
-import {
-    validateTransactionData,
-} from '@/features/finance/lib/validate-transaction';
+import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 import { validateTransfer } from '@/features/finance/lib/validate-transfer';
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { getCategoryError } from '@/lib/categories';
@@ -63,8 +61,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             if (accounts.length !== 2 || accounts[0].currency !== accounts[1].currency) {
                 return NextResponse.json(
                     {
-                        error:
-                            'Both accounts must be active, same-currency accounts in this workspace',
+                        error: 'Both accounts must be active, same-currency accounts in this workspace',
                     },
                     { status: 400 },
                 );

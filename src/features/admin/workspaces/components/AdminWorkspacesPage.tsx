@@ -132,7 +132,8 @@ export function AdminWorkspacesPage() {
                             onChange={(e) =>
                                 table.list.setFilter(
                                     'isActive',
-                                    (e.target.value || undefined) as AdminWorkspaceFilters['isActive'],
+                                    (e.target.value ||
+                                        undefined) as AdminWorkspaceFilters['isActive'],
                                 )
                             }
                         >

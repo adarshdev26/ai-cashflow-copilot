@@ -27,9 +27,7 @@ export async function GET(req: Request) {
         const where: Prisma.CategoryWhereInput = {
             workspaceId: null,
             ...(params.isActive !== undefined ? { isActive: params.isActive } : {}),
-            ...(type
-                ? { type: type as (typeof CATEGORY_TYPES)[number] }
-                : {}),
+            ...(type ? { type: type as (typeof CATEGORY_TYPES)[number] } : {}),
             ...(params.search ? { name: { contains: params.search, mode: 'insensitive' } } : {}),
         };
 

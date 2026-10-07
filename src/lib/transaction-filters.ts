@@ -24,11 +24,11 @@ export function buildTransactionWhere(f: {
         ...(f.search ? { description: { contains: f.search, mode: 'insensitive' as const } } : {}),
         ...(f.dateFrom || f.dateTo
             ? {
-                createdAt: {
-                    ...(f.dateFrom ? { gte: f.dateFrom } : {}),
-                    ...(f.dateTo ? { lte: f.dateTo } : {}),
-                },
-            }
+                  createdAt: {
+                      ...(f.dateFrom ? { gte: f.dateFrom } : {}),
+                      ...(f.dateTo ? { lte: f.dateTo } : {}),
+                  },
+              }
             : {}),
     };
 

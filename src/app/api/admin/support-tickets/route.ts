@@ -14,9 +14,7 @@ export async function GET(req: Request) {
     const page = Math.max(1, Number(sp.get('page')) || 1);
     const limit = Math.min(100, Math.max(1, Number(sp.get('limit')) || 10));
     const sortByRaw = sp.get('sortBy') ?? 'createdAt';
-    const sortBy = (SORTABLE as readonly string[]).includes(sortByRaw)
-        ? sortByRaw
-        : 'createdAt';
+    const sortBy = (SORTABLE as readonly string[]).includes(sortByRaw) ? sortByRaw : 'createdAt';
     const sortDir = sp.get('sortDir') === 'asc' ? 'asc' : 'desc';
     const search = sp.get('search')?.trim();
     const statusRaw = sp.get('status');

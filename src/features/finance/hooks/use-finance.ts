@@ -7,7 +7,12 @@ import {
     createTransfer,
     updateTransfer,
 } from '../api/finance-api';
-import { CreateTransactionInput, TransactionListParams, TransferInput, UpdateTransactionInput } from '../types';
+import {
+    CreateTransactionInput,
+    TransactionListParams,
+    TransferInput,
+    UpdateTransactionInput,
+} from '../types';
 import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
 
 export const financeKeys = {

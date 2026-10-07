@@ -208,7 +208,7 @@ export function DataTable<TData, TValue>({
                             Clear
                         </button>
                     )}
-                    <div className="text-base-content/60 ml-auto whitespace-nowrap text-xs">
+                    <div className="text-base-content/60 ml-auto text-xs whitespace-nowrap">
                         Total:{' '}
                         <span className="text-base-content/80 font-semibold">
                             {totalCount ?? table.getFilteredRowModel().rows.length}

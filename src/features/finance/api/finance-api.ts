@@ -38,7 +38,10 @@ export async function createTransaction(
     });
 }
 
-export async function createTransfer(workspaceId: string, data: TransferInput): Promise<Transaction> {
+export async function createTransfer(
+    workspaceId: string,
+    data: TransferInput,
+): Promise<Transaction> {
     return apiFetch<Transaction>('/api/finance/transactions', {
         ...withWorkspace(workspaceId),
         method: 'POST',

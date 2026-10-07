@@ -125,7 +125,10 @@ export async function POST(req: Request) {
                 const destination =
                     accountById.get(r.toAccount) ?? accountByName.get(r.toAccount.toLowerCase());
                 if (!destination || destination === 'AMBIGUOUS') {
-                    errors.push({ row: r.row, message: `To Account "${r.toAccount}" not found or ambiguous` });
+                    errors.push({
+                        row: r.row,
+                        message: `To Account "${r.toAccount}" not found or ambiguous`,
+                    });
                     continue;
                 }
                 if (destination.id === account.id) {
@@ -133,11 +136,17 @@ export async function POST(req: Request) {
                     continue;
                 }
                 if (!destination.isActive) {
-                    errors.push({ row: r.row, message: `To Account "${destination.name}" is inactive` });
+                    errors.push({
+                        row: r.row,
+                        message: `To Account "${destination.name}" is inactive`,
+                    });
                     continue;
                 }
                 if (destination.currency !== account.currency) {
-                    errors.push({ row: r.row, message: 'Transfers between different currencies are not supported' });
+                    errors.push({
+                        row: r.row,
+                        message: 'Transfers between different currencies are not supported',
+                    });
                     continue;
                 }
                 toAccountId = destination.id;

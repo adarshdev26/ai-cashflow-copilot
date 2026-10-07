@@ -148,7 +148,8 @@ export function AdminCategoriesPage() {
                                 onChange={(e) =>
                                     table.list.setFilter(
                                         'isActive',
-                                        (e.target.value || undefined) as AdminCategoryFilters['isActive'],
+                                        (e.target.value ||
+                                            undefined) as AdminCategoryFilters['isActive'],
                                     )
                                 }
                             >

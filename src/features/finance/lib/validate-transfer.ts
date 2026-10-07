@@ -8,8 +8,7 @@ export interface TransferInput {
 }
 
 export type TransferValidation =
-    | { ok: true; data: Omit<TransferInput, 'date'> & { date: Date } }
-    | { ok: false; error: string };
+    { ok: true; data: Omit<TransferInput, 'date'> & { date: Date } } | { ok: false; error: string };
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_NOTE = 255; // ⚠️ use the same limit as transaction description
@@ -35,10 +34,8 @@ export function validateTransfer(body: unknown): TransferValidation {
     const dateStr = typeof b.date === 'string' ? b.date : '';
     if (!DATE_RE.test(dateStr)) return { ok: false, error: 'Enter a valid date' };
     const date = new Date(`${dateStr}T12:00:00.000Z`); // same "noon UTC" convention as transactions
-    if (
-        Number.isNaN(date.getTime()) ||
-        date.toISOString().slice(0, 10) !== dateStr
-    ) return { ok: false, error: 'Enter a valid date' };
+    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== dateStr)
+        return { ok: false, error: 'Enter a valid date' };
 
     const note = typeof b.note === 'string' ? b.note.trim() : '';
     if (note.length > MAX_NOTE) {

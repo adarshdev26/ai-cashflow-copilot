@@ -26,7 +26,9 @@ export function useDataTableState<
     const [resolvedFilterKeys] = useState<readonly (keyof TFilters)[]>(
         () =>
             filterKeys ??
-            (Object.keys(options.defaultFilters).filter((key) => key !== searchKey) as (keyof TFilters)[]),
+            (Object.keys(options.defaultFilters).filter(
+                (key) => key !== searchKey,
+            ) as (keyof TFilters)[]),
     );
     const { setFilter, setFilters, setPage, setPageSize, setSort } = list;
     const paginationState = useMemo<PaginationState>(

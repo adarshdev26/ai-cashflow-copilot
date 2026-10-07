@@ -60,7 +60,11 @@ export const FinanceHeader = memo(function FinanceHeader({
                 )}
                 {canCreate && onUseTemplate && <UseTemplateMenu onSelect={onUseTemplate} />}
                 {canCreate && onTransfer && (
-                    <Button variant="secondary" onClick={onTransfer} leftIcon={<ArrowLeftRight className="h-4 w-4" />}>
+                    <Button
+                        variant="secondary"
+                        onClick={onTransfer}
+                        leftIcon={<ArrowLeftRight className="h-4 w-4" />}
+                    >
                         Transfer Money
                     </Button>
                 )}

@@ -34,7 +34,13 @@ export async function GET(req: Request) {
         const dateFrom = parseDateParam(sp.get('dateFrom'));
         const dateTo = parseDateParam(sp.get('dateTo'), true);
 
-        if (type !== null && type !== '' && type !== 'CREDIT' && type !== 'DEBIT' && type !== 'TRANSFER') {
+        if (
+            type !== null &&
+            type !== '' &&
+            type !== 'CREDIT' &&
+            type !== 'DEBIT' &&
+            type !== 'TRANSFER'
+        ) {
             return NextResponse.json({ error: 'Invalid type value' }, { status: 400 });
         }
         if (dateFrom === null || dateTo === null) {

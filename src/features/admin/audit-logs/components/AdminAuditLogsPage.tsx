@@ -25,8 +25,8 @@ export function AdminAuditLogsPage() {
     });
     const isInvalidDateRange = Boolean(
         table.list.filters.dateFrom &&
-            table.list.filters.dateTo &&
-            table.list.filters.dateFrom > table.list.filters.dateTo,
+        table.list.filters.dateTo &&
+        table.list.filters.dateFrom > table.list.filters.dateTo,
     );
     const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
         queryKey: ['admin-audit-logs', 'list', table.list.params],

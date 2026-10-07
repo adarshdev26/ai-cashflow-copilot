@@ -77,7 +77,9 @@ export function ExportTransactionsModal({ open, onClose, workspaceId, initialFil
                 <Select
                     aria-label="Type"
                     value={filters.type ?? ''}
-                    onChange={(e) => set('type', e.target.value as 'CREDIT' | 'DEBIT' | 'TRANSFER' | '')}
+                    onChange={(e) =>
+                        set('type', e.target.value as 'CREDIT' | 'DEBIT' | 'TRANSFER' | '')
+                    }
                 >
                     <option value="">All types</option>
                     <option value="CREDIT">Credit</option>

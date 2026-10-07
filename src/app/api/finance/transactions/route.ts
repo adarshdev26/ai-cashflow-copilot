@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
-import {
-    validateTransactionData,
-} from '@/features/finance/lib/validate-transaction';
+import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
 import { validateTransfer } from '@/features/finance/lib/validate-transfer';
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { Prisma } from '@/generated/prisma';
@@ -94,8 +92,8 @@ export async function GET(req: Request) {
             sortBy === 'account'
                 ? { account: { name: sortDir } }
                 : sortBy === 'category'
-                    ? { category: { name: sortDir } }
-                    : { [sortBy]: sortDir },
+                  ? { category: { name: sortDir } }
+                  : { [sortBy]: sortDir },
             { id: 'asc' },
         ];
         const [transactions, totalCount] = await Promise.all([

@@ -5,12 +5,7 @@ export type TransactionType = 'CREDIT' | 'DEBIT' | 'TRANSFER';
 export type FinancialTransactionType = 'CREDIT' | 'DEBIT';
 
 export type TransactionSortBy =
-    | 'createdAt'
-    | 'amount'
-    | 'description'
-    | 'type'
-    | 'account'
-    | 'category';
+    'createdAt' | 'amount' | 'description' | 'type' | 'account' | 'category';
 export type TransactionSortField = TransactionSortBy;
 export type SortDirection = 'asc' | 'desc';
 
