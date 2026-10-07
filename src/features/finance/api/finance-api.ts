@@ -4,6 +4,7 @@ import {
     TransactionListParams,
     TransactionListResponse,
     UpdateTransactionInput,
+    TransferInput,
 } from '../types';
 import { apiFetch, withWorkspace } from '@/lib/api-client';
 
@@ -33,6 +34,29 @@ export async function createTransaction(
     return apiFetch<Transaction>('/api/finance/transactions', {
         ...withWorkspace(workspaceId),
         method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function createTransfer(
+    workspaceId: string,
+    data: TransferInput,
+): Promise<Transaction> {
+    return apiFetch<Transaction>('/api/finance/transactions', {
+        ...withWorkspace(workspaceId),
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function updateTransfer(
+    workspaceId: string,
+    id: string,
+    data: TransferInput,
+): Promise<Transaction> {
+    return apiFetch<Transaction>(`/api/finance/transactions/${id}`, {
+        ...withWorkspace(workspaceId),
+        method: 'PATCH',
         body: JSON.stringify(data),
     });
 }

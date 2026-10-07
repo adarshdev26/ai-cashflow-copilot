@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { getSystemNumber } from '@/lib/settings/server';
+import { FINANCIAL_TYPES } from '@/lib/transaction-filters';
 
 const DEFAULT_DAYS = 30;
 
@@ -29,7 +30,7 @@ export async function GET(req: Request) {
         let days: number;
         if (requested === 'all') {
             const first = await prisma.transaction.aggregate({
-                where: { workspaceId },
+                where: { workspaceId, type: { in: FINANCIAL_TYPES } },
                 _min: { createdAt: true },
             });
             const firstDate = first._min.createdAt;
@@ -54,11 +55,11 @@ export async function GET(req: Request) {
             // Opening balance: everything before the window, summed by the database
             prisma.transaction.groupBy({
                 by: ['type'],
-                where: { workspaceId, createdAt: { lt: start } },
+                where: { workspaceId, type: { in: FINANCIAL_TYPES }, createdAt: { lt: start } },
                 _sum: { amount: true },
             }),
             prisma.transaction.findMany({
-                where: { workspaceId, createdAt: { gte: start } },
+                where: { workspaceId, type: { in: FINANCIAL_TYPES }, createdAt: { gte: start } },
                 select: { type: true, amount: true, createdAt: true },
             }),
         ]);

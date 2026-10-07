@@ -50,9 +50,12 @@ export function OnboardingWizard() {
     };
 
     return (
-        <div className="border-base-300 bg-base-100 rounded-xl border p-8 shadow-2xl">
-            <WizardProgress steps={WIZARD_STEPS} current={step} />
-            <div className="mt-8">{renderStep()}</div>
+        <div className="border-base-300 bg-base-100 overflow-hidden rounded-2xl border shadow-2xl">
+            <div className="from-primary to-primary/30 h-1.5 bg-gradient-to-r" />
+            <div className="p-8 sm:p-10">
+                <WizardProgress steps={WIZARD_STEPS} current={step} />
+                <div className="mt-8">{renderStep()}</div>
+            </div>
         </div>
     );
 }

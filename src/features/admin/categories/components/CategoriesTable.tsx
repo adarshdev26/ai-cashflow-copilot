@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import type { ReactNode } from 'react';
 import type { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
@@ -23,6 +24,9 @@ type Props = {
     totalCount: number;
     isLoading: boolean;
     isFetching: boolean;
+    filters?: ReactNode;
+    activeFilterCount?: number;
+    onClearFilters?: () => void;
 };
 
 const typeLabels = { BOTH: 'Both', CREDIT: 'Income', DEBIT: 'Expense' } as const;
@@ -42,6 +46,9 @@ export function CategoriesTable({
     totalCount,
     isLoading,
     isFetching,
+    filters,
+    activeFilterCount,
+    onClearFilters,
 }: Props) {
     const columns = useMemo<ColumnDef<AdminCategoryRow>[]>(
         () => [
@@ -66,7 +73,7 @@ export function CategoriesTable({
             {
                 id: 'isActive',
                 header: 'Status',
-                enableSorting: false,
+                accessorFn: (row) => row.isActive,
                 cell: ({ row }) => <StatusBadge active={row.original.isActive} />,
             },
             {
@@ -160,6 +167,9 @@ export function CategoriesTable({
             onGlobalFilterChange={onGlobalFilterChange}
             isLoading={isLoading}
             isFetching={isFetching}
+            filters={filters}
+            activeFilterCount={activeFilterCount}
+            onClearFilters={onClearFilters}
         />
     );
 }

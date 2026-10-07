@@ -53,6 +53,7 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
             {
                 accessorKey: 'name',
                 header: 'Template',
+                enableSorting: true,
                 cell: ({ row }) => {
                     const t = row.original;
                     const isIncome = t.type === 'CREDIT';
@@ -81,6 +82,7 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
             {
                 accessorKey: 'amount',
                 header: 'Amount',
+                enableSorting: true,
                 cell: ({ row }) => {
                     const t = row.original;
                     if (t.amount == null) {
@@ -100,6 +102,7 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
             {
                 id: 'account',
                 header: 'Account',
+                enableSorting: true,
                 accessorFn: (row) => row.account?.name ?? '',
                 cell: ({ row }) => {
                     const a = row.original.account;
@@ -115,6 +118,7 @@ export const TransactionTemplateTable = memo(function TransactionTemplateTable({
             {
                 id: 'category',
                 header: 'Category',
+                enableSorting: true,
                 accessorFn: (row) => row.category?.name ?? '',
                 cell: ({ row }) => {
                     const c = row.original.category;

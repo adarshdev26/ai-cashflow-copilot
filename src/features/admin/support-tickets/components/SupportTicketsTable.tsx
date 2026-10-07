@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import type { ReactNode } from 'react';
 import type { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
@@ -21,6 +22,9 @@ type Props = {
     totalCount: number;
     isLoading: boolean;
     isFetching: boolean;
+    filters?: ReactNode;
+    activeFilterCount?: number;
+    onClearFilters?: () => void;
 };
 
 export function SupportTicketsTable({
@@ -36,6 +40,9 @@ export function SupportTicketsTable({
     totalCount,
     isLoading,
     isFetching,
+    filters,
+    activeFilterCount,
+    onClearFilters,
 }: Props) {
     const columns = useMemo<ColumnDef<AdminTicketRow>[]>(
         () => [
@@ -49,9 +56,9 @@ export function SupportTicketsTable({
                 ),
             },
             {
-                id: 'user',
+                id: 'requester',
                 header: 'Requester',
-                enableSorting: false,
+                accessorFn: (row) => row.user.email,
                 cell: ({ row }) => {
                     const { name, email } = row.original.user;
                     return (
@@ -116,6 +123,9 @@ export function SupportTicketsTable({
             onGlobalFilterChange={onGlobalFilterChange}
             isLoading={isLoading}
             isFetching={isFetching}
+            filters={filters}
+            activeFilterCount={activeFilterCount}
+            onClearFilters={onClearFilters}
         />
     );
 }

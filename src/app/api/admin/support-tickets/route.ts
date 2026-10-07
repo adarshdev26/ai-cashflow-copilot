@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 import { requireAdmin } from '@/lib/admin/auth';
 import { isTicketStatus } from '@/features/support-tickets/status';
 
-const SORTABLE = ['createdAt', 'updatedAt', 'status', 'subject'] as const;
+const SORTABLE = ['createdAt', 'updatedAt', 'status', 'subject', 'requester'] as const;
 
 export async function GET(req: Request) {
     const guard = await requireAdmin();
@@ -38,7 +38,10 @@ export async function GET(req: Request) {
     const [rows, total] = await Promise.all([
         prisma.supportTicket.findMany({
             where,
-            orderBy: { [sortBy]: sortDir },
+            orderBy:
+                sortBy === 'requester'
+                    ? [{ user: { email: sortDir } }, { id: 'asc' }]
+                    : [{ [sortBy]: sortDir }, { id: 'asc' }],
             skip: (page - 1) * limit,
             take: limit,
             select: {

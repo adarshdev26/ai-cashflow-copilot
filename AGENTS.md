@@ -10,6 +10,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Cashflow Copilot agent instructions
 
+## Transfers
+
+A transfer is one transaction row with `type = TRANSFER`, the source in `accountId`, the destination in `toAccountId`, and no category. It moves balance between active, same-currency accounts in one workspace. Totals, reports, charts, budgets, and category summaries must filter with `FINANCIAL_TYPES` (`CREDIT` and `DEBIT`); recurring transactions and templates remain income/expense only.
+
 Follow the code that is already in the repo. Do not add a service layer, repository layer, Zod, React Hook Form, or a component library. Do not treat habits, notes, settings, admin role, or workspace switching as implemented features.
 
 ## Project architecture
@@ -224,3 +228,10 @@ There is no `.env.example` and no `NEXT_PUBLIC_` variable. Do not put secrets in
 - Preserve this Next.js agent block. Do not edit the text between `BEGIN:nextjs-agent-rules` and `END:nextjs-agent-rules`.
 - If a comment and the code disagree, follow the code. Signup does not create a workspace. The category-summary comment that mentions `/api/finance/categories/summary` is wrong; the route is `/api/categories/summary`.
 - Leave unrelated files alone. Match quote and semicolon style of the file you edit.
+
+## DataTable conventions
+
+- Controlled server-paginated lists use `useDataTableState` (or `useAdminTableState`, which wraps it), spread `dataTableProps` into the table, and use `activeFilterCount` / `clearFilters`. Clear filters preserves search and sort. Full-array client lists (budgets, recurring, templates) keep DataTable's local state.
+- Put table filters in the `DataTable` `filters` slot and provide `activeFilterCount` and `onClearFilters` when filters are available.
+- Use `FilterSelect` and `FilterDateRange` for compact controls; filter controls must not stretch to full width.
+- Every server sortable column needs an allow-listed key in its API route and a stable `{ id: 'asc' }` tie-breaker. Client-side tables keep local sorting.

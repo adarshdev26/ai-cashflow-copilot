@@ -69,6 +69,7 @@ export const RecurringTable = memo(function RecurringTable({
             {
                 id: 'description',
                 header: 'Description',
+                enableSorting: true,
                 accessorFn: (row) => row.description ?? '',
                 cell: ({ row }) => {
                     const r = row.original;
@@ -97,6 +98,7 @@ export const RecurringTable = memo(function RecurringTable({
             {
                 accessorKey: 'amount',
                 header: 'Amount',
+                enableSorting: true,
                 cell: ({ row }) => {
                     const r = row.original;
                     const isIncome = r.type === 'CREDIT';
@@ -113,6 +115,7 @@ export const RecurringTable = memo(function RecurringTable({
             {
                 id: 'account',
                 header: 'Account',
+                enableSorting: true,
                 accessorFn: (row) => row.account.name,
                 cell: ({ row }) => (
                     <span className="text-base-content/80">{row.original.account.name}</span>
@@ -127,6 +130,7 @@ export const RecurringTable = memo(function RecurringTable({
             {
                 accessorKey: 'nextRunAt',
                 header: 'Next',
+                enableSorting: true,
                 cell: ({ row }) => {
                     const r = row.original;
                     if (getRecurringStatus(r) === 'ENDED')
@@ -143,6 +147,7 @@ export const RecurringTable = memo(function RecurringTable({
             {
                 accessorKey: 'endDate',
                 header: 'Ends',
+                enableSorting: true,
                 cell: ({ row }) =>
                     row.original.endDate ? (
                         <span className="text-base-content/80">

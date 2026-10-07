@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Select } from '@/components/ui/Select';
+import { FilterSelect } from '@/components/ui/FilterSelect';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import type { CategoryKind } from '@/features/categories/types';
 import { useAdminTableState } from '../../shared/hooks/use-admin-table-state';
@@ -103,40 +103,6 @@ export function AdminCategoriesPage() {
                 </Button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-                <Select
-                    aria-label="Filter categories by status"
-                    className="w-40"
-                    value={table.list.filters.isActive ?? ''}
-                    onChange={(e) =>
-                        table.list.setFilter(
-                            'isActive',
-                            (e.target.value || undefined) as AdminCategoryFilters['isActive'],
-                        )
-                    }
-                >
-                    <option value="">All statuses</option>
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
-                </Select>
-                <Select
-                    aria-label="Filter categories by type"
-                    className="w-44"
-                    value={table.list.filters.type ?? ''}
-                    onChange={(e) =>
-                        table.list.setFilter(
-                            'type',
-                            (e.target.value || undefined) as CategoryKind | undefined,
-                        )
-                    }
-                >
-                    <option value="">All types</option>
-                    <option value="BOTH">Income and expenses</option>
-                    <option value="CREDIT">Income</option>
-                    <option value="DEBIT">Expense</option>
-                </Select>
-            </div>
-
             {isError && !data ? (
                 <div className="border-error/30 bg-error/10 rounded-xl border p-6 text-center">
                     <p className="text-error text-sm">
@@ -174,6 +140,42 @@ export function AdminCategoriesPage() {
                     totalCount={data?.pagination.totalCount ?? 0}
                     isLoading={isLoading}
                     isFetching={isFetching}
+                    filters={
+                        <>
+                            <FilterSelect
+                                aria-label="Filter categories by status"
+                                value={table.list.filters.isActive ?? ''}
+                                onChange={(e) =>
+                                    table.list.setFilter(
+                                        'isActive',
+                                        (e.target.value ||
+                                            undefined) as AdminCategoryFilters['isActive'],
+                                    )
+                                }
+                            >
+                                <option value="">All statuses</option>
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </FilterSelect>
+                            <FilterSelect
+                                aria-label="Filter categories by type"
+                                value={table.list.filters.type ?? ''}
+                                onChange={(e) =>
+                                    table.list.setFilter(
+                                        'type',
+                                        (e.target.value || undefined) as CategoryKind | undefined,
+                                    )
+                                }
+                            >
+                                <option value="">All types</option>
+                                <option value="BOTH">Income and expenses</option>
+                                <option value="CREDIT">Income</option>
+                                <option value="DEBIT">Expense</option>
+                            </FilterSelect>
+                        </>
+                    }
+                    activeFilterCount={table.activeFilterCount}
+                    onClearFilters={table.clearFilters}
                 />
             )}
 

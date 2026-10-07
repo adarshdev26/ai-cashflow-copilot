@@ -189,33 +189,40 @@ export function ImportTransactionsModal({
                 )}
 
                 {preview.length > 0 && (
-                    <div className="border-base-300 overflow-x-auto rounded-lg border">
-                        <table className="w-full text-left text-xs">
-                            <thead className="bg-base-200 text-base-content/60">
-                                <tr>
-                                    <th className="px-3 py-2">Date</th>
-                                    <th className="px-3 py-2">Type</th>
-                                    <th className="px-3 py-2">Amount</th>
-                                    <th className="px-3 py-2">Category</th>
-                                    <th className="px-3 py-2">Account</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {preview.map((r) => (
-                                    <tr key={r.row} className="border-base-200 border-t">
-                                        <td className="px-3 py-2">{r.date.slice(0, 10)}</td>
-                                        <td className="px-3 py-2">{r.type}</td>
-                                        <td className="px-3 py-2">{r.amount.toFixed(2)}</td>
-                                        <td className="px-3 py-2">{r.category ?? '—'}</td>
-                                        <td className="px-3 py-2">{r.account ?? '—'}</td>
+                    <>
+                        <div className="border-base-300 overflow-x-auto rounded-lg border">
+                            <table className="w-full text-left text-xs">
+                                <thead className="bg-base-200 text-base-content/60">
+                                    <tr>
+                                        <th className="px-3 py-2">Date</th>
+                                        <th className="px-3 py-2">Type</th>
+                                        <th className="px-3 py-2">Amount</th>
+                                        <th className="px-3 py-2">Category</th>
+                                        <th className="px-3 py-2">Account</th>
+                                        <th className="px-3 py-2">To Account</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        <p className="border-base-200 text-base-content/50 border-t px-3 py-2 text-xs">
-                            First {preview.length} rows
+                                </thead>
+                                <tbody>
+                                    {preview.map((r) => (
+                                        <tr key={r.row} className="border-base-200 border-t">
+                                            <td className="px-3 py-2">{r.date.slice(0, 10)}</td>
+                                            <td className="px-3 py-2">{r.type}</td>
+                                            <td className="px-3 py-2">{r.amount.toFixed(2)}</td>
+                                            <td className="px-3 py-2">{r.category ?? '—'}</td>
+                                            <td className="px-3 py-2">{r.account ?? '—'}</td>
+                                            <td className="px-3 py-2">{r.toAccount ?? '—'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <p className="border-base-200 text-base-content/50 border-t px-3 py-2 text-xs">
+                                First {preview.length} rows
+                            </p>
+                        </div>
+                        <p className="text-base-content/50 text-xs">
+                            To Account is only needed for TRANSFER rows.
                         </p>
-                    </div>
+                    </>
                 )}
             </div>
         </Modal>

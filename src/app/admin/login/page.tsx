@@ -2,11 +2,12 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Mail, Lock, ShieldCheck } from 'lucide-react';
 import { AuthShell } from '@/components/auth/AuthShell';
-import { PasswordInput } from '@/components/ui/PasswordInput';
+import { AdminPanel, AuthAlert, AuthField, SplitAuthLayout } from '@/components/auth/AuthUI';
 import { PrimaryButton } from '@/components/ui/Button';
 import { PageTransitionOverlay } from '@/components/ui/PageTransitionOverlay';
-import { authInputCls } from '@/components/ui/inputs';
 import { apiFetch } from '@/lib/api-client';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 
@@ -41,61 +42,57 @@ export default function AdminLoginPage() {
     return (
         <AuthShell>
             <PageTransitionOverlay isVisible={loading} message="Signing in…" />
-            <div className="border-base-300 bg-base-100 w-full max-w-md rounded-xl border p-8 shadow-2xl">
-                <h1 className="text-base-content mb-2 text-2xl font-bold tracking-tight">
-                    Admin sign in
-                </h1>
-                <p className="text-base-content/60 mb-6 text-sm">
+            {/* Same layout as the user login: form left, colour panel right */}
+            <SplitAuthLayout panel={<AdminPanel />} panelSide="right">
+                <span className="bg-primary/10 text-primary mb-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Admin
+                </span>
+                <h1 className="text-2xl font-bold tracking-tight">Admin sign in</h1>
+                <p className="text-base-content/60 mt-1 mb-6 text-sm">
                     Sign in to manage users and workspaces.
                 </p>
-                {error && (
-                    <div
-                        role="alert"
-                        className="border-error/20 bg-error/10 text-error mb-4 rounded border p-3 text-sm"
-                    >
-                        {error}
-                    </div>
-                )}
+
+                {error && <AuthAlert>{error}</AuthAlert>}
+
                 <form onSubmit={submit} className="space-y-4">
-                    <div>
-                        <label
-                            htmlFor="admin-login-email"
-                            className="text-base-content/70 mb-1 block text-sm font-medium"
-                        >
-                            Email
-                        </label>
-                        <input
-                            id="admin-login-email"
-                            type="email"
-                            autoFocus
-                            autoComplete="username"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className={authInputCls}
-                        />
-                    </div>
-                    <div>
-                        <label
-                            htmlFor="admin-login-password"
-                            className="text-base-content/70 mb-1 block text-sm font-medium"
-                        >
-                            Password
-                        </label>
-                        <PasswordInput
-                            id="admin-login-password"
-                            autoComplete="current-password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className={authInputCls}
-                        />
-                    </div>
+                    <AuthField
+                        id="admin-login-email"
+                        label="Email"
+                        hideLabel
+                        icon={Mail}
+                        type="email"
+                        value={email}
+                        onChange={setEmail}
+                        placeholder="Email"
+                        autoComplete="username"
+                        autoFocus
+                        required
+                    />
+                    <AuthField
+                        id="admin-login-password"
+                        label="Password"
+                        hideLabel
+                        icon={Lock}
+                        type="password"
+                        value={password}
+                        onChange={setPassword}
+                        placeholder="Password"
+                        autoComplete="current-password"
+                        required
+                    />
                     <PrimaryButton type="submit" loading={loading} className="w-full">
                         Sign in
                     </PrimaryButton>
                 </form>
-            </div>
+
+                <p className="text-base-content/60 mt-6 text-center text-sm">
+                    Not an admin?{' '}
+                    <Link href="/login" className="text-primary font-medium hover:underline">
+                        Go to user login
+                    </Link>
+                </p>
+            </SplitAuthLayout>
         </AuthShell>
     );
 }

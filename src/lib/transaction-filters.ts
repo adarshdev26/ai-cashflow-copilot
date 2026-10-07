@@ -1,3 +1,5 @@
+import { TransactionType, type Prisma } from '@/generated/prisma';
+
 export function parseDateParam(value: string | null, endOfDay = false): Date | undefined | null {
     if (!value) return undefined;
     const d = new Date(value);
@@ -8,18 +10,17 @@ export function parseDateParam(value: string | null, endOfDay = false): Date | u
 
 export function buildTransactionWhere(f: {
     workspaceId: string;
-    type?: 'CREDIT' | 'DEBIT' | null;
+    type?: 'CREDIT' | 'DEBIT' | 'TRANSFER' | null;
     categoryId?: string;
     accountId?: string;
     search?: string;
     dateFrom?: Date;
     dateTo?: Date;
 }) {
-    return {
+    const where: Prisma.TransactionWhereInput = {
         workspaceId: f.workspaceId,
         ...(f.type ? { type: f.type } : {}),
         ...(f.categoryId ? { categoryId: f.categoryId } : {}),
-        ...(f.accountId ? { accountId: f.accountId } : {}),
         ...(f.search ? { description: { contains: f.search, mode: 'insensitive' as const } } : {}),
         ...(f.dateFrom || f.dateTo
             ? {
@@ -30,4 +31,16 @@ export function buildTransactionWhere(f: {
               }
             : {}),
     };
+
+    if (f.accountId) {
+        where.AND = [
+            ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+            { OR: [{ accountId: f.accountId }, { toAccountId: f.accountId }] },
+        ];
+    }
+
+    return where;
 }
+
+/** Only these types count as income/expense. Transfers are excluded everywhere money is totalled. */
+export const FINANCIAL_TYPES = [TransactionType.CREDIT, TransactionType.DEBIT];

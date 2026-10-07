@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/Select';
+import { FilterSelect } from '@/components/ui/FilterSelect';
 import { getErrorMessage } from '@/lib/ui/toast';
 import { TICKET_STATUSES, STATUS_LABEL, isTicketStatus } from '@/features/support-tickets/status';
 import { useAdminTableState } from '../../shared/hooks/use-admin-table-state';
@@ -38,25 +38,6 @@ export function AdminSupportTicketsPage() {
                 </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-                <Select
-                    aria-label="Filter tickets by status"
-                    className="w-44"
-                    value={table.list.filters.status ?? ''}
-                    onChange={(e) => {
-                        const v = e.target.value;
-                        table.list.setFilter('status', isTicketStatus(v) ? v : undefined);
-                    }}
-                >
-                    <option value="">All statuses</option>
-                    {TICKET_STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                            {STATUS_LABEL[s]}
-                        </option>
-                    ))}
-                </Select>
-            </div>
-
             {isError && !data ? (
                 <div className="border-error/30 bg-error/10 rounded-xl border p-6 text-center">
                     <p className="text-error text-sm">
@@ -87,6 +68,25 @@ export function AdminSupportTicketsPage() {
                     totalCount={data?.pagination.totalCount ?? 0}
                     isLoading={isLoading}
                     isFetching={isFetching}
+                    filters={
+                        <FilterSelect
+                            aria-label="Filter tickets by status"
+                            value={table.list.filters.status ?? ''}
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                table.list.setFilter('status', isTicketStatus(v) ? v : undefined);
+                            }}
+                        >
+                            <option value="">All statuses</option>
+                            {TICKET_STATUSES.map((s) => (
+                                <option key={s} value={s}>
+                                    {STATUS_LABEL[s]}
+                                </option>
+                            ))}
+                        </FilterSelect>
+                    }
+                    activeFilterCount={table.activeFilterCount}
+                    onClearFilters={table.clearFilters}
                 />
             )}
 

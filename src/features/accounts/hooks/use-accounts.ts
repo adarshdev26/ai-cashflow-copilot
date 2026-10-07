@@ -29,6 +29,7 @@ export function useCreateAccount(workspaceId: string) {
         mutationFn: (data: CreateAccountInput) => createAccount(workspaceId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: accountKeys.all(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: ['net-worth', workspaceId] });
             invalidateReports(queryClient);
             void queryClient.invalidateQueries({ queryKey: ['plan'] });
         },
@@ -42,6 +43,7 @@ export function useUpdateAccount(workspaceId: string) {
             updateAccount(workspaceId, id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: accountKeys.all(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: ['net-worth', workspaceId] });
             // Transaction rows include the account name, so refresh the ledger too.
             queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
             invalidateReports(queryClient);
@@ -55,6 +57,7 @@ export function useDeleteAccount(workspaceId: string) {
         mutationFn: (id: string) => deleteAccount(workspaceId, id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: accountKeys.all(workspaceId) });
+            queryClient.invalidateQueries({ queryKey: ['net-worth', workspaceId] });
             invalidateReports(queryClient);
             void queryClient.invalidateQueries({ queryKey: ['plan'] });
         },

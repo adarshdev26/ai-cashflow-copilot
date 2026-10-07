@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { Select } from '@/components/ui/Select';
+import { FilterSelect } from '@/components/ui/FilterSelect';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
@@ -92,23 +92,6 @@ export function AdminWorkspacesPage() {
                     </p>
                 </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-                <Select
-                    aria-label="Filter workspaces by status"
-                    className="w-40"
-                    value={table.list.filters.isActive ?? ''}
-                    onChange={(e) =>
-                        table.list.setFilter(
-                            'isActive',
-                            (e.target.value || undefined) as AdminWorkspaceFilters['isActive'],
-                        )
-                    }
-                >
-                    <option value="">All statuses</option>
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
-                </Select>
-            </div>
             {isError && !data ? (
                 <div className="border-error/30 bg-error/10 rounded-xl border p-6 text-center">
                     <p className="text-error text-sm">
@@ -142,6 +125,25 @@ export function AdminWorkspacesPage() {
                     totalCount={data?.pagination.totalCount ?? 0}
                     isLoading={isLoading}
                     isFetching={isFetching}
+                    filters={
+                        <FilterSelect
+                            aria-label="Filter workspaces by status"
+                            value={table.list.filters.isActive ?? ''}
+                            onChange={(e) =>
+                                table.list.setFilter(
+                                    'isActive',
+                                    (e.target.value ||
+                                        undefined) as AdminWorkspaceFilters['isActive'],
+                                )
+                            }
+                        >
+                            <option value="">All statuses</option>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </FilterSelect>
+                    }
+                    activeFilterCount={table.activeFilterCount}
+                    onClearFilters={table.clearFilters}
                 />
             )}
 

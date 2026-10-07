@@ -1,4 +1,5 @@
 import type { Granularity, ReportFilters, ReportTimezoneParams, ReportType } from '../types';
+import { FINANCIAL_TYPES } from '@/lib/transaction-filters';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const DAY_MS = 86_400_000;
@@ -247,7 +248,7 @@ export function buildReportWhere(workspaceId: string, f: ReportFilters, range: D
         createdAt: { gte: range.start, lt: range.endExclusive },
         ...(f.accountId ? { accountId: f.accountId } : {}),
         ...(f.categoryId ? { categoryId: f.categoryId } : {}),
-        ...(f.type ? { type: f.type } : {}),
+        type: f.type === 'CREDIT' || f.type === 'DEBIT' ? f.type : { in: FINANCIAL_TYPES },
     };
 }
 

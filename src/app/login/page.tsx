@@ -3,12 +3,12 @@
 import { Suspense, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Mail, Lock } from 'lucide-react';
 import { PrimaryButton } from '@/components/ui/Button';
-import { PasswordInput } from '@/components/ui/PasswordInput';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { getSafeNextPath } from '@/lib/auth/safe-redirect';
 import { AuthShell } from '@/components/auth/AuthShell';
-import { authInputCls } from '@/components/ui/inputs';
+import { AuthAlert, AuthField, ShowcasePanel, SplitAuthLayout } from '@/components/auth/AuthUI';
 
 export default function LoginPage() {
     return (
@@ -24,6 +24,7 @@ function LoginForm() {
     const nextPath = getSafeNextPath(searchParams.get('next'));
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [remember, setRemember] = useState(true);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -61,71 +62,73 @@ function LoginForm() {
 
     return (
         <AuthShell>
-            <div className="bg-base-100 border-base-300 w-full max-w-md rounded-xl border p-8 shadow-2xl">
-                <h2 className="mb-6 text-2xl font-bold tracking-tight">Welcome Back</h2>
-                {error && (
-                    <div
-                        role="alert"
-                        className="bg-error/10 text-error border-error/20 mb-4 rounded border p-3 text-sm"
-                    >
-                        {error}
-                    </div>
-                )}
+            <SplitAuthLayout panel={<ShowcasePanel />} panelSide="right">
+                <h2 className="text-2xl font-bold tracking-tight">Log in to your Account</h2>
+                <p className="text-base-content/60 mt-1 mb-6 text-sm">
+                    Welcome back! Enter your details to log in.
+                </p>
+
+                {error && <AuthAlert>{error}</AuthAlert>}
+
                 <form onSubmit={handleLogin} className="space-y-4">
-                    <div>
-                        <label
-                            htmlFor="login-email"
-                            className="text-base-content/70 mb-1 block text-sm font-medium"
-                        >
-                            Email
+                    <AuthField
+                        id="login-email"
+                        label="Email"
+                        hideLabel
+                        icon={Mail}
+                        type="email"
+                        value={email}
+                        onChange={setEmail}
+                        placeholder="Email"
+                        autoComplete="email"
+                        required
+                    />
+                    <AuthField
+                        id="login-password"
+                        label="Password"
+                        hideLabel
+                        icon={Lock}
+                        type="password"
+                        value={password}
+                        onChange={setPassword}
+                        placeholder="Password"
+                        autoComplete="current-password"
+                        required
+                    />
+
+                    <div className="flex items-center justify-between">
+                        <label className="text-base-content/60 flex cursor-pointer items-center gap-2 text-xs">
+                            <input
+                                type="checkbox"
+                                checked={remember}
+                                onChange={(e) => setRemember(e.target.checked)}
+                                className="checkbox checkbox-primary checkbox-xs"
+                            />
+                            Remember me
                         </label>
-                        <input
-                            id="login-email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className={authInputCls}
-                        />
+                        <Link
+                            href="/forgot-password"
+                            className="text-primary text-xs font-medium hover:underline"
+                        >
+                            Forgot Password?
+                        </Link>
                     </div>
-                    <div>
-                        <div className="mb-1 flex items-center justify-between">
-                            <label
-                                htmlFor="login-password"
-                                className="text-base-content/70 block text-sm font-medium"
-                            >
-                                Password
-                            </label>
-                            <Link
-                                href="/forgot-password"
-                                className="text-primary text-xs hover:underline"
-                            >
-                                Forgot password?
-                            </Link>
-                        </div>
-                        <PasswordInput
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            autoComplete="current-password"
-                            required
-                            id="login-password"
-                            className={authInputCls}
-                        />
-                    </div>
+
                     <PrimaryButton type="submit" loading={loading} className="w-full">
                         Log In
                     </PrimaryButton>
                 </form>
-                <p className="text-base-content/60 mt-4 text-center text-sm">
+
+                <p className="text-base-content/60 mt-6 text-center text-sm">
                     Don&apos;t have an account?{' '}
                     <Link
                         href={nextPath ? `/signup?next=${encodeURIComponent(nextPath)}` : '/signup'}
-                        className="text-primary hover:underline"
+                        className="text-primary font-medium hover:underline"
                     >
-                        Sign up
+                        Create an account
                     </Link>
                 </p>
-            </div>
+            </SplitAuthLayout>
         </AuthShell>
     );
 }

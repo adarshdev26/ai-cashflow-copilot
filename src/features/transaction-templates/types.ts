@@ -1,4 +1,4 @@
-import type { TransactionType } from '@/features/finance/types';
+import type { FinancialTransactionType } from '@/features/finance/types';
 
 export type TemplateDateMode = 'FIXED' | 'TODAY';
 
@@ -6,7 +6,7 @@ export interface TransactionTemplateDTO {
     id: string;
     workspaceId: string;
     name: string;
-    type: TransactionType;
+    type: FinancialTransactionType;
     /** null = "ask each time" (user types the amount when using the template) */
     amount: number | null;
     description: string | null;
@@ -23,7 +23,7 @@ export interface TransactionTemplateDTO {
 
 export interface TemplateInput {
     name: string;
-    type: TransactionType;
+    type: FinancialTransactionType;
     amount?: number | null;
     description?: string | null;
     accountId?: string | null;

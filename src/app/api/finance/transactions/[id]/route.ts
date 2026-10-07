@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { validateTransactionData } from '@/features/finance/lib/validate-transaction';
+import { validateTransfer } from '@/features/finance/lib/validate-transfer';
 import { getAccountError } from '@/features/accounts/lib/check-account';
 import { getCategoryError } from '@/lib/categories';
 import { logAudit, userActor } from '@/lib/admin/audit';
@@ -10,6 +11,7 @@ import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 const TRANSACTION_INCLUDE = {
     category: { select: { id: true, name: true, color: true } },
     account: { select: { id: true, name: true, type: true, isActive: true } },
+    toAccount: { select: { id: true, name: true } },
 } as const;
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -30,6 +32,87 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         }
 
         const body = await req.json();
+
+        // --- Transfer branch ---------------------------------------------------
+        // A transaction can never switch between TRANSFER and non-TRANSFER.
+        const isTransfer = existing.type === 'TRANSFER';
+        if (isTransfer !== (body?.type === 'TRANSFER')) {
+            return NextResponse.json(
+                { error: 'A transfer cannot be converted to or from a normal transaction' },
+                { status: 400 },
+            );
+        }
+
+        if (isTransfer) {
+            const parsed = validateTransfer(body);
+            if (!parsed.ok) {
+                return NextResponse.json({ error: parsed.error }, { status: 400 });
+            }
+            const { fromAccountId, toAccountId, amount, date, note } = parsed.data;
+
+            const accounts = await prisma.financialAccount.findMany({
+                where: {
+                    id: { in: [fromAccountId, toAccountId] },
+                    workspaceId,
+                    isActive: true,
+                },
+                select: { id: true, currency: true },
+            });
+            if (accounts.length !== 2 || accounts[0].currency !== accounts[1].currency) {
+                return NextResponse.json(
+                    {
+                        error: 'Both accounts must be active, same-currency accounts in this workspace',
+                    },
+                    { status: 400 },
+                );
+            }
+
+            const updated = await prisma.transaction.update({
+                where: { id: existing.id },
+                data: {
+                    amount,
+                    description: note,
+                    accountId: fromAccountId,
+                    toAccountId,
+                    createdAt: date,
+                },
+                include: {
+                    account: { select: { id: true, name: true } },
+                    toAccount: { select: { id: true, name: true } },
+                },
+            });
+
+            const changes = {
+                ...(existing.amount !== updated.amount
+                    ? { amount: { before: existing.amount, after: updated.amount } }
+                    : {}),
+                ...(existing.description !== updated.description
+                    ? { description: { before: existing.description, after: updated.description } }
+                    : {}),
+                ...(existing.accountId !== updated.accountId
+                    ? { accountId: { before: existing.accountId, after: updated.accountId } }
+                    : {}),
+                ...(existing.toAccountId !== updated.toAccountId
+                    ? { toAccountId: { before: existing.toAccountId, after: updated.toAccountId } }
+                    : {}),
+                ...(existing.createdAt.getTime() !== updated.createdAt.getTime()
+                    ? { date: { before: existing.createdAt, after: updated.createdAt } }
+                    : {}),
+            };
+            if (Object.keys(changes).length > 0) {
+                await logAudit({
+                    actor: await userActor(access.userId),
+                    action: AUDIT_ACTIONS.TRANSFER_UPDATED,
+                    resourceType: 'transaction',
+                    resourceId: updated.id,
+                    workspaceId,
+                    metadata: { changes },
+                });
+            }
+
+            return NextResponse.json(updated, { status: 200 });
+        }
+        // --- End transfer branch ----------------------------------------------
 
         // Merge existing with body for validation
         const mergedData = {
@@ -148,9 +231,14 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
         await prisma.transaction.delete({ where: { id } });
 
+        const action =
+            existing.type === 'TRANSFER'
+                ? AUDIT_ACTIONS.TRANSFER_DELETED
+                : AUDIT_ACTIONS.TRANSACTION_DELETED;
+
         await logAudit({
             actor: await userActor(access.userId),
-            action: AUDIT_ACTIONS.TRANSACTION_DELETED,
+            action,
             resourceType: 'transaction',
             resourceId: existing.id,
             workspaceId,

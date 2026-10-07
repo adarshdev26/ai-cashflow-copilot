@@ -20,5 +20,5 @@ export type AdminCategoryFilters = {
     type?: CategoryKind;
 };
 
-export type AdminCategorySortField = 'createdAt' | 'name' | 'type';
+export type AdminCategorySortField = 'createdAt' | 'name' | 'type' | 'isActive';
 export type AdminCategoryList = Paged<AdminCategoryRow> & { customCategoryCount: number };

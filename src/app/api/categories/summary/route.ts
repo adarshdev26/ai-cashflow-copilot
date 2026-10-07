@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { prisma } from '@/lib/db/prisma';
 import { visibleCategoryWhere } from '@/lib/categories';
+import { FINANCIAL_TYPES } from '@/lib/transaction-filters';
 
 type CategoryTotals = {
     categoryId: string;
@@ -49,7 +50,7 @@ export async function GET(req: Request) {
             }),
             prisma.transaction.groupBy({
                 by: ['categoryId', 'type'],
-                where: { workspaceId, ...dateFilter },
+                where: { workspaceId, type: { in: FINANCIAL_TYPES }, ...dateFilter },
                 _sum: { amount: true },
                 _count: { _all: true },
             }),

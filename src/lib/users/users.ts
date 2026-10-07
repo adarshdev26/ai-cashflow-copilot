@@ -30,7 +30,13 @@ export async function createUserWithPersonalWorkspaceTx(
             ownerId: user.id,
             access: { create: { userId: user.id, role: 'OWNER' } },
             // New workspaces get the workspace default currency (INR), same as the account default
-            accounts: { create: { name: defaultAccountName, type: 'OTHER' } },
+            accounts: {
+                create: {
+                    name: defaultAccountName,
+                    type: 'OTHER',
+                    classification: 'ASSET',
+                },
+            },
         },
     });
     return user;

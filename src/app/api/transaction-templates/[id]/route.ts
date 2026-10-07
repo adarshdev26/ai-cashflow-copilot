@@ -29,6 +29,12 @@ export async function PATCH(request: Request, { params }: Ctx) {
 
         const existing = await prisma.transactionTemplate.findFirst({ where: { id, workspaceId } });
         if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+        if (existing.type !== 'CREDIT' && existing.type !== 'DEBIT') {
+            return NextResponse.json(
+                { error: 'Transfers cannot be used as templates' },
+                { status: 400 },
+            );
+        }
 
         let body: unknown;
         try {

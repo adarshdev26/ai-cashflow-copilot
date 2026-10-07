@@ -599,6 +599,18 @@ export const SETTINGS: readonly SettingDef[] = [
         [3, 6, 12, 24].map((v) => ({ value: v, label: `${v} months` })),
     ),
     opt(
+        'netWorthMonths',
+        'user',
+        'preferences',
+        'Net worth history range',
+        'Months shown in the net worth history chart.',
+        6,
+        [
+            ...[3, 6, 12, 24].map((v) => ({ value: v, label: `${v} months` })),
+            { value: 'all', label: 'All time' },
+        ],
+    ),
+    opt(
         'balanceTrendDays',
         'user',
         'preferences',

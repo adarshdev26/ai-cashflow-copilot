@@ -50,6 +50,11 @@ export const AUDIT_ACTIONS = {
     BUDGET_SAVED: 'budget.saved',
     BUDGET_UPDATED: 'budget.updated',
     BUDGET_DEACTIVATED: 'budget.deactivated',
+    GOAL_CREATED: 'goal.created',
+    GOAL_UPDATED: 'goal.updated',
+    GOAL_ARCHIVED: 'goal.archived',
+    GOAL_RESTORED: 'goal.restored',
+    GOAL_CONTRIBUTION_RECORDED: 'goal.contribution_recorded',
     RECURRING_CREATED: 'recurring.created',
     RECURRING_UPDATED: 'recurring.updated',
     RECURRING_DELETED: 'recurring.deleted',
@@ -62,6 +67,9 @@ export const AUDIT_ACTIONS = {
     USER_PLAN_CHANGED: 'user.plan_changed',
     BILLING_UPGRADED: 'billing.upgraded',
     BILLING_DOWNGRADED: 'billing.downgraded',
+    TRANSFER_CREATED: 'transfer.created',
+    TRANSFER_UPDATED: 'transfer.updated',
+    TRANSFER_DELETED: 'transfer.deleted',
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
@@ -118,6 +126,11 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     'budget.saved': 'Saved budget',
     'budget.updated': 'Updated budget',
     'budget.deactivated': 'Deactivated budget',
+    'goal.created': 'Created savings goal',
+    'goal.updated': 'Updated savings goal',
+    'goal.archived': 'Archived savings goal',
+    'goal.restored': 'Restored savings goal',
+    'goal.contribution_recorded': 'Recorded savings goal contribution',
     'recurring.created': 'Created recurring transaction',
     'recurring.updated': 'Updated recurring transaction',
     'recurring.deleted': 'Deleted recurring transaction',
@@ -130,6 +143,9 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     'user.plan_changed': 'Changed user plan',
     'billing.upgraded': 'Upgraded plan',
     'billing.downgraded': 'Downgraded plan',
+    'transfer.created': 'Transfer created',
+    'transfer.updated': 'Transfer updated',
+    'transfer.deleted': 'Transfer deleted',
 };
 
 export const AUDIT_RESOURCE_TYPES = {
@@ -140,6 +156,7 @@ export const AUDIT_RESOURCE_TYPES = {
     ACCOUNT: 'account',
     CATEGORY: 'category',
     BUDGET: 'budget',
+    GOAL: 'goal',
     RECURRING: 'recurring',
     TEMPLATE: 'template',
     INVITATION: 'invitation',
@@ -157,6 +174,7 @@ export const AUDIT_RESOURCE_LABELS: Record<AuditResourceType, string> = {
     account: 'Account',
     category: 'Category',
     budget: 'Budget',
+    goal: 'Savings goal',
     recurring: 'Recurring transaction',
     template: 'Transaction template',
     invitation: 'Invitation',

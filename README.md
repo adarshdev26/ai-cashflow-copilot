@@ -90,6 +90,10 @@ The sidebar reads the session through `useCurrentUser` → `GET /api/auth/me`.
 
 The signed-in user’s id comes from the JWT. The client sends the selected workspace in the `X-Workspace-Id` header; each handler checks that the user has the required access role before reading or writing workspace data.
 
+#### Transfers
+
+A transfer is stored as one transaction row: `type = TRANSFER`, source account in `accountId`, destination in `toAccountId`, and no category. Both accounts must be active, belong to the same workspace, and use the same currency. Account balances include outgoing and incoming transfers; financial totals, reports, charts, budgets, and category summaries filter with `FINANCIAL_TYPES` (`CREDIT` and `DEBIT`). Recurring transactions and templates remain income/expense only.
+
 ### Dashboard
 
 ```text
@@ -601,7 +605,7 @@ Preview versus production is not configured in this repository.
 
 ## Testing
 
-Not yet implemented. No test runner is listed in `package.json`. The CI file calls `npm run test` anyway.
+No test framework is listed in `package.json`. Pure Goals calculation tests run with `node --import tsx --test src/features/goals/lib/goals.test.ts`. The CI file calls `npm run test` anyway.
 
 ## Current Features
 
@@ -609,6 +613,7 @@ Not yet implemented. No test runner is listed in `package.json`. The CI file cal
 - Dashboard shell with overview, finance, and placeholder links
 - Transaction ledger with search, type, category, date filters, sort, and pagination
 - Transaction create, edit, and delete
+- Savings goals with progress tracking, contributions, and archive support
 - Income, expense, and net summary cards
 - Category filter, badge, select, and all-time category totals table
 - Income vs expense, category spending, and balance trend charts

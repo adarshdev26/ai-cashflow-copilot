@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { PageTransitionOverlay } from '@/components/ui/PageTransitionOverlay';
-import { Select } from '@/components/ui/Select';
+import { FilterSelect } from '@/components/ui/FilterSelect';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { useAdminTableState } from '../../shared/hooks/use-admin-table-state';
@@ -111,23 +111,6 @@ export function AdminUsersPage() {
                     Add user
                 </Button>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-                <Select
-                    aria-label="Filter users by status"
-                    className="w-40"
-                    value={table.list.filters.isActive ?? ''}
-                    onChange={(e) =>
-                        table.list.setFilter(
-                            'isActive',
-                            (e.target.value || undefined) as AdminUserFilters['isActive'],
-                        )
-                    }
-                >
-                    <option value="">All statuses</option>
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
-                </Select>
-            </div>
             {isError && !data ? (
                 <div className="border-error/30 bg-error/10 rounded-xl border p-6 text-center">
                     <p className="text-error text-sm">
@@ -164,6 +147,24 @@ export function AdminUsersPage() {
                     totalCount={data?.pagination.totalCount ?? 0}
                     isLoading={isLoading}
                     isFetching={isFetching}
+                    filters={
+                        <FilterSelect
+                            aria-label="Filter users by status"
+                            value={table.list.filters.isActive ?? ''}
+                            onChange={(e) =>
+                                table.list.setFilter(
+                                    'isActive',
+                                    (e.target.value || undefined) as AdminUserFilters['isActive'],
+                                )
+                            }
+                        >
+                            <option value="">All statuses</option>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </FilterSelect>
+                    }
+                    activeFilterCount={table.activeFilterCount}
+                    onClearFilters={table.clearFilters}
                 />
             )}
 

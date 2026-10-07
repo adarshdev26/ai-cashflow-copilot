@@ -3,12 +3,18 @@
 import { Suspense, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { User, Mail, Lock, UserPlus, Ban } from 'lucide-react';
 import { PrimaryButton } from '@/components/ui/Button';
-import { PasswordInput } from '@/components/ui/PasswordInput';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { getSafeNextPath } from '@/lib/auth/safe-redirect';
 import { AuthShell } from '@/components/auth/AuthShell';
-import { authInputCls } from '@/components/ui/inputs';
+import {
+    AuthAlert,
+    AuthField,
+    BenefitsPanel,
+    PasswordStrength,
+    SplitAuthLayout,
+} from '@/components/auth/AuthUI';
 import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 export default function SignupPage() {
@@ -30,6 +36,8 @@ function SignupForm() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const signupDisabled = settings?.['auth.signupEnabled'] === false;
 
     const handleSignup = useCallback(
         async (e: React.FormEvent) => {
@@ -65,87 +73,77 @@ function SignupForm() {
 
     return (
         <AuthShell>
-            <div className="bg-base-100 border-base-300 w-full max-w-md rounded-xl border p-8 shadow-2xl">
-                <h2 className="mb-6 text-2xl font-bold tracking-tight">Create Account</h2>
-                {settings?.['auth.signupEnabled'] === false ? (
+            <SplitAuthLayout panel={<BenefitsPanel />} panelSide="left">
+                <div className="bg-primary/10 text-primary mb-4 flex h-11 w-11 items-center justify-center rounded-xl">
+                    <UserPlus className="h-5 w-5" />
+                </div>
+                <h2 className="text-2xl font-bold tracking-tight">Create your account</h2>
+                <p className="text-base-content/60 mt-1 mb-6 text-sm">
+                    Join today and take control of your cashflow.
+                </p>
+
+                {signupDisabled ? (
                     <div
                         role="status"
-                        className="bg-base-200 text-base-content/70 rounded p-3 text-sm"
+                        className="bg-base-200 text-base-content/70 flex items-start gap-3 rounded-lg p-4 text-sm"
                     >
+                        <Ban className="mt-0.5 h-4 w-4 shrink-0" />
                         New account signups are currently disabled.
                     </div>
                 ) : (
                     <>
-                        {error && (
-                            <div
-                                role="alert"
-                                className="bg-error/10 text-error border-error/20 mb-4 rounded border p-3 text-sm"
-                            >
-                                {error}
-                            </div>
-                        )}
+                        {error && <AuthAlert>{error}</AuthAlert>}
                         <form onSubmit={handleSignup} className="space-y-4">
-                            <div>
-                                <label
-                                    htmlFor="signup-name"
-                                    className="text-base-content/70 mb-1 block text-sm font-medium"
-                                >
-                                    Name
-                                </label>
-                                <input
-                                    id="signup-name"
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    required
-                                    className={authInputCls}
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="signup-email"
-                                    className="text-base-content/70 mb-1 block text-sm font-medium"
-                                >
-                                    Email
-                                </label>
-                                <input
-                                    id="signup-email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    className={authInputCls}
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="signup-password"
-                                    className="text-base-content/70 mb-1 block text-sm font-medium"
-                                >
-                                    Password
-                                </label>
-                                <PasswordInput
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    autoComplete="new-password"
-                                    required
-                                    id="signup-password"
-                                    className={authInputCls}
-                                />
-                            </div>
+                            <AuthField
+                                id="signup-name"
+                                label="Full name"
+                                uppercaseLabel
+                                icon={User}
+                                value={name}
+                                onChange={setName}
+                                placeholder="John Doe"
+                                autoComplete="name"
+                                required
+                            />
+                            <AuthField
+                                id="signup-email"
+                                label="Email"
+                                uppercaseLabel
+                                icon={Mail}
+                                type="email"
+                                value={email}
+                                onChange={setEmail}
+                                placeholder="you@example.com"
+                                autoComplete="email"
+                                required
+                            />
+                            <AuthField
+                                id="signup-password"
+                                label="Password"
+                                uppercaseLabel
+                                icon={Lock}
+                                type="password"
+                                value={password}
+                                onChange={setPassword}
+                                placeholder="Create a password"
+                                autoComplete="new-password"
+                                required
+                                hint={<PasswordStrength password={password} />}
+                            />
                             <PrimaryButton type="submit" loading={loading} className="w-full">
-                                Sign Up
+                                Create Account
                             </PrimaryButton>
                         </form>
                     </>
                 )}
-                <p className="text-base-content/60 mt-4 text-center text-sm">
+
+                <p className="text-base-content/60 mt-6 text-center text-sm">
                     Already have an account?{' '}
-                    <Link href={loginHref} className="text-primary hover:underline">
+                    <Link href={loginHref} className="text-primary font-medium hover:underline">
                         Log in
                     </Link>
                 </p>
-            </div>
+            </SplitAuthLayout>
         </AuthShell>
     );
 }

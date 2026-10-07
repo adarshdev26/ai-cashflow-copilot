@@ -18,7 +18,16 @@ export async function GET(req: Request) {
 
         const accounts = await prisma.financialAccount.findMany({
             where: { workspaceId, ...(onlyActive ? { isActive: true } : {}) },
-            include: { _count: { select: { transactions: true } } },
+            include: {
+                _count: {
+                    select: {
+                        transactions: true,
+                        // Incoming transfers are a separate relation (Transaction.toAccount),
+                        // so they must be counted separately.
+                        incomingTransfers: true,
+                    },
+                },
+            },
             orderBy: [{ isActive: 'desc' }, { createdAt: 'asc' }],
         });
 
@@ -76,7 +85,9 @@ export async function POST(req: Request) {
 
         const created = await prisma.financialAccount.create({
             data: { ...data, workspaceId },
-            include: { _count: { select: { transactions: true } } },
+            include: {
+                _count: { select: { transactions: true, incomingTransfers: true } },
+            },
         });
 
         await logAudit({

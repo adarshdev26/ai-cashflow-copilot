@@ -8,7 +8,15 @@ import { getSystemNumber } from '@/lib/settings/server';
 // Sortable fields accepted from the query string. `memberCount`, `accountCount`
 // and `categoryCount` are not real columns — they are mapped to Prisma relation
 // `_count` orderings further down.
-const SORT_FIELDS = ['createdAt', 'name', 'memberCount', 'accountCount', 'categoryCount'] as const;
+const SORT_FIELDS = [
+    'createdAt',
+    'name',
+    'memberCount',
+    'accountCount',
+    'categoryCount',
+    'owner',
+    'isActive',
+] as const;
 
 type SortField = (typeof SORT_FIELDS)[number];
 
@@ -23,6 +31,8 @@ function buildOrderBy(
             return { accounts: { _count: sortDir } };
         case 'categoryCount':
             return { categories: { _count: sortDir } };
+        case 'owner':
+            return { owner: { email: sortDir } };
         default:
             return { [sortBy]: sortDir };
     }

@@ -1,7 +1,6 @@
 'use client';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useActiveAccountId } from '@/features/accounts';
-import { OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import {
     useTransactions,
     useCreateTransaction,
@@ -11,11 +10,13 @@ import {
     TransactionTable,
     FinanceStats,
 } from '@/features/finance';
+import { useCreateTransfer, useUpdateTransfer } from '@/features/finance/hooks/use-finance';
+import { TransferModal } from '@/features/finance/components/TransferModal';
 import {
     templateToInitialValues,
     type TransactionTemplateDTO,
 } from '@/features/transaction-templates';
-import { useListQueryState } from '@/hooks/list/useListQueryState';
+import { useDataTableState } from '@/hooks/list/useDataTableState';
 import { useCategories } from '@/resources/hooks/use-categories';
 import {
     CreateTransactionInput,
@@ -24,6 +25,7 @@ import {
     TransactionSortField,
     TransactionType,
     UpdateTransactionInput,
+    TransferInput,
 } from '@/features/finance/types';
 import { CategoryStatsTooltip } from '@/resources/components/CategoryStats';
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
@@ -59,20 +61,19 @@ export default function TransactionsPage() {
     );
     const {
         params,
-        page,
-        pageSize,
         setPage,
         setPageSize,
-        sortBy,
-        sortDir,
-        setSort,
         filters,
         setFilter,
-    } = useListQueryState<TransactionFilters, TransactionSortField>({
+        dataTableProps,
+        activeFilterCount,
+        clearFilters,
+    } = useDataTableState<TransactionFilters, TransactionSortField>({
         defaultFilters: defaultTransactionFilters,
         defaultSortDir: 'desc',
         defaultPageSize: preferredPageSize,
         maxPageSize,
+        filterKeys: ['type', 'accountId', 'categoryId', 'dateFrom', 'dateTo'],
     });
     useEffect(() => {
         if (!preferencesLoading) setPageSize(preferredPageSize);
@@ -111,11 +112,16 @@ export default function TransactionsPage() {
     const { mutate: addTx, isPending: isAdding } = useCreateTransaction(workspaceId);
     const { mutate: updateTx, isPending: isUpdating } = useUpdateTransaction(workspaceId);
     const { mutate: deleteTx, isPending: isDeleting } = useDeleteTransaction(workspaceId);
+    const { mutate: addTransfer, isPending: isAddingTransfer } = useCreateTransfer(workspaceId);
+    const { mutate: updateTransfer, isPending: isUpdatingTransfer } =
+        useUpdateTransfer(workspaceId);
 
     const [formState, setFormState] = useState<TransactionFormState>(null);
     const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
     const [exportOpen, setExportOpen] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
+    const [transferOpen, setTransferOpen] = useState(false);
+    const [editingTransfer, setEditingTransfer] = useState<Transaction | null>(null);
 
     const isSubmitting = isAdding || isUpdating;
 
@@ -180,45 +186,27 @@ export default function TransactionsPage() {
         [],
     );
     const closeModal = useCallback(() => setFormState(null), []);
-    const openEditModal = useCallback(
-        (tx: Transaction) => setFormState({ mode: 'edit', transaction: tx }),
-        [],
+    const openEditModal = useCallback((tx: Transaction) => {
+        if (tx.type === 'TRANSFER') setEditingTransfer(tx);
+        else setFormState({ mode: 'edit', transaction: tx });
+    }, []);
+    const handleTransferSubmit = useCallback(
+        (input: TransferInput) => {
+            const editing = editingTransfer;
+            const onSuccess = () => {
+                setTransferOpen(false);
+                setEditingTransfer(null);
+                notify.success(editing ? 'Transfer updated' : 'Transfer created');
+            };
+            const onError = (error: Error) =>
+                notify.error(getErrorMessage(error, 'Transfer failed'));
+            if (editing) updateTransfer({ id: editing.id, data: input }, { onSuccess, onError });
+            else addTransfer(input, { onSuccess, onError });
+        },
+        [addTransfer, editingTransfer, updateTransfer],
     );
     const openDeleteTarget = useCallback((tx: Transaction) => setDeleteTarget(tx), []);
     const closeDeleteTarget = useCallback(() => setDeleteTarget(null), []);
-
-    const pagination: PaginationState = useMemo(
-        () => ({ pageIndex: page - 1, pageSize }),
-        [page, pageSize],
-    );
-    const sorting: SortingState = useMemo(
-        () => (sortBy ? [{ id: sortBy, desc: sortDir === 'desc' }] : []),
-        [sortBy, sortDir],
-    );
-    const globalFilter = filters.search ?? '';
-
-    const handleSortingChange: OnChangeFn<SortingState> = useCallback(
-        (updater) => {
-            const currentSorting: SortingState = sortBy
-                ? [{ id: sortBy, desc: sortDir === 'desc' }]
-                : [];
-            const nextSorting = typeof updater === 'function' ? updater(currentSorting) : updater;
-            const nextSort = nextSorting[0];
-            setSort(
-                nextSort?.id as TransactionSortField | undefined,
-                nextSort?.desc ? 'desc' : 'asc',
-            );
-        },
-        [setSort, sortBy, sortDir],
-    );
-
-    const handleGlobalFilterChange: OnChangeFn<string> = useCallback(
-        (updater) => {
-            const nextSearch = typeof updater === 'function' ? updater(globalFilter) : updater;
-            setFilter('search', nextSearch || undefined);
-        },
-        [globalFilter, setFilter],
-    );
 
     const handleTypeChange = useCallback(
         (value: TransactionType | '') => {
@@ -255,20 +243,6 @@ export default function TransactionsPage() {
         [setFilter],
     );
 
-    const handlePaginationChange: OnChangeFn<PaginationState> = useCallback(
-        (updater) => {
-            const currentPagination: PaginationState = { pageIndex: page - 1, pageSize };
-            const nextPagination =
-                typeof updater === 'function' ? updater(currentPagination) : updater;
-            if (nextPagination.pageSize !== pageSize) {
-                setPageSize(nextPagination.pageSize);
-            } else {
-                setPage(nextPagination.pageIndex + 1);
-            }
-        },
-        [page, pageSize, setPage, setPageSize],
-    );
-
     // if (isLoading) return <div className="text-sm text-base-content/60 animate-pulse p-8">Loading finance ledger...</div>;
     if (error) return <div className="text-error p-8 text-sm">Failed to load transactions.</div>;
 
@@ -279,41 +253,59 @@ export default function TransactionsPage() {
                 onUseTemplate={openCreateFromTemplate}
                 onOpenExport={() => setExportOpen(true)}
                 onOpenImport={() => setImportOpen(true)}
+                onTransfer={() => {
+                    setEditingTransfer(null);
+                    setTransferOpen(true);
+                }}
             />
             <FinanceStats netBalance={false} thisMonthNet={false} lastMonthNet={false} />
 
             <CategoryStatsTooltip />
 
-            <TransactionFiltersBar
-                filters={filters}
-                categories={categories}
-                accounts={accounts}
-                categoriesLoading={categoriesLoading}
-                accountsLoading={accountsLoading}
-                isInvalidDateRange={isInvalidDateRange}
-                onTypeChange={handleTypeChange}
-                onAccountChange={handleAccountChange}
-                onCategoryChange={handleCategoryChange}
-                onDateFromChange={handleDateFromChange}
-                onDateToChange={handleDateToChange}
-            />
-
             <TransactionTable
                 transactions={transactionResponse?.data}
                 density={tableDensity}
-                pagination={pagination}
-                sorting={sorting}
-                globalFilter={globalFilter}
+                {...dataTableProps}
                 pageCount={transactionResponse?.pagination.totalPages ?? 1}
                 totalCount={transactionResponse?.pagination.totalCount ?? 0}
-                onPaginationChange={handlePaginationChange}
-                onSortingChange={handleSortingChange}
-                onGlobalFilterChange={handleGlobalFilterChange}
                 onEdit={openEditModal}
                 onDelete={openDeleteTarget}
                 isLoading={isLoading}
                 isFetching={isFetching}
+                activeAccountId={activeAccountId ?? null}
+                filters={
+                    <TransactionFiltersBar
+                        filters={filters}
+                        categories={categories}
+                        accounts={accounts}
+                        categoriesLoading={categoriesLoading}
+                        accountsLoading={accountsLoading}
+                        isInvalidDateRange={isInvalidDateRange}
+                        onTypeChange={handleTypeChange}
+                        onAccountChange={handleAccountChange}
+                        onCategoryChange={handleCategoryChange}
+                        onDateFromChange={handleDateFromChange}
+                        onDateToChange={handleDateToChange}
+                    />
+                }
+                activeFilterCount={activeFilterCount}
+                onClearFilters={clearFilters}
             />
+
+            {(transferOpen || editingTransfer) && (
+                <TransferModal
+                    key={editingTransfer?.id ?? (transferOpen ? 'new-transfer' : 'closed-transfer')}
+                    open={transferOpen || Boolean(editingTransfer)}
+                    workspaceId={workspaceId}
+                    onClose={() => {
+                        setTransferOpen(false);
+                        setEditingTransfer(null);
+                    }}
+                    onSubmit={handleTransferSubmit}
+                    isSubmitting={isAddingTransfer || isUpdatingTransfer}
+                    transfer={editingTransfer}
+                />
+            )}
 
             <TransactionDialogs
                 formState={formState}

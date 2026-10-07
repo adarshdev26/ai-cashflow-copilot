@@ -34,7 +34,13 @@ export async function GET(req: Request) {
         const dateFrom = parseDateParam(sp.get('dateFrom'));
         const dateTo = parseDateParam(sp.get('dateTo'), true);
 
-        if (type !== null && type !== '' && type !== 'CREDIT' && type !== 'DEBIT') {
+        if (
+            type !== null &&
+            type !== '' &&
+            type !== 'CREDIT' &&
+            type !== 'DEBIT' &&
+            type !== 'TRANSFER'
+        ) {
             return NextResponse.json({ error: 'Invalid type value' }, { status: 400 });
         }
         if (dateFrom === null || dateTo === null) {
@@ -46,7 +52,7 @@ export async function GET(req: Request) {
 
         const where = buildTransactionWhere({
             workspaceId,
-            type: (type || null) as 'CREDIT' | 'DEBIT' | null,
+            type: (type || null) as 'CREDIT' | 'DEBIT' | 'TRANSFER' | null,
             categoryId: sp.get('categoryId') || undefined,
             accountId: sp.get('accountId') || undefined,
             search: sp.get('search')?.trim() || undefined,
@@ -58,7 +64,11 @@ export async function GET(req: Request) {
             where,
             orderBy: { createdAt: 'desc' },
             take: maxExportRows + 1,
-            include: { category: { select: { name: true } }, account: { select: { name: true } } },
+            include: {
+                category: { select: { name: true } },
+                account: { select: { name: true } },
+                toAccount: { select: { name: true } },
+            },
         });
         if (rows.length > maxExportRows) {
             return NextResponse.json(
@@ -76,6 +86,7 @@ export async function GET(req: Request) {
                 safe(t.description),
                 safe(t.category?.name),
                 safe(t.account?.name),
+                safe(t.toAccount?.name),
             ]),
         });
 

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { getErrorMessage } from '@/lib/ui/toast';
 import { useAdminTableState } from '../../shared/hooks/use-admin-table-state';
-import { useAuditLogs } from '../hooks/use-audit-logs';
+import { adminAuditLogsApi } from '../api/audit-logs-api';
 import type { AuditLogFilters, AuditLogSortField } from '../types';
 import { AuditLogDetails } from './AuditLogDetails';
 import { AuditLogFiltersBar } from './AuditLogFiltersBar';
@@ -22,9 +23,17 @@ export function AdminAuditLogsPage() {
         defaultSortBy: 'createdAt',
         defaultSortDir: 'desc',
     });
-    const { data, isLoading, isFetching, isError, error, refetch } = useAuditLogs(
-        table.list.params,
+    const isInvalidDateRange = Boolean(
+        table.list.filters.dateFrom &&
+        table.list.filters.dateTo &&
+        table.list.filters.dateFrom > table.list.filters.dateTo,
     );
+    const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
+        queryKey: ['admin-audit-logs', 'list', table.list.params],
+        queryFn: () => adminAuditLogsApi.list(table.list.params),
+        placeholderData: (previous) => previous,
+        enabled: !isInvalidDateRange,
+    });
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
     return (
@@ -35,13 +44,6 @@ export function AdminAuditLogsPage() {
                     A record of important actions across users and workspaces.
                 </p>
             </div>
-
-            <AuditLogFiltersBar
-                filters={table.list.filters}
-                onChange={(key, value) =>
-                    table.list.setFilter(key, value as AuditLogFilters[typeof key])
-                }
-            />
 
             {isError && !data ? (
                 <div className="border-error/30 bg-error/10 rounded-xl border p-6 text-center">
@@ -66,6 +68,21 @@ export function AdminAuditLogsPage() {
                     totalCount={data?.pagination.totalCount ?? 0}
                     isLoading={isLoading}
                     isFetching={isFetching}
+                    filters={
+                        <AuditLogFiltersBar
+                            filters={table.list.filters}
+                            onChange={(key, value) =>
+                                table.list.setFilter(key, value as AuditLogFilters[typeof key])
+                            }
+                            error={
+                                isInvalidDateRange
+                                    ? '"From" date must be on or before the "To" date.'
+                                    : undefined
+                            }
+                        />
+                    }
+                    activeFilterCount={table.activeFilterCount}
+                    onClearFilters={table.clearFilters}
                 />
             )}
 

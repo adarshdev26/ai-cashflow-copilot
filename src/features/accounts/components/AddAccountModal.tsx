@@ -6,7 +6,10 @@ import { PrimaryButton, Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import {
+    ACCOUNT_CLASSIFICATIONS,
     ACCOUNT_TYPES,
+    DEFAULT_CLASSIFICATION_BY_TYPE,
+    type AccountClassification,
     type AccountType,
     type AccountWithBalance,
     type CreateAccountInput,
@@ -34,6 +37,12 @@ export function AddAccountModal({
 
     const [name, setName] = useState(account?.name ?? '');
     const [type, setType] = useState<AccountType>(account?.type ?? 'BANK');
+    const [classification, setClassification] = useState<AccountClassification>(
+        account?.classification ?? DEFAULT_CLASSIFICATION_BY_TYPE[type],
+    );
+    const [manualClassification, setManualClassification] = useState(
+        Boolean(account?.classification),
+    );
     const [openingBalance, setOpeningBalance] = useState(
         account ? String(account.openingBalance) : '',
     );
@@ -56,10 +65,20 @@ export function AddAccountModal({
             onSubmit({
                 name: trimmed,
                 type,
+                classification,
                 openingBalance: openingBalance === '' ? 0 : Number(openingBalance),
             });
         },
-        [nameError, balanceInvalid, isSubmitting, onSubmit, trimmed, type, openingBalance],
+        [
+            nameError,
+            balanceInvalid,
+            isSubmitting,
+            onSubmit,
+            trimmed,
+            type,
+            classification,
+            openingBalance,
+        ],
     );
 
     return (
@@ -109,13 +128,44 @@ export function AddAccountModal({
                     <label className="text-base-content/80 mb-1 block text-xs font-medium">
                         Type
                     </label>
-                    <Select value={type} onChange={(e) => setType(e.target.value as AccountType)}>
+                    <Select
+                        value={type}
+                        onChange={(e) => {
+                            const nextType = e.target.value as AccountType;
+                            setType(nextType);
+                            if (!manualClassification) {
+                                setClassification(DEFAULT_CLASSIFICATION_BY_TYPE[nextType]);
+                            }
+                        }}
+                    >
                         {ACCOUNT_TYPES.map((t) => (
                             <option key={t} value={t}>
                                 {ACCOUNT_TYPE_LABELS[t]}
                             </option>
                         ))}
                     </Select>
+                </div>
+
+                <div>
+                    <label className="text-base-content/80 mb-1 block text-xs font-medium">
+                        Classification
+                    </label>
+                    <Select
+                        value={classification}
+                        onChange={(e) => {
+                            setManualClassification(true);
+                            setClassification(e.target.value as AccountClassification);
+                        }}
+                    >
+                        {ACCOUNT_CLASSIFICATIONS.map((c) => (
+                            <option key={c} value={c}>
+                                {c === 'ASSET' ? 'Asset' : 'Liability'}
+                            </option>
+                        ))}
+                    </Select>
+                    <p className="text-base-content/60 mt-1 text-xs">
+                        Liability means this account owes money.
+                    </p>
                 </div>
 
                 <div>

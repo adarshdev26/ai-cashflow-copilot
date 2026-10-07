@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import {
     useReactTable,
     getCoreRowModel,
@@ -13,7 +14,16 @@ import {
     OnChangeFn,
     PaginationState,
 } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
+import {
+    ChevronLeft,
+    ChevronRight,
+    Search,
+    ArrowUp,
+    ArrowDown,
+    ArrowUpDown,
+    SlidersHorizontal,
+    X,
+} from 'lucide-react';
 import { useDebouncedSearch } from '@/hooks/useDebouncedSearch';
 import { SETTINGS_BY_KEY } from '@/lib/settings/registry';
 import { usePublicSettings } from '@/features/settings/hooks/use-settings';
@@ -50,6 +60,10 @@ interface DataTableProps<TData, TValue> {
     actionsTourId?: string;
     isLoading?: boolean;
     isFetching?: boolean;
+    filters?: ReactNode;
+    activeFilterCount?: number;
+    onClearFilters?: () => void;
+    totalLabel?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -77,6 +91,10 @@ export function DataTable<TData, TValue>({
     actionsTourId,
     isLoading = false,
     isFetching = false,
+    filters,
+    activeFilterCount = 0,
+    onClearFilters,
+    totalLabel = 'entries',
 }: DataTableProps<TData, TValue>) {
     const { data: settings } = usePublicSettings();
     const searchDebounceMs =
@@ -84,6 +102,7 @@ export function DataTable<TData, TValue>({
     const pageSize = configuredPageSize ?? Number(settings?.['ui.defaultPageSize'] ?? 20);
     const [localSorting, setLocalSorting] = useState<SortingState>([]);
     const [localGlobalFilter, setLocalGlobalFilter] = useState('');
+    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
@@ -141,26 +160,60 @@ export function DataTable<TData, TValue>({
             className="border-base-300 bg-base-100 overflow-hidden rounded-xl border shadow-sm"
             data-tour={actionsTourId}
         >
-            {/* Search Header Bar */}
-            {searchKey && (
-                <div className="border-base-200 bg-base-200/50 flex items-center justify-between gap-4 border-b p-4">
-                    <div className="relative w-full max-w-sm">
-                        <Search className="text-base-content/50 absolute top-2.5 left-3 h-4 w-4" />
-                        <input
-                            type="text"
-                            data-tour={searchTourId}
-                            value={search.value}
-                            onChange={search.onChange}
-                            placeholder={searchPlaceholder}
-                            className="border-base-300 bg-base-100 focus:ring-primary/20 focus:border-primary w-full rounded-lg border py-2 pr-4 pl-9 text-sm focus:ring-2 focus:outline-none"
-                        />
-                    </div>
-                    <div className="text-base-content/60 text-xs">
+            {(searchKey || filters) && (
+                <div className="border-base-200 bg-base-200/50 flex flex-wrap items-center gap-2 border-b p-4">
+                    {searchKey && (
+                        <div className="relative w-full sm:w-64">
+                            <Search className="text-base-content/50 absolute top-2.5 left-3 h-4 w-4" />
+                            <input
+                                type="text"
+                                data-tour={searchTourId}
+                                value={search.value}
+                                onChange={search.onChange}
+                                placeholder={searchPlaceholder}
+                                className="border-base-300 bg-base-100 focus:ring-primary/20 focus:border-primary w-full rounded-lg border py-2 pr-4 pl-9 text-sm focus:ring-2 focus:outline-none"
+                            />
+                        </div>
+                    )}
+                    {filters && (
+                        <>
+                            <button
+                                type="button"
+                                aria-expanded={mobileFiltersOpen}
+                                onClick={() => setMobileFiltersOpen((open) => !open)}
+                                className="border-base-300 bg-base-100 text-base-content/80 hover:bg-base-200 relative inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm sm:hidden"
+                            >
+                                <SlidersHorizontal className="h-4 w-4" />
+                                Filters
+                                {activeFilterCount > 0 && (
+                                    <span className="bg-primary text-primary-content inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-semibold">
+                                        {activeFilterCount}
+                                    </span>
+                                )}
+                            </button>
+                            <div
+                                className={`${mobileFiltersOpen ? 'flex' : 'hidden'} w-full flex-wrap items-center gap-2 sm:flex sm:w-auto`}
+                            >
+                                {filters}
+                            </div>
+                        </>
+                    )}
+                    {activeFilterCount > 0 && onClearFilters && (
+                        <button
+                            type="button"
+                            onClick={onClearFilters}
+                            className="text-base-content/70 hover:bg-base-200 inline-flex h-9 items-center gap-1 rounded-lg px-2 text-xs font-medium"
+                        >
+                            <X className="h-3.5 w-3.5" />
+                            Clear
+                        </button>
+                    )}
+                    <div className="text-base-content/60 ml-auto text-xs whitespace-nowrap">
                         Total:{' '}
                         <span className="text-base-content/80 font-semibold">
                             {totalCount ?? table.getFilteredRowModel().rows.length}
                         </span>{' '}
-                        entries
+                        {totalLabel}
                     </div>
                 </div>
             )}
@@ -179,25 +232,45 @@ export function DataTable<TData, TValue>({
                             >
                                 {headerGroup.headers.map((header) => {
                                     const canSort = header.column.getCanSort();
+                                    const sorted = header.column.getIsSorted();
                                     return (
                                         <th
                                             key={header.id}
-                                            onClick={
-                                                canSort
-                                                    ? header.column.getToggleSortingHandler()
-                                                    : undefined
+                                            aria-sort={
+                                                sorted === 'asc'
+                                                    ? 'ascending'
+                                                    : sorted === 'desc'
+                                                      ? 'descending'
+                                                      : 'none'
                                             }
-                                            className={`${density === 'compact' ? 'py-2' : 'py-3'} px-6 ${canSort ? 'hover:text-base-content cursor-pointer select-none' : ''}`}
+                                            className={`${density === 'compact' ? 'py-2' : 'py-3'} px-6`}
                                         >
-                                            <div className="flex items-center gap-1.5">
-                                                {flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext(),
-                                                )}
-                                                {canSort && (
-                                                    <ArrowUpDown className="text-base-content/50 h-3.5 w-3.5" />
-                                                )}
-                                            </div>
+                                            {canSort ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={header.column.getToggleSortingHandler()}
+                                                    className="hover:text-base-content inline-flex items-center gap-1.5 text-left select-none"
+                                                >
+                                                    {flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext(),
+                                                    )}
+                                                    {sorted === 'asc' ? (
+                                                        <ArrowUp className="text-primary h-3.5 w-3.5" />
+                                                    ) : sorted === 'desc' ? (
+                                                        <ArrowDown className="text-primary h-3.5 w-3.5" />
+                                                    ) : (
+                                                        <ArrowUpDown className="text-base-content/50 h-3.5 w-3.5" />
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                <div className="flex items-center gap-1.5">
+                                                    {flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext(),
+                                                    )}
+                                                </div>
+                                            )}
                                         </th>
                                     );
                                 })}
