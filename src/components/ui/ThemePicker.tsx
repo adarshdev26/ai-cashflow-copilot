@@ -1,7 +1,7 @@
 'use client';
 import { useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
-import { Palette, Check } from 'lucide-react';
+import { Palette, Check, Sun, Moon } from 'lucide-react';
 import { THEMES, attrOf, labelOf } from '@/lib/ui/themes';
 import { useUpdateUserPreferences } from '@/features/settings/hooks/use-settings';
 
@@ -14,7 +14,7 @@ const useMounted = () =>
     );
 
 export function ThemeMenu({ persistPreference = false }: { persistPreference?: boolean }) {
-    const { theme, setTheme } = useTheme();
+    const { theme, resolvedTheme, setTheme } = useTheme();
     const updatePreference = useUpdateUserPreferences();
     const mounted = useMounted();
 
@@ -25,6 +25,36 @@ export function ThemeMenu({ persistPreference = false }: { persistPreference?: b
 
     const close = () => (document.activeElement as HTMLElement | null)?.blur();
 
+    // Only two themes (light + dark): show a simple toggle switch instead of the dropdown.
+    const themeCount: number = THEMES.length;
+    if (themeCount === 2) {
+        const darkTheme = THEMES.find((t) => t.toLowerCase().includes('dark')) ?? THEMES[1];
+        const lightTheme = THEMES.find((t) => t !== darkTheme) ?? THEMES[0];
+        const isDark =
+            mounted &&
+            (resolvedTheme === darkTheme || (theme === 'system' && resolvedTheme === 'dark'));
+
+        return (
+            <label
+                data-tour="theme-switcher"
+                className="flex cursor-pointer items-center gap-2"
+                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+                <Sun className="h-4 w-4" />
+                <input
+                    type="checkbox"
+                    role="switch"
+                    aria-label="Toggle dark mode"
+                    className="toggle toggle-sm"
+                    checked={isDark}
+                    onChange={() => selectTheme(isDark ? lightTheme : darkTheme)}
+                />
+                <Moon className="h-4 w-4" />
+            </label>
+        );
+    }
+
+    // More than two themes: the existing dropdown, unchanged.
     return (
         <div className="dropdown dropdown-end">
             <button
