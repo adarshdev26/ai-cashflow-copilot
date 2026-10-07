@@ -2,8 +2,10 @@
 
 import dynamic from 'next/dynamic';
 import { ChartCard } from '@/features/dashboard';
-import { FinanceStats } from '@/features/finance';
 import { UpcomingRecurring } from '@/features/dashboard/components/UpcomingRecurring';
+import { FinancialHealth } from '@/features/dashboard/components/FinancialHealth';
+import { AttentionRequired } from '@/features/dashboard/components/AttentionRequired';
+import { InsightsCard } from '@/features/dashboard/components/InsightsCard';
 
 const CashflowChart = dynamic(
     () => import('@/features/dashboard/components/CashflowChart').then((m) => m.CashflowChart),
@@ -38,12 +40,17 @@ export default function DashboardOverviewPage() {
                     Dashboard Overview
                 </h1>
                 <p className="text-base-content/60 text-sm">
-                    Monitor your financial health, daily habits, and active documentation.
+                    See what needs your attention and where your money is going.
                 </p>
             </div>
 
-            <FinanceStats totalIncome={false} totalExpense={false} />
-            <UpcomingRecurring />
+            <FinancialHealth />
+            <AttentionRequired />
+
+            <div className="grid items-start gap-5 lg:grid-cols-2">
+                <UpcomingRecurring />
+                <InsightsCard />
+            </div>
 
             <div className="grid gap-5 lg:grid-cols-3">
                 <div className="lg:col-span-2">

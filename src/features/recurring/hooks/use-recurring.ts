@@ -25,6 +25,7 @@ function useInvalidate(includePlan = false) {
         qc.invalidateQueries({ queryKey: ['dashboard-metrics'] });
         qc.invalidateQueries({ queryKey: ['accounts'] });
         qc.invalidateQueries({ queryKey: ['budgets'] });
+        qc.invalidateQueries({ queryKey: ['calendar'] });
         invalidateReports(qc);
         if (includePlan) {
             void qc.invalidateQueries({ queryKey: ['plan'] });

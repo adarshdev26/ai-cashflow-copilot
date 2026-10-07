@@ -5,7 +5,7 @@ export type RecurringFrequency = 'WEEKLY' | 'MONTHLY' | 'YEARLY';
  * true  = WEEKLY runs every 5 seconds (no catch-up), for local testing
  * false = WEEKLY runs every 7 days (normal behaviour)
  */
-const TEST_FAST_WEEKLY = true;
+const TEST_FAST_WEEKLY = false;
 const TEST_STEP_MS = 5_000;
 
 /** Schedule dates are calendar dates stored at 12:00 UTC. */
@@ -189,4 +189,41 @@ export function collectDueOccurrences(input: DueOccurrencesInput): DueOccurrence
 
     const finished = end !== null && cursor.getTime() > end.getTime();
     return { occurrences, nextRunAt: cursor, hasMore: isLive(cursor), finished };
+}
+
+export interface WindowOccurrencesInput {
+    startDate: string | Date;
+    frequency: RecurringFrequency;
+    /** Persisted nextRunAt: the first occurrence NOT yet generated. */
+    nextRunAt: Date;
+    endDate?: string | Date | null;
+    windowStart: Date;
+    /** Inclusive. */
+    windowEnd: Date;
+    limit?: number;
+}
+
+/**
+ * Read-only preview of the not-yet-generated occurrences inside
+ * [windowStart, windowEnd]. Uses the same date math as the cron and never writes.
+ */
+export function listOccurrencesInWindow(input: WindowOccurrencesInput): Date[] {
+    const limit = input.limit ?? MAX_OCCURRENCES_PER_RUN;
+    const end = input.endDate ? toScheduleDate(input.endDate) : null;
+
+    let cursor = input.nextRunAt;
+    if (cursor.getTime() < input.windowStart.getTime()) {
+        cursor = firstOccurrenceOnOrAfter(input.startDate, input.frequency, input.windowStart);
+    }
+
+    const out: Date[] = [];
+    while (
+        out.length < limit &&
+        cursor.getTime() <= input.windowEnd.getTime() &&
+        (end === null || cursor.getTime() <= end.getTime())
+    ) {
+        out.push(cursor);
+        cursor = nextOccurrenceAfter(input.startDate, input.frequency, cursor);
+    }
+    return out;
 }

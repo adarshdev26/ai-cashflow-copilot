@@ -27,6 +27,7 @@ function useInvalidateCategoryData() {
             queryClient.invalidateQueries({ queryKey: ['recurring'] }),
             queryClient.invalidateQueries({ queryKey: ['transaction-templates'] }),
             queryClient.invalidateQueries({ queryKey: ['reports'] }),
+            queryClient.invalidateQueries({ queryKey: ['calendar'] }),
         ]);
 }
 

@@ -24,7 +24,10 @@ export function useGoals(includeArchived = false, workspaceIdOverride?: string) 
 function useInvalidateGoals() {
     const queryClient = useQueryClient();
     const workspaceId = useActiveWorkspaceId();
-    return () => queryClient.invalidateQueries({ queryKey: goalKeys.all(workspaceId) });
+    return () => {
+        queryClient.invalidateQueries({ queryKey: goalKeys.all(workspaceId) });
+        queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    };
 }
 
 export function useCreateGoal() {
