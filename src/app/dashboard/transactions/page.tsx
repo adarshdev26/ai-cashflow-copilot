@@ -292,7 +292,7 @@ export default function TransactionsPage() {
                 onClearFilters={clearFilters}
             />
 
-            {transferOpen && (
+            {(transferOpen || editingTransfer) && (
                 <TransferModal
                     key={editingTransfer?.id ?? (transferOpen ? 'new-transfer' : 'closed-transfer')}
                     open={transferOpen || Boolean(editingTransfer)}

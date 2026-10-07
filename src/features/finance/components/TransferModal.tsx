@@ -96,6 +96,22 @@ export function TransferModal({
                     </div>
                 )}
 
+                <div>
+                    <label
+                        htmlFor="transfer-note"
+                        className="text-base-content/70 mb-1.5 block text-sm font-medium"
+                    >
+                        Description
+                    </label>
+                    <Input
+                        id="transfer-note"
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="e.g. ATM withdrawal"
+                        maxLength={255}
+                    />
+                </div>
+
                 <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_auto_1fr]">
                     <div>
                         <label
@@ -191,22 +207,6 @@ export function TransferModal({
                             required
                         />
                     </div>
-                </div>
-
-                <div>
-                    <label
-                        htmlFor="transfer-note"
-                        className="text-base-content/70 mb-1.5 block text-sm font-medium"
-                    >
-                        Note <span className="text-base-content/40">(optional)</span>
-                    </label>
-                    <Input
-                        id="transfer-note"
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                        placeholder="e.g. ATM withdrawal"
-                        maxLength={255}
-                    />
                 </div>
 
                 <PrimaryButton
