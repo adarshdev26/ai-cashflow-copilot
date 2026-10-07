@@ -1,11 +1,33 @@
-import { LayoutDashboard, ReceiptText, Target, NotebookPen, Settings } from 'lucide-react';
+import {
+    LayoutDashboard,
+    ReceiptText,
+    CalendarDays,
+    Repeat,
+    LayoutTemplate,
+    PiggyBank,
+    Target,
+    Landmark,
+    Scale,
+    Tags,
+    BarChart3,
+    LifeBuoy,
+    Settings,
+} from 'lucide-react';
 import { cx } from '../primitives/cx';
 
 const nav = [
     { icon: LayoutDashboard, label: 'Overview', active: true },
     { icon: ReceiptText, label: 'Transactions' },
-    { icon: Target, label: 'Habits' },
-    { icon: NotebookPen, label: 'Notes' },
+    { icon: CalendarDays, label: 'Calendar' },
+    { icon: Repeat, label: 'Recurring' },
+    { icon: LayoutTemplate, label: 'Templates' },
+    { icon: PiggyBank, label: 'Budgets' },
+    { icon: Target, label: 'Goals' },
+    { icon: Landmark, label: 'Accounts' },
+    { icon: Scale, label: 'Net Worth' },
+    { icon: Tags, label: 'Categories' },
+    { icon: BarChart3, label: 'Reports' },
+    { icon: LifeBuoy, label: 'Support' },
     { icon: Settings, label: 'Settings' },
 ];
 
@@ -26,7 +48,7 @@ const rows = [
 export function HeroPreview() {
     return (
         <div className="bg-mk-surface flex text-left">
-            <aside className="border-mk-line hidden w-52 shrink-0 border-r p-4 md:block">
+            <aside className="border-mk-line hidden w-52 shrink-0 overflow-y-auto border-r p-4 md:block">
                 <p className="mk-heading mb-4 px-2 text-sm font-bold">Family budget ▾</p>
                 <ul className="space-y-1">
                     {nav.map(({ icon: Icon, label, active }) => (

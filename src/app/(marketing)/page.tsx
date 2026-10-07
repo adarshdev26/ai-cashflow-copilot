@@ -35,7 +35,7 @@ export default function HomePage() {
             <Hero
                 eyebrow="Shared workspaces for your money"
                 title="Know where your money goes. Together."
-                subtitle="Track income and expenses, keep every part of your life in its own workspace, and build the habits that keep you on track."
+                subtitle="Track income and expenses and keep every part of your life in its own workspace."
                 primary={{ href: '/signup', label: 'Get started' }}
                 secondary={{ href: '/features', label: 'See features' }}
                 showPreview
@@ -45,7 +45,7 @@ export default function HomePage() {
             <FeatureGrid
                 eyebrow="Who it's for"
                 title="Built for how you actually live"
-                subtitle="One simple tool for households, side projects, small teams, and anyone building better money habits."
+                subtitle="One simple tool for households, side projects, small teams, and anyone who wants a clearer view of their money."
                 items={USE_CASES}
                 columns={2}
                 tone="muted"
@@ -54,7 +54,7 @@ export default function HomePage() {
             <FeatureBento
                 eyebrow="Features"
                 title="Everything you need, nothing you don't"
-                subtitle="Workspaces, a fast ledger, templates, clear numbers, habits, and notes, all in one place."
+                subtitle="Workspaces, a fast ledger, templates, and clear numbers, all in one place."
                 items={FEATURES}
             />
 

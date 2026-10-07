@@ -137,7 +137,7 @@ function CreateWorkspaceModal({
                     Create workspace
                 </h2>
                 <p className="text-base-content/60 mt-1 text-sm">
-                    A workspace keeps its own transactions, habits and notes.
+                    A workspace keeps its own transactions.
                 </p>
 
                 <form onSubmit={handleSubmit} className="mt-4 space-y-4">

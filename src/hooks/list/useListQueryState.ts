@@ -1,14 +1,13 @@
 /*
-  Example for a future habits list:
-  const list = useListQueryState<HabitFilters, HabitSortField>({
-    defaultFilters: { search: undefined, completed: undefined },
+  Example usage:
+  const list = useListQueryState<TransactionFilters, TransactionSortField>({
+    defaultFilters: { search: undefined, type: undefined },
     defaultSortBy: 'createdAt',
     defaultSortDir: 'desc',
     defaultPageSize: 20,
   });
-  const result = useHabits(list.params);
+  const result = useTransactions(list.params);
 */
-// Filter updates are immediate by design; debounce a search input at the caller when its UX requires it.
 
 import { useCallback, useMemo } from 'react';
 import { useFilters } from './useFilters';

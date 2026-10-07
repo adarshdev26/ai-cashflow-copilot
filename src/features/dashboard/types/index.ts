@@ -19,5 +19,5 @@ export interface ActivityItem {
     category: string;
     amount?: number;
     date: string;
-    type: 'TRANSACTION' | 'HABIT' | 'NOTE';
+    type: 'TRANSACTION';
 }

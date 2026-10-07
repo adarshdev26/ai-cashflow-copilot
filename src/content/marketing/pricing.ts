@@ -25,7 +25,6 @@ export const plans: Plan[] = [
             '1 workspace',
             'Unlimited transactions',
             'Transaction search and sorting',
-            'Habits and notes',
             'Guided tour',
         ],
     },
@@ -103,7 +102,5 @@ export const comparisonRows: ComparisonRow[] = [
         feature: 'Reusable templates',
         values: { free: false, plus: true, team: true },
     },
-    { group: 'Extras', feature: 'Habits', values: { free: true, plus: true, team: true } },
-    { group: 'Extras', feature: 'Notes', values: { free: true, plus: true, team: true } },
     { group: 'Extras', feature: 'Guided tour', values: { free: true, plus: true, team: true } },
 ];

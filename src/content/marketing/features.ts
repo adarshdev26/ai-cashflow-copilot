@@ -3,8 +3,6 @@ import {
     ReceiptText,
     LayoutTemplate,
     BarChart3,
-    Target,
-    NotebookPen,
     Users,
     ShieldCheck,
     Lock,
@@ -28,7 +26,7 @@ export const FEATURES: Feature[] = [
         icon: Layers,
         title: 'Separate workspaces',
         description:
-            'Keep family, business, and side-project money completely apart. Every workspace has its own transactions, members, habits, notes, and totals, so one part of your life never blurs into another.',
+            'Keep family, business, and side-project money completely apart. Every workspace has its own transactions, members, accounts, and totals, so one part of your life never blurs into another.',
     },
     {
         icon: ReceiptText,
@@ -47,18 +45,6 @@ export const FEATURES: Feature[] = [
         title: 'Clear numbers',
         description:
             'See income, expenses, and net balance for each workspace in a layout that is easy to scan. Your numbers update as you add transactions, so you always know where you stand.',
-    },
-    {
-        icon: Target,
-        title: 'Money habits',
-        description:
-            'Track the daily habits that support your money goals, from saving and budgeting to checking in on spending. Keep those routines right next to the finances they are meant to improve.',
-    },
-    {
-        icon: NotebookPen,
-        title: 'Notes beside numbers',
-        description:
-            'Capture quick notes, reminders, and context without leaving your workspace. Add the story behind a transaction or a decision while it is still fresh.',
     },
 ];
 
@@ -80,7 +66,7 @@ export const FEATURE_DETAILS: FeatureDetail[] = [
         eyebrow: 'Workspaces',
         title: 'One workspace for every part of your life',
         description:
-            'Everything you add lives inside a workspace. Switch between them in a click and keep household spending, business expenses, and side-project income in separate, clearly labeled spaces. Each workspace has its own accounts, ledger, budgets, categories, members, habits, notes, and totals.',
+            'Everything you add lives inside a workspace. Switch between them in a click and keep household spending, business expenses, and side-project income in separate, clearly labeled spaces. Each workspace has its own accounts, ledger, budgets, categories, members, and totals.',
         bullets: [
             'Create as many workspaces as your plan allows for home, work, projects, or clients',
             'Switch instantly from the top bar without losing your place',
@@ -204,20 +190,6 @@ export const FEATURE_DETAILS: FeatureDetail[] = [
         },
     },
     {
-        id: 'habits',
-        icon: Target,
-        eyebrow: 'Habits & notes',
-        title: 'Build the habits behind the numbers',
-        description:
-            'Good money outcomes usually come from small daily routines. Track habits and keep notes in the same place as your transactions, so the behavior behind the numbers is never separated from the numbers themselves.',
-        bullets: [
-            'Track daily habits that support your money goals',
-            'Keep quick notes next to your finances and transactions',
-            'Review progress without juggling a separate app',
-            'Build context around decisions while they are still fresh',
-        ],
-    },
-    {
         id: 'together',
         icon: Users,
         eyebrow: 'Together',
@@ -249,7 +221,7 @@ export const EXTRAS: Feature[] = [
         icon: Sparkles,
         title: 'Guided tour',
         description:
-            'A short walkthrough shows you around workspaces, transactions, habits, and notes on your first visit.',
+            'A short walkthrough shows you around workspaces, transactions, and the main areas of the app on your first visit.',
     },
     {
         icon: HeartHandshake,
@@ -276,9 +248,9 @@ export const STEPS = [
             'Income, expenses, and net balance update as you go, giving you a clear view of each workspace without manual calculations.',
     },
     {
-        title: 'Invite people and build habits',
+        title: 'Invite people to share the view',
         description:
-            'Bring in family members or teammates, then track the daily habits and notes that keep everyone aligned and on course.',
+            'Bring in family members or teammates so everyone works from the same up-to-date picture of the workspace.',
     },
 ];
 
@@ -334,11 +306,11 @@ export const VALUES: Feature[] = [
 export const FAQS = [
     {
         q: 'What can I track?',
-        a: 'You can track income and expenses as transactions, plus daily habits and notes, all inside a workspace. Each workspace keeps its own records so you can separate different parts of your life.',
+        a: 'You can track income and expenses as transactions, all inside a workspace. Each workspace keeps its own records so you can separate different parts of your life.',
     },
     {
         q: 'What is a workspace?',
-        a: 'A workspace is a separate space with its own transactions, members, habits, notes, and totals. Use one for family, another for a business, another for a side project, or however you want to organize your money.',
+        a: 'A workspace is a separate space with its own transactions, accounts, members, and totals. Use one for family, another for a business, another for a side project, or however you want to organize your money.',
     },
     {
         q: 'Can I share a workspace?',
@@ -350,6 +322,6 @@ export const FAQS = [
     },
     {
         q: 'Is there a tour?',
-        a: 'Yes. A short guided tour walks you through workspaces, transactions, habits, notes, and the main areas of the app on your first visit.',
+        a: 'Yes. A short guided tour walks you through workspaces, transactions, and the main areas of the app on your first visit.',
     },
 ];

@@ -34,12 +34,12 @@ export type SettingDef = Base &
         | { type: 'number'; default: number; min: number; max: number; unit?: string }
         | { type: 'boolean'; default: boolean }
         | {
-              type: 'string';
-              default: string;
-              minLength?: number;
-              maxLength: number;
-              format?: 'email';
-          }
+            type: 'string';
+            default: string;
+            minLength?: number;
+            maxLength: number;
+            format?: 'email';
+        }
         | { type: 'enum'; default: string | number; options: readonly EnumOption[] }
     );
 
@@ -185,7 +185,7 @@ export const SETTINGS: readonly SettingDef[] = [
         'general',
         'Tagline',
         'Short line under the name.',
-        'Money, habits and notes, in one shared workspace.',
+        'Money management in one shared workspace.',
         140,
         { pub: true },
     ),

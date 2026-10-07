@@ -1,8 +1,8 @@
 export const SITE = {
     name: 'Cashflow Copilot', // TODO: real brand
-    tagline: 'Money, habits and notes, in one shared workspace.',
+    tagline: 'Money, in one shared workspace.',
     description:
-        'Track income and expenses, keep family, business and side-project money in separate workspaces, and build better money habits, together.',
+        'Track income and expenses, keep family, business and side-project money in separate workspaces, and stay on top of your money, together.',
     url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
     email: 'hello@cashflowcopilot.com', // TODO
 };

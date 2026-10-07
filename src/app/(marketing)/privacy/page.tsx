@@ -53,8 +53,8 @@ export default function PrivacyPage() {
                 </h2>
                 <p>
                     We collect only what we need to run the service: your account details and the
-                    transactions, habits and notes you add. Data in a workspace is visible to that
-                    workspace’s members and nobody else.
+                    transactions you add. Data in a workspace is visible to that workspace’s members
+                    and nobody else.
                 </p>
 
                 <h2 id="collect" className="scroll-mt-24">
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
                 </h2>
                 <ul>
                     <li>Account details such as your name and email address.</li>
-                    <li>Content you add to a workspace: transactions, habits, and notes.</li>
+                    <li>Content you add to a workspace: transactions.</li>
                     <li>Invitation details, such as the email addresses you invite.</li>
                     <li>
                         Basic usage and device data needed to keep the service reliable. TODO: list

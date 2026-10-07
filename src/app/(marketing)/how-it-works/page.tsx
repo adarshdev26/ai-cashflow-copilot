@@ -47,7 +47,7 @@ export default function HowItWorksPage() {
             <FeatureGrid
                 eyebrow="Day to day"
                 title="A weekly rhythm that sticks"
-                subtitle="Small routines that keep your numbers, habits, and notes working together."
+                subtitle="Small routines that keep your numbers working together."
                 items={WEEKLY_RHYTHM}
                 tone="muted"
             />

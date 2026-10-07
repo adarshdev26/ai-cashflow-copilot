@@ -4,7 +4,7 @@ export type FaqItem = { q: string; a: string };
 export const pricingFaqs: FaqItem[] = [
     {
         q: 'Is there a free plan?',
-        a: 'Yes. The Free plan lets you track transactions, habits and notes in a workspace with no payment details needed.',
+        a: 'Yes. The Free plan lets you track transactions in a workspace with no payment details needed.',
     },
     {
         q: 'Can I switch plans later?',

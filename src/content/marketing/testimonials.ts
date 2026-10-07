@@ -20,10 +20,4 @@ export const testimonials: Testimonial[] = [
         role: 'Small business owner',
         initials: 'CN',
     },
-    {
-        quote: 'Placeholder: a real quote about habits and notes beside the numbers goes here.',
-        name: 'Customer name',
-        role: 'Side-project founder',
-        initials: 'CN',
-    },
 ];

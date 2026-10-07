@@ -2,7 +2,6 @@ import {
     Home,
     Briefcase,
     Users,
-    Target,
     UserPlus,
     Layers,
     ReceiptText,
@@ -10,7 +9,6 @@ import {
     UserCheck,
     LayoutTemplate,
     Search,
-    NotebookPen,
     BarChart3,
     Lock,
     Eye,
@@ -32,19 +30,13 @@ export const USE_CASES: Feature[] = [
         icon: Briefcase,
         title: 'Side projects and freelancers',
         description:
-            'Keep project income and expenses apart from personal spending, with notes that explain the story behind each entry.',
+            'Keep project income and expenses apart from personal spending, with a clean ledger for each client or project.',
     },
     {
         icon: Users,
         title: 'Small teams',
         description:
             'Give teammates access to a shared workspace and manage who is in it, and who is still pending, from settings.',
-    },
-    {
-        icon: Target,
-        title: 'Habit builders',
-        description:
-            'Pair your numbers with daily habits like saving and checking in on spending, so progress becomes a routine instead of a resolution.',
     },
 ];
 
@@ -69,7 +61,8 @@ export const ONBOARDING: Feature[] = [
     {
         icon: Sparkles,
         title: 'Take the guided tour',
-        description: 'A short walkthrough points out workspaces, transactions, habits, and notes.',
+        description:
+            'A short walkthrough points out workspaces, transactions, and the main areas of the app.',
     },
     {
         icon: LayoutTemplate,
@@ -95,17 +88,6 @@ export const WEEKLY_RHYTHM: Feature[] = [
         icon: Search,
         title: 'Review the ledger',
         description: 'Search, sort, and filter your transactions to see where the week went.',
-    },
-    {
-        icon: NotebookPen,
-        title: 'Add context',
-        description: 'Jot a note beside the decisions you want to remember while they are fresh.',
-    },
-    {
-        icon: Target,
-        title: 'Check your habits',
-        description:
-            'Tick off the routines that support your money goals, in the same place as the numbers.',
     },
     {
         icon: BarChart3,
@@ -164,7 +146,7 @@ export const SECURITY_DETAILS: FeatureDetail[] = [
         eyebrow: 'Separation',
         title: 'Each workspace is its own space',
         description:
-            'Transactions, habits, notes, members, and totals belong to a workspace and are visible only to its members. Family money and business money never blur together.',
+            'Transactions, accounts, members, and totals belong to a workspace and are visible only to its members. Family money and business money never blur together.',
         bullets: [
             'Data belongs to a single workspace',
             'Only members of a workspace can see its contents',
@@ -237,7 +219,7 @@ export const SECURITY_FAQS = [
     },
     {
         q: 'Is my data mixed with my other workspaces?',
-        a: 'No. Each workspace keeps its own transactions, members, habits, notes, and totals.',
+        a: 'No. Each workspace keeps its own transactions, accounts, members, and totals.',
     },
     {
         q: 'Can I remove someone?',
@@ -266,11 +248,6 @@ export const INCLUDED_EVERYWHERE: Feature[] = [
         description: 'Find any entry in a ledger that stays readable as it grows.',
     },
     {
-        icon: NotebookPen,
-        title: 'Habits and notes',
-        description: 'Keep the routines and context behind your money next to the numbers.',
-    },
-    {
         icon: Sparkles,
         title: 'Guided tour',
         description: 'A short walkthrough shows you around on your first visit.',
@@ -282,7 +259,7 @@ export const PLAN_FIT: Feature[] = [
         icon: Wallet,
         title: 'Free is for individuals',
         description:
-            'Start tracking with one workspace, unlimited transactions, habits, and notes.',
+            'Start tracking with one workspace, unlimited transactions, and a ledger that stays clean as it grows.',
     },
     {
         icon: Home,
@@ -306,7 +283,7 @@ export const ABOUT_FAQS = [
     },
     {
         q: 'Can I try it for free?',
-        a: 'Yes. The Free plan includes one workspace, unlimited transactions, habits, and notes.',
+        a: 'Yes. The Free plan includes one workspace and unlimited transactions.',
     },
     {
         q: 'Is it only for shared money?',

@@ -12,7 +12,7 @@ import { comparisonRows } from '@/content/marketing/pricing';
 export const metadata: Metadata = {
     title: 'Features',
     description:
-        'Workspaces, accounts, transactions, templates, recurring entries, categories, budgets, habits and shared access, all in one place.',
+        'Workspaces, accounts, transactions, templates, recurring entries, categories, budgets and shared access, all in one place.',
     alternates: { canonical: '/features' },
 };
 
@@ -31,7 +31,7 @@ export default function FeaturesPage() {
             <FeatureBento
                 eyebrow="At a glance"
                 title="The whole toolkit"
-                subtitle="Building blocks that work together, so money, habits, and notes never live in separate apps."
+                subtitle="Building blocks that work together, so money never live in separate apps."
                 items={FEATURES}
             />
 

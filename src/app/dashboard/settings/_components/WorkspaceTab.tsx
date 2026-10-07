@@ -296,7 +296,7 @@ function WorkspaceContent() {
             <ConfirmDialog
                 isOpen={deleteOpen}
                 title="Delete Workspace"
-                description={`Are you sure you want to delete "${workspace.name}"? This will permanently delete all transactions, habits, and notes.`}
+                description={`Are you sure you want to delete "${workspace.name}"? This will permanently delete all transactions.`}
                 confirmText={deletingWs ? 'Deleting...' : 'Delete'}
                 variant="danger"
                 onConfirm={handleDelete}

@@ -76,9 +76,8 @@ export default function TermsPage() {
                     4. Your content
                 </h2>
                 <p>
-                    You keep ownership of the transactions, habits, and notes you add. You give us
-                    permission to store and process them only to provide the service. TODO: confirm
-                    with counsel.
+                    You keep ownership of the transactions you add. You give us permission to store
+                    and process them only to provide the service. TODO: confirm with counsel.
                 </p>
 
                 <h2 id="plans" className="scroll-mt-24">

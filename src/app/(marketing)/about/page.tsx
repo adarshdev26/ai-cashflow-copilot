@@ -66,7 +66,7 @@ export default async function AboutPage() {
                 title="Why we built this"
                 paragraphs={[
                     'Most money tools are either spreadsheets that break or heavy apps built for accountants.',
-                    'We wanted something in between: quick to fill, easy to read, and shareable with the people you actually split life with, with habits and notes beside the numbers.',
+                    'We wanted something in between: quick to fill, easy to read, and shareable with the people you actually split life with..',
                 ]}
                 aside={
                     <div className="space-y-4">
@@ -92,7 +92,7 @@ export default async function AboutPage() {
                 title="Built to be shared"
                 paragraphs={[
                     'Money is rarely a solo activity, so sharing, inviting, and collaborating are part of the core experience rather than an afterthought.',
-                    'Every workspace keeps its own transactions, members, habits, and notes, so you can share exactly what you want and nothing else.',
+                    'Every workspace keeps its own transactions, members, so you can share exactly what you want and nothing else.',
                 ]}
                 aside={
                     <div className="space-y-4">
