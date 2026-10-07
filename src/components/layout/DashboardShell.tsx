@@ -330,7 +330,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         setSignOutMessage(isImpersonating ? 'Returning to admin…' : 'Signing out…');
         try {
             const endpoint = isImpersonating ? '/api/admin/impersonation/stop' : '/api/auth/logout';
-            const redirectTo = '/admin/users';
+            const redirectTo = isImpersonating ? '/admin/users' : '/login';
             if (isImpersonating) router.prefetch(redirectTo);
             const response = await fetch(endpoint, { method: 'POST' });
             if (!response.ok) throw new Error('Failed to sign out');
