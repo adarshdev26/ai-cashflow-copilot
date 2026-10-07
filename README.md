@@ -605,7 +605,7 @@ Preview versus production is not configured in this repository.
 
 ## Testing
 
-Not yet implemented. No test runner is listed in `package.json`. The CI file calls `npm run test` anyway.
+No test framework is listed in `package.json`. Pure Goals calculation tests run with `node --import tsx --test src/features/goals/lib/goals.test.ts`. The CI file calls `npm run test` anyway.
 
 ## Current Features
 
@@ -613,6 +613,7 @@ Not yet implemented. No test runner is listed in `package.json`. The CI file cal
 - Dashboard shell with overview, finance, and placeholder links
 - Transaction ledger with search, type, category, date filters, sort, and pagination
 - Transaction create, edit, and delete
+- Savings goals with progress tracking, contributions, and archive support
 - Income, expense, and net summary cards
 - Category filter, badge, select, and all-time category totals table
 - Income vs expense, category spending, and balance trend charts
