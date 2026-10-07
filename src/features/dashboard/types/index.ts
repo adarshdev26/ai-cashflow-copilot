@@ -26,3 +26,24 @@ export interface ActivityItem {
     date: string;
     type: 'TRANSACTION' | 'HABIT' | 'NOTE';
 }
+
+export type InsightType =
+    | 'SPENDING_INCREASE'
+    | 'BUDGET_WARNING'
+    | 'LARGE_EXPENSE'
+    | 'CASH_FLOW_CHANGE'
+    | 'RECURRING_EXPENSE';
+
+export type InsightSeverity = 'INFO' | 'WARNING' | 'POSITIVE';
+
+export interface FinancialInsight {
+    type: InsightType;
+    title: string;
+    message: string;
+    severity: InsightSeverity;
+}
+
+export interface AiInsightsResponse {
+    success: boolean;
+    insights: FinancialInsight[];
+}
