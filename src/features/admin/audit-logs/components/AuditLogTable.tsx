@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import type { ReactNode } from 'react';
 import type { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
@@ -21,6 +22,9 @@ type Props = {
     totalCount: number;
     isLoading: boolean;
     isFetching: boolean;
+    filters?: ReactNode;
+    activeFilterCount?: number;
+    onClearFilters?: () => void;
 };
 
 export function AuditLogTable({ data, onView, ...table }: Props) {
@@ -28,6 +32,7 @@ export function AuditLogTable({ data, onView, ...table }: Props) {
         () => [
             {
                 id: 'createdAt',
+                accessorFn: (row) => row.createdAt,
                 header: 'Date',
                 cell: ({ row }) => (
                     <span className="whitespace-nowrap">
@@ -51,13 +56,13 @@ export function AuditLogTable({ data, onView, ...table }: Props) {
             {
                 id: 'action',
                 header: 'Action',
-                enableSorting: false,
+                accessorFn: (row) => row.action,
                 cell: ({ row }) => auditActionLabel(row.original.action),
             },
             {
-                id: 'resource',
+                id: 'resourceType',
                 header: 'Resource',
-                enableSorting: false,
+                accessorFn: (row) => row.resourceType,
                 cell: ({ row }) =>
                     auditResourceLabel(row.original.resourceType, row.original.resourceId),
             },
@@ -86,6 +91,9 @@ export function AuditLogTable({ data, onView, ...table }: Props) {
             data={data}
             searchKey="search"
             searchPlaceholder="Search actor or resource ID..."
+            filters={table.filters}
+            activeFilterCount={table.activeFilterCount}
+            onClearFilters={table.onClearFilters}
             manualPagination
             manualSorting
             manualFiltering

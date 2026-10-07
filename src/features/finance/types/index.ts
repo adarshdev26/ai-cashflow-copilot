@@ -3,7 +3,13 @@ import type { AccountType } from '@/features/accounts/types';
 
 export type TransactionType = 'CREDIT' | 'DEBIT';
 
-export type TransactionSortBy = 'createdAt' | 'amount' | 'description' | 'type';
+export type TransactionSortBy =
+    | 'createdAt'
+    | 'amount'
+    | 'description'
+    | 'type'
+    | 'account'
+    | 'category';
 export type TransactionSortField = TransactionSortBy;
 export type SortDirection = 'asc' | 'desc';
 

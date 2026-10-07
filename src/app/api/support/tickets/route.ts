@@ -43,7 +43,7 @@ export async function GET(req: Request) {
     const [rows, totalCount] = await Promise.all([
         prisma.supportTicket.findMany({
             where,
-            orderBy: { [sortBy]: sortDir },
+            orderBy: [{ [sortBy]: sortDir }, { id: 'asc' }],
             skip: (page - 1) * limit,
             take: limit,
             select: {

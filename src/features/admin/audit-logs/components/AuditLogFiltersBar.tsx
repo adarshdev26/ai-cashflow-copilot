@@ -1,24 +1,24 @@
 'use client';
 
+import { FilterDateRange } from '@/components/ui/FilterDateRange';
+import { FilterSelect } from '@/components/ui/FilterSelect';
 import { AUDIT_ACTION_LABELS, AUDIT_RESOURCE_LABELS } from '@/lib/admin/audit-events';
-import { Select } from '@/components/ui/Select';
 import type { AuditLogFilters } from '../types';
-
-const dateInputClass =
-    'border-base-300 bg-base-100 focus:ring-primary/20 focus:border-primary rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none';
 
 export function AuditLogFiltersBar({
     filters,
     onChange,
+    error,
 }: {
     filters: AuditLogFilters;
     onChange: (key: keyof AuditLogFilters, value: string | undefined) => void;
+    error?: string;
 }) {
     return (
-        <div className="flex flex-wrap items-center gap-3">
-            <Select
+        <>
+            <FilterSelect
                 aria-label="Filter by action"
-                className="w-52"
+                className="w-40 sm:w-48"
                 value={filters.action ?? ''}
                 onChange={(e) => onChange('action', e.target.value || undefined)}
             >
@@ -28,10 +28,9 @@ export function AuditLogFiltersBar({
                         {label}
                     </option>
                 ))}
-            </Select>
-            <Select
+            </FilterSelect>
+            <FilterSelect
                 aria-label="Filter by resource type"
-                className="w-44"
                 value={filters.resourceType ?? ''}
                 onChange={(e) => onChange('resourceType', e.target.value || undefined)}
             >
@@ -41,27 +40,16 @@ export function AuditLogFiltersBar({
                         {label}
                     </option>
                 ))}
-            </Select>
-            <label className="text-base-content/60 flex items-center gap-2 text-xs">
-                From
-                <input
-                    type="date"
-                    className={dateInputClass}
-                    value={filters.dateFrom ?? ''}
-                    max={filters.dateTo || undefined}
-                    onChange={(e) => onChange('dateFrom', e.target.value || undefined)}
-                />
-            </label>
-            <label className="text-base-content/60 flex items-center gap-2 text-xs">
-                To
-                <input
-                    type="date"
-                    className={dateInputClass}
-                    value={filters.dateTo ?? ''}
-                    min={filters.dateFrom || undefined}
-                    onChange={(e) => onChange('dateTo', e.target.value || undefined)}
-                />
-            </label>
-        </div>
+            </FilterSelect>
+            <FilterDateRange
+                from={filters.dateFrom ?? ''}
+                to={filters.dateTo ?? ''}
+                onChange={({ from, to }) => {
+                    onChange('dateFrom', from || undefined);
+                    onChange('dateTo', to || undefined);
+                }}
+                error={error}
+            />
+        </>
     );
 }

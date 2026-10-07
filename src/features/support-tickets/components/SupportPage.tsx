@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/Select';
+import { FilterSelect } from '@/components/ui/FilterSelect';
 import { getErrorMessage } from '@/lib/ui/toast';
 import { useAdminTableState } from '@/features/admin/shared/hooks/use-admin-table-state';
 
@@ -40,7 +40,7 @@ function PageHeader({ onCreate }: { onCreate: () => void }) {
 function StatusFilter({ value, onChange }: StatusFilterProps) {
     return (
         <div className="flex flex-wrap items-center gap-3">
-            <Select
+            <FilterSelect
                 aria-label="Filter tickets by status"
                 className="w-44"
                 value={value}
@@ -56,7 +56,7 @@ function StatusFilter({ value, onChange }: StatusFilterProps) {
                         {STATUS_LABEL[status]}
                     </option>
                 ))}
-            </Select>
+            </FilterSelect>
         </div>
     );
 }
@@ -114,11 +114,6 @@ export function SupportPage() {
         <div className="mx-auto max-w-7xl space-y-8">
             <PageHeader onCreate={() => setCreating(true)} />
 
-            <StatusFilter
-                value={statusFilter ?? ''}
-                onChange={(status) => table.list.setFilter('status', status)}
-            />
-
             {showError ? (
                 <ErrorState error={error} onRetry={() => void refetch()} />
             ) : showEmpty ? (
@@ -137,6 +132,14 @@ export function SupportPage() {
                     totalCount={totalCount}
                     isLoading={isLoading}
                     isFetching={isFetching}
+                    filters={
+                        <StatusFilter
+                            value={statusFilter ?? ''}
+                            onChange={(status) => table.list.setFilter('status', status)}
+                        />
+                    }
+                    activeFilterCount={statusFilter ? 1 : 0}
+                    onClearFilters={() => table.list.setFilter('status', undefined)}
                 />
             )}
 

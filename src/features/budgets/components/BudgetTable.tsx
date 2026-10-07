@@ -69,6 +69,7 @@ export const BudgetTable = memo(function BudgetTable({
             {
                 id: 'category',
                 header: 'Category',
+                enableSorting: true,
                 accessorFn: (row) => row.category.name,
                 cell: ({ row }) => {
                     const b = row.original;
@@ -94,6 +95,7 @@ export const BudgetTable = memo(function BudgetTable({
             {
                 accessorKey: 'amount',
                 header: 'Budget',
+                enableSorting: true,
                 cell: ({ row }) => (
                     <span className="text-base-content font-semibold">
                         {formatINR(row.original.amount, locale)}
@@ -103,6 +105,7 @@ export const BudgetTable = memo(function BudgetTable({
             {
                 accessorKey: 'spent',
                 header: 'Spent',
+                enableSorting: true,
                 cell: ({ row }) => (
                     <span className="text-base-content/80 font-medium">
                         {formatINR(row.original.spent, locale)}
@@ -112,6 +115,7 @@ export const BudgetTable = memo(function BudgetTable({
             {
                 accessorKey: 'remaining',
                 header: 'Remaining',
+                enableSorting: true,
                 cell: ({ row }) => {
                     const r = row.original.remaining;
                     return r >= 0 ? (
@@ -126,6 +130,7 @@ export const BudgetTable = memo(function BudgetTable({
             {
                 accessorKey: 'percentUsed',
                 header: 'Usage',
+                enableSorting: true,
                 cell: ({ row }) => {
                     const tone = usageTone(
                         row.original.percentUsed,

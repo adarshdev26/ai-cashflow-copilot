@@ -24,5 +24,11 @@ export type AdminWorkspaceDetail = Omit<AdminWorkspaceRow, 'memberCount'> & {
     members: AdminWorkspaceMember[];
 };
 export type AdminWorkspaceSortField =
-    'name' | 'createdAt' | 'memberCount' | 'accountCount' | 'categoryCount';
+    | 'name'
+    | 'createdAt'
+    | 'memberCount'
+    | 'accountCount'
+    | 'categoryCount'
+    | 'owner'
+    | 'isActive';
 export type AdminWorkspaceFilters = { search?: string; isActive?: 'true' | 'false' };

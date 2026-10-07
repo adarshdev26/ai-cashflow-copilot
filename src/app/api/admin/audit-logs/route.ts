@@ -9,11 +9,13 @@ const TOKEN_RE = /^[a-z0-9_.-]{1,64}$/i;
 const ID_RE = /^[a-zA-Z0-9_-]{1,64}$/;
 
 /** Date-only values (YYYY-MM-DD) are treated as UTC; `dateTo` is inclusive of the whole day. */
-function parseDate(raw: string | null, endOfDay: boolean): Date | undefined {
+function parseDate(raw: string | null, endOfDay: boolean): Date | null | undefined {
     if (!raw) return undefined;
     const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(raw);
     const d = new Date(dateOnly ? `${raw}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}Z` : raw);
-    return Number.isNaN(d.getTime()) ? undefined : d;
+    if (Number.isNaN(d.getTime())) return null;
+    if (dateOnly && d.toISOString().slice(0, 10) !== raw) return null;
+    return d;
 }
 
 export const AUDIT_ROW_SELECT = {
@@ -36,7 +38,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const p = parseListParams(
         url,
-        ['createdAt'],
+        ['createdAt', 'action', 'resourceType'],
         'createdAt',
         await getSystemNumber('limits.listMaxPageSize'),
     );
@@ -48,6 +50,12 @@ export async function GET(req: Request) {
     const resourceId = sp.get('resourceId');
     const dateFrom = parseDate(sp.get('dateFrom'), false);
     const dateTo = parseDate(sp.get('dateTo'), true);
+    if (dateFrom === null || dateTo === null) {
+        return NextResponse.json({ error: 'Invalid date value' }, { status: 400 });
+    }
+    if (dateFrom && dateTo && dateFrom > dateTo) {
+        return NextResponse.json({ error: 'dateFrom must be before dateTo' }, { status: 400 });
+    }
 
     const where: Prisma.AuditLogWhereInput = {
         ...(action && TOKEN_RE.test(action) ? { action } : {}),
@@ -77,8 +85,15 @@ export async function GET(req: Request) {
         prisma.auditLog.findMany({
             where,
             select: AUDIT_ROW_SELECT,
-            // id is the tie-breaker so pages stay stable when timestamps collide
-            orderBy: [{ createdAt: p.sortDir }, { id: p.sortDir }],
+            // id is the tie-breaker so pages stay stable when primary values collide
+            orderBy: [
+                p.sortBy === 'createdAt'
+                    ? { createdAt: p.sortDir }
+                    : p.sortBy === 'action'
+                      ? { action: p.sortDir }
+                      : { resourceType: p.sortDir },
+                { id: p.sortDir },
+            ],
             skip: p.skip,
             take: p.limit,
         }),

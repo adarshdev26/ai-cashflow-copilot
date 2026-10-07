@@ -1,7 +1,7 @@
 'use client';
 
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
+import { FilterDateRange } from '@/components/ui/FilterDateRange';
+import { FilterSelect } from '@/components/ui/FilterSelect';
 import type { FinancialAccount } from '@/features/accounts/types';
 import type { Category } from '@/resources/types';
 import type { TransactionFilters as TransactionFilterValues, TransactionType } from '../types';
@@ -34,11 +34,8 @@ export function TransactionFilters({
     onDateToChange,
 }: Props) {
     return (
-        <div
-            className="border-base-300 bg-base-100 grid gap-4 rounded-xl border p-4 md:grid-cols-5"
-            data-tour="transaction-filters"
-        >
-            <Select
+        <div className="contents" data-tour="transaction-filters">
+            <FilterSelect
                 aria-label="Filter by transaction type"
                 value={filters.type ?? ''}
                 onChange={(event) => onTypeChange(event.target.value as TransactionType | '')}
@@ -46,8 +43,8 @@ export function TransactionFilters({
                 <option value="">All types</option>
                 <option value="CREDIT">Credit</option>
                 <option value="DEBIT">Debit</option>
-            </Select>
-            <Select
+            </FilterSelect>
+            <FilterSelect
                 aria-label="Filter by account"
                 value={filters.accountId ?? ''}
                 onChange={(event) => onAccountChange(event.target.value)}
@@ -60,8 +57,8 @@ export function TransactionFilters({
                         {account.isActive ? '' : ' (inactive)'}
                     </option>
                 ))}
-            </Select>
-            <Select
+            </FilterSelect>
+            <FilterSelect
                 aria-label="Filter by category"
                 value={filters.categoryId ?? ''}
                 onChange={(event) => onCategoryChange(event.target.value)}
@@ -73,25 +70,20 @@ export function TransactionFilters({
                         {category.name}
                     </option>
                 ))}
-            </Select>
-            <Input
-                aria-label="Filter transactions from date"
-                type="date"
-                value={filters.dateFrom ?? ''}
-                onChange={(event) => onDateFromChange(event.target.value)}
+            </FilterSelect>
+            <FilterDateRange
+                from={filters.dateFrom ?? ''}
+                to={filters.dateTo ?? ''}
+                onChange={({ from, to }) => {
+                    onDateFromChange(from);
+                    onDateToChange(to);
+                }}
+                error={
+                    isInvalidDateRange
+                        ? '"From" date must be on or before the "To" date.'
+                        : undefined
+                }
             />
-            <Input
-                aria-label="Filter transactions to date"
-                type="date"
-                min={filters.dateFrom}
-                value={filters.dateTo ?? ''}
-                onChange={(event) => onDateToChange(event.target.value)}
-            />
-            {isInvalidDateRange && (
-                <p className="text-error text-xs md:col-span-5">
-                    &quot;From&quot; date must be on or before the &quot;To&quot; date.
-                </p>
-            )}
         </div>
     );
 }

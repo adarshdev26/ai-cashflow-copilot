@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 import { requireAdmin } from '@/lib/admin/auth';
 import { isTicketStatus } from '@/features/support-tickets/status';
 
-const SORTABLE = ['createdAt', 'updatedAt', 'status', 'subject'] as const;
+const SORTABLE = ['createdAt', 'updatedAt', 'status', 'subject', 'requester'] as const;
 
 export async function GET(req: Request) {
     const guard = await requireAdmin();
@@ -14,7 +14,9 @@ export async function GET(req: Request) {
     const page = Math.max(1, Number(sp.get('page')) || 1);
     const limit = Math.min(100, Math.max(1, Number(sp.get('limit')) || 10));
     const sortByRaw = sp.get('sortBy') ?? 'createdAt';
-    const sortBy = (SORTABLE as readonly string[]).includes(sortByRaw) ? sortByRaw : 'createdAt';
+    const sortBy = (SORTABLE as readonly string[]).includes(sortByRaw)
+        ? sortByRaw
+        : 'createdAt';
     const sortDir = sp.get('sortDir') === 'asc' ? 'asc' : 'desc';
     const search = sp.get('search')?.trim();
     const statusRaw = sp.get('status');
@@ -38,7 +40,10 @@ export async function GET(req: Request) {
     const [rows, total] = await Promise.all([
         prisma.supportTicket.findMany({
             where,
-            orderBy: { [sortBy]: sortDir },
+            orderBy:
+                sortBy === 'requester'
+                    ? [{ user: { email: sortDir } }, { id: 'asc' }]
+                    : [{ [sortBy]: sortDir }, { id: 'asc' }],
             skip: (page - 1) * limit,
             take: limit,
             select: {

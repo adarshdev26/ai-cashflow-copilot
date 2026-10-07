@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useCallback, memo } from 'react';
+import type { ReactNode } from 'react';
 import { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { ArrowUpRight, ArrowDownLeft, Pencil, Trash2, Repeat, LayoutTemplate } from 'lucide-react';
 import { Transaction } from '../types';
@@ -28,6 +29,9 @@ interface TransactionTableProps {
     isLoading?: boolean;
     isFetching?: boolean;
     density?: 'comfortable' | 'compact';
+    filters?: ReactNode;
+    activeFilterCount?: number;
+    onClearFilters?: () => void;
 }
 
 export const TransactionTable = memo(function TransactionTable({
@@ -45,6 +49,9 @@ export const TransactionTable = memo(function TransactionTable({
     isLoading,
     isFetching,
     density = 'comfortable',
+    filters,
+    activeFilterCount,
+    onClearFilters,
 }: TransactionTableProps) {
     const canEdit = usePermission('transaction.update');
     const canDelete = usePermission('transaction.delete');
@@ -115,7 +122,7 @@ export const TransactionTable = memo(function TransactionTable({
             {
                 id: 'account',
                 header: 'Account',
-                enableSorting: false,
+                accessorFn: (row) => row.account?.name ?? '',
                 cell: ({ row }) => {
                     const account = row.original.account;
                     if (!account) return <span className="text-base-content/50">None</span>;
@@ -132,8 +139,9 @@ export const TransactionTable = memo(function TransactionTable({
                 },
             },
             {
-                accessorKey: 'category',
+                id: 'category',
                 header: 'Category',
+                accessorFn: (row) => row.category?.name ?? '',
                 enableSorting: false,
                 cell: ({ row }) => {
                     return <CategoryBadge category={row.original.category} />;
@@ -272,6 +280,9 @@ export const TransactionTable = memo(function TransactionTable({
                 onGlobalFilterChange={onGlobalFilterChange}
                 isLoading={isLoading}
                 isFetching={isFetching}
+                filters={filters}
+                activeFilterCount={activeFilterCount}
+                onClearFilters={onClearFilters}
             />
         </div>
     );

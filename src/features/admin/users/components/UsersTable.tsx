@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import type { ReactNode } from 'react';
 import type { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { Eye, EyeOff, KeyRound, LogIn, Pencil, Trash2, UsersRound } from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
@@ -28,6 +29,9 @@ type Props = {
     totalCount: number;
     isLoading: boolean;
     isFetching: boolean;
+    filters?: ReactNode;
+    activeFilterCount?: number;
+    onClearFilters?: () => void;
 };
 
 export function UsersTable({
@@ -49,6 +53,9 @@ export function UsersTable({
     totalCount,
     isLoading,
     isFetching,
+    filters,
+    activeFilterCount,
+    onClearFilters,
 }: Props) {
     const columns = useMemo<ColumnDef<AdminUserRow>[]>(
         () => [
@@ -73,13 +80,13 @@ export function UsersTable({
             {
                 id: 'isActive',
                 header: 'Status',
-                enableSorting: false,
+                accessorFn: (row) => row.isActive,
                 cell: ({ row }) => <StatusBadge active={row.original.isActive} />,
             },
             {
                 id: 'plan',
                 header: 'Plan',
-                enableSorting: false,
+                accessorFn: (row) => row.plan,
                 cell: ({ row }) => <PlanBadge plan={row.original.plan} />,
             },
             {
@@ -214,6 +221,9 @@ export function UsersTable({
             onGlobalFilterChange={onGlobalFilterChange}
             isLoading={isLoading}
             isFetching={isFetching}
+            filters={filters}
+            activeFilterCount={activeFilterCount}
+            onClearFilters={onClearFilters}
         />
     );
 }

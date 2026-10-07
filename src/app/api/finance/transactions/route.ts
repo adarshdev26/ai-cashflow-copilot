@@ -11,7 +11,7 @@ import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 
 // Offset pagination matches the existing numbered table controls and keeps this query compatible with useQuery.
-const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type'] as const;
+const SORT_FIELDS = ['createdAt', 'amount', 'description', 'type', 'account', 'category'] as const;
 const DEFAULT_LIMIT = 10;
 
 const TRANSACTION_INCLUDE = {
@@ -86,7 +86,14 @@ export async function GET(req: Request) {
             dateFrom,
             dateTo,
         });
-        const orderBy = { [sortBy]: sortDir } as Record<string, 'asc' | 'desc'>;
+        const orderBy: Prisma.TransactionOrderByWithRelationInput[] = [
+            sortBy === 'account'
+                ? { account: { name: sortDir } }
+                : sortBy === 'category'
+                  ? { category: { name: sortDir } }
+                  : { [sortBy]: sortDir },
+            { id: 'asc' },
+        ];
         const [transactions, totalCount] = await Promise.all([
             prisma.transaction.findMany({
                 where,

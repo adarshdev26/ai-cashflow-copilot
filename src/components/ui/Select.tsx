@@ -38,6 +38,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
     { className, children, value, defaultValue, onChange, disabled, name, id, style, ...rest },
     ref,
 ) {
+    const hasWidthClass = className?.split(/\s+/).some((token) => /^!?w-/.test(token));
     const options = useMemo(() => parseOptions(children), [children]);
     const [inner, setInner] = useState(String(defaultValue ?? options[0]?.value ?? ''));
     const current = value !== undefined ? String(value) : inner;
@@ -142,7 +143,11 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
     };
 
     return (
-        <div ref={wrapRef} className={cn('relative w-full', className)} style={style}>
+        <div
+            ref={wrapRef}
+            className={cn('relative', hasWidthClass ? undefined : 'w-full', className)}
+            style={style}
+        >
             {name && <input type="hidden" name={name} value={current} />}
             <button
                 ref={ref}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import type { ReactNode } from 'react';
 import type { ColumnDef, OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import { Eye, EyeOff, Pencil, Trash2, UsersRound } from 'lucide-react';
 import { DataTable } from '@/components/ui/DataTable';
@@ -24,6 +25,9 @@ type Props = {
     totalCount: number;
     isLoading: boolean;
     isFetching: boolean;
+    filters?: ReactNode;
+    activeFilterCount?: number;
+    onClearFilters?: () => void;
 };
 
 export function WorkspacesTable({
@@ -42,6 +46,9 @@ export function WorkspacesTable({
     totalCount,
     isLoading,
     isFetching,
+    filters,
+    activeFilterCount,
+    onClearFilters,
 }: Props) {
     const columns = useMemo<ColumnDef<AdminWorkspaceRow>[]>(
         () => [
@@ -57,7 +64,7 @@ export function WorkspacesTable({
             {
                 id: 'owner',
                 header: 'Owner',
-                enableSorting: false,
+                accessorFn: (row) => row.owner.email,
                 cell: ({ row }) => (
                     <span className="block max-w-[16rem] truncate" title={row.original.owner.email}>
                         {row.original.owner.email}
@@ -85,7 +92,7 @@ export function WorkspacesTable({
             {
                 id: 'isActive',
                 header: 'Status',
-                enableSorting: false,
+                accessorFn: (row) => row.isActive,
                 cell: ({ row }) => <StatusBadge active={row.original.isActive} />,
             },
             {
@@ -172,6 +179,9 @@ export function WorkspacesTable({
             onGlobalFilterChange={onGlobalFilterChange}
             isLoading={isLoading}
             isFetching={isFetching}
+            filters={filters}
+            activeFilterCount={activeFilterCount}
+            onClearFilters={onClearFilters}
         />
     );
 }

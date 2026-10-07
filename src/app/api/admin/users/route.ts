@@ -21,7 +21,7 @@ export async function GET(req: Request) {
 
     const p = parseListParams(
         new URL(req.url),
-        ['createdAt', 'name', 'email'],
+        ['createdAt', 'name', 'email', 'isActive', 'plan'],
         'createdAt',
         await getSystemNumber('limits.listMaxPageSize'),
     );
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
         prisma.user.findMany({
             where,
             select: USER_ROW_SELECT,
-            orderBy: { [p.sortBy]: p.sortDir },
+            orderBy: [{ [p.sortBy]: p.sortDir }, { id: 'asc' }],
             skip: p.skip,
             take: p.limit,
         }),

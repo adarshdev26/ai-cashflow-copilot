@@ -284,20 +284,6 @@ export default function TransactionsPage() {
 
             <CategoryStatsTooltip />
 
-            <TransactionFiltersBar
-                filters={filters}
-                categories={categories}
-                accounts={accounts}
-                categoriesLoading={categoriesLoading}
-                accountsLoading={accountsLoading}
-                isInvalidDateRange={isInvalidDateRange}
-                onTypeChange={handleTypeChange}
-                onAccountChange={handleAccountChange}
-                onCategoryChange={handleCategoryChange}
-                onDateFromChange={handleDateFromChange}
-                onDateToChange={handleDateToChange}
-            />
-
             <TransactionTable
                 transactions={transactionResponse?.data}
                 density={tableDensity}
@@ -313,6 +299,38 @@ export default function TransactionsPage() {
                 onDelete={openDeleteTarget}
                 isLoading={isLoading}
                 isFetching={isFetching}
+                filters={
+                    <TransactionFiltersBar
+                        filters={filters}
+                        categories={categories}
+                        accounts={accounts}
+                        categoriesLoading={categoriesLoading}
+                        accountsLoading={accountsLoading}
+                        isInvalidDateRange={isInvalidDateRange}
+                        onTypeChange={handleTypeChange}
+                        onAccountChange={handleAccountChange}
+                        onCategoryChange={handleCategoryChange}
+                        onDateFromChange={handleDateFromChange}
+                        onDateToChange={handleDateToChange}
+                    />
+                }
+                activeFilterCount={
+                    [
+                        filters.type,
+                        filters.accountId,
+                        filters.categoryId,
+                        filters.dateFrom,
+                        filters.dateTo,
+                    ].filter(Boolean).length
+                }
+                onClearFilters={() => {
+                    setFilter('type', undefined);
+                    setFilter('accountId', undefined);
+                    setFilter('categoryId', undefined);
+                    setFilter('dateFrom', undefined);
+                    setFilter('dateTo', undefined);
+                    setPage(1);
+                }}
             />
 
             <TransactionDialogs

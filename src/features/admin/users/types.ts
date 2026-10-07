@@ -17,5 +17,5 @@ export type AdminUserRow = {
     createdAt: string;
     workspaces: AdminUserWorkspace[];
 };
-export type AdminUserSortField = 'createdAt' | 'name' | 'email';
+export type AdminUserSortField = 'createdAt' | 'name' | 'email' | 'isActive' | 'plan';
 export type AdminUserFilters = { search?: string; isActive?: 'true' | 'false' };

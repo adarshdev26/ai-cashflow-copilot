@@ -19,7 +19,7 @@ export type AuditLogDetail = AuditLogRow & {
     userAgent: string | null;
 };
 
-export type AuditLogSortField = 'createdAt';
+export type AuditLogSortField = 'createdAt' | 'action' | 'resourceType';
 
 export type AuditLogFilters = {
     search?: string;

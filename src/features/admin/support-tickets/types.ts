@@ -15,7 +15,12 @@ export type AdminTicketDetail = AdminTicketRow & {
     resolvedAt: string | null;
 };
 
-export type AdminTicketSortField = 'createdAt' | 'updatedAt' | 'status' | 'subject';
+export type AdminTicketSortField =
+    | 'createdAt'
+    | 'updatedAt'
+    | 'status'
+    | 'subject'
+    | 'requester';
 
 // Must be a `type` alias (not an interface) to satisfy useAdminTableState's Record<string, unknown> constraint.
 export type AdminTicketFilters = { search?: string; status?: TicketStatus };

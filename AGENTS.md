@@ -224,3 +224,9 @@ There is no `.env.example` and no `NEXT_PUBLIC_` variable. Do not put secrets in
 - Preserve this Next.js agent block. Do not edit the text between `BEGIN:nextjs-agent-rules` and `END:nextjs-agent-rules`.
 - If a comment and the code disagree, follow the code. Signup does not create a workspace. The category-summary comment that mentions `/api/finance/categories/summary` is wrong; the route is `/api/categories/summary`.
 - Leave unrelated files alone. Match quote and semicolon style of the file you edit.
+
+## DataTable conventions
+
+- Put table filters in the `DataTable` `filters` slot and provide `activeFilterCount` and `onClearFilters` when filters are available.
+- Use `FilterSelect` and `FilterDateRange` for compact controls; filter controls must not stretch to full width.
+- Every server sortable column needs an allow-listed key in its API route and a stable `{ id: 'asc' }` tie-breaker. Client-side tables keep local sorting.

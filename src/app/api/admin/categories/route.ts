@@ -16,15 +16,18 @@ export async function GET(req: Request) {
         const url = new URL(req.url);
         const params = parseListParams(
             url,
-            ['createdAt', 'name', 'type'],
+            ['createdAt', 'name', 'type', 'isActive'],
             'name',
             await getSystemNumber('limits.listMaxPageSize'),
         );
         const type = url.searchParams.get('type');
+        if (type && !CATEGORY_TYPES.includes(type as (typeof CATEGORY_TYPES)[number])) {
+            return NextResponse.json({ error: 'Invalid type value' }, { status: 400 });
+        }
         const where: Prisma.CategoryWhereInput = {
             workspaceId: null,
             ...(params.isActive !== undefined ? { isActive: params.isActive } : {}),
-            ...(type && CATEGORY_TYPES.includes(type as (typeof CATEGORY_TYPES)[number])
+            ...(type
                 ? { type: type as (typeof CATEGORY_TYPES)[number] }
                 : {}),
             ...(params.search ? { name: { contains: params.search, mode: 'insensitive' } } : {}),
@@ -46,7 +49,7 @@ export async function GET(req: Request) {
                         },
                     },
                 },
-                orderBy: { [params.sortBy]: params.sortDir },
+                orderBy: [{ [params.sortBy]: params.sortDir }, { id: 'asc' }],
                 skip: params.skip,
                 take: params.limit,
             }),
