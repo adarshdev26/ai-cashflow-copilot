@@ -46,6 +46,7 @@ export function useCreateTransaction(workspaceId: string) {
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['net-worth', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['calendar'] });
             invalidateReports(queryClient);
         },
     });

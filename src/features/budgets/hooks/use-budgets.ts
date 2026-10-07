@@ -27,6 +27,7 @@ function useInvalidateBudgets(invalidatePlan = false) {
     const workspaceId = useActiveWorkspaceId();
     return () => {
         queryClient.invalidateQueries({ queryKey: budgetKeys.all(workspaceId) });
+        queryClient.invalidateQueries({ queryKey: ['calendar'] });
         invalidateReports(queryClient);
         if (invalidatePlan) {
             void queryClient.invalidateQueries({ queryKey: ['plan'] });

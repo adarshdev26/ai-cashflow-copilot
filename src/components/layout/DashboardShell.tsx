@@ -22,6 +22,7 @@ import {
     Sparkles,
     Target,
     Scale,
+    CalendarDays,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -44,6 +45,7 @@ import { requestUpgrade } from '@/lib/plans/upgrade-event';
 const navigation = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Transactions', href: '/dashboard/transactions', icon: WalletCards },
+    { name: 'Calendar', href: '/dashboard/calendar', icon: CalendarDays },
     { name: 'Recurring', href: '/dashboard/recurring', icon: Repeat },
     { name: 'Templates', href: '/dashboard/templates', icon: LayoutTemplate },
     { name: 'Budgets', href: '/dashboard/budgets', icon: WalletCards },
@@ -64,6 +66,7 @@ const mobileTabs: MobileTabItem[] = [
 ];
 
 const mobileMoreItems: MobileTabItem[] = [
+    { name: 'Calendar', href: '/dashboard/calendar', icon: CalendarDays },
     { name: 'Goals', href: '/dashboard/goals', icon: Target },
     { name: 'Recurring', href: '/dashboard/recurring', icon: Repeat },
     { name: 'Templates', href: '/dashboard/templates', icon: LayoutTemplate },

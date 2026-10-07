@@ -9,6 +9,7 @@ function useInvalidateCategories(workspaceId: string, invalidatePlan = false) {
         queryClient.invalidateQueries({ queryKey: ['categories', workspaceId] });
         // category names/colors appear in the ledger, stats and the donut chart
         queryClient.invalidateQueries({ queryKey: ['transactions', workspaceId] });
+        queryClient.invalidateQueries({ queryKey: ['calendar'] });
         invalidateReports(queryClient);
         if (invalidatePlan) {
             void queryClient.invalidateQueries({ queryKey: ['plan'] });
