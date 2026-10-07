@@ -34,12 +34,12 @@ export type SettingDef = Base &
         | { type: 'number'; default: number; min: number; max: number; unit?: string }
         | { type: 'boolean'; default: boolean }
         | {
-            type: 'string';
-            default: string;
-            minLength?: number;
-            maxLength: number;
-            format?: 'email';
-        }
+              type: 'string';
+              default: string;
+              minLength?: number;
+              maxLength: number;
+              format?: 'email';
+          }
         | { type: 'enum'; default: string | number; options: readonly EnumOption[] }
     );
 

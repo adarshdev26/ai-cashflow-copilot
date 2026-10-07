@@ -16,8 +16,8 @@ function positiveAmount(value: unknown, label: string): ValidationResult<number>
         typeof value === 'number'
             ? value
             : typeof value === 'string' && value.trim()
-                ? Number(value)
-                : Number.NaN;
+              ? Number(value)
+              : Number.NaN;
     if (!Number.isFinite(amount) || amount <= 0) {
         return { ok: false, error: `${label} must be greater than 0` };
     }
