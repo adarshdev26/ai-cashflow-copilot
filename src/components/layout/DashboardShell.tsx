@@ -21,6 +21,7 @@ import {
     PiggyBank,
     Sparkles,
     Target,
+    Scale,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -48,6 +49,7 @@ const navigation = [
     { name: 'Budgets', href: '/dashboard/budgets', icon: WalletCards },
     { name: 'Goals', href: '/dashboard/goals', icon: Target },
     { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
+    { name: 'Net Worth', href: '/dashboard/net-worth', icon: Scale },
     { name: 'Categories', href: '/dashboard/categories', icon: Tags },
     { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
     { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
@@ -66,6 +68,7 @@ const mobileMoreItems: MobileTabItem[] = [
     { name: 'Recurring', href: '/dashboard/recurring', icon: Repeat },
     { name: 'Templates', href: '/dashboard/templates', icon: LayoutTemplate },
     { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
+    { name: 'Net Worth', href: '/dashboard/net-worth', icon: Scale },
     { name: 'Categories', href: '/dashboard/categories', icon: Tags },
     { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },

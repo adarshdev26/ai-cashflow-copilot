@@ -43,6 +43,11 @@ enum AccountType {
   OTHER
 }
 
+enum AccountClassification {
+  ASSET
+  LIABILITY
+}
+
 enum CategoryType {
   CREDIT
   DEBIT
@@ -182,6 +187,7 @@ model FinancialAccount {
   workspace             Workspace              @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   name                  String
   type                  AccountType            @default(OTHER)
+  classification        AccountClassification   @default(ASSET)
   currency              String                 @default("INR")
   openingBalance        Float                  @default(0)
   recurringTransactions RecurringTransaction[]

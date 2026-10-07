@@ -45,6 +45,7 @@ export function useCreateTransaction(workspaceId: string) {
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['net-worth', workspaceId] });
             invalidateReports(queryClient);
         },
     });
@@ -60,6 +61,7 @@ export function useUpdateTransaction(workspaceId: string) {
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['net-worth', workspaceId] });
             invalidateReports(queryClient);
         },
     });
@@ -74,6 +76,7 @@ export function useCreateTransfer(workspaceId: string) {
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['net-worth', workspaceId] });
             invalidateReports(queryClient);
         },
     });
@@ -89,6 +92,7 @@ export function useUpdateTransfer(workspaceId: string) {
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['net-worth', workspaceId] });
             invalidateReports(queryClient);
         },
     });
@@ -103,6 +107,7 @@ export function useDeleteTransaction(workspaceId: string) {
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['budgets', workspaceId] });
+            queryClient.invalidateQueries({ queryKey: ['net-worth', workspaceId] });
             invalidateReports(queryClient);
         },
     });

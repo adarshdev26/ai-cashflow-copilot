@@ -5,6 +5,7 @@ import { Landmark, Banknote, CreditCard, Wallet, CircleDollarSign } from 'lucide
 import { Button } from '@/components/ui/Button';
 import type { AccountType, AccountWithBalance } from '../types';
 import { useUserLocale } from '@/features/settings/hooks/use-settings';
+import { cn } from '@/lib/cn';
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
     BANK: 'Bank',
@@ -73,6 +74,16 @@ export const AccountCard = memo(function AccountCard({
                         <p className="text-base-content/60 text-xs">
                             {ACCOUNT_TYPE_LABELS[account.type]}
                         </p>
+                        <span
+                            className={cn(
+                                'mt-1 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase',
+                                account.classification === 'LIABILITY'
+                                    ? 'border-error/30 bg-error/10 text-error'
+                                    : 'border-success/30 bg-success/10 text-success',
+                            )}
+                        >
+                            {account.classification === 'LIABILITY' ? 'Liability' : 'Asset'}
+                        </span>
                     </div>
                 </div>
                 {!account.isActive && (
