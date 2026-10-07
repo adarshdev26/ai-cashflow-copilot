@@ -86,10 +86,10 @@ export function toBudgetRows(raw: unknown): BudgetRow[] {
     const list: unknown[] = Array.isArray(raw)
         ? raw
         : Array.isArray(root.items)
-            ? root.items
-            : Array.isArray(root.budgets)
-                ? root.budgets
-                : [];
+          ? root.items
+          : Array.isArray(root.budgets)
+            ? root.budgets
+            : [];
 
     return list.map((item, i) => {
         const r = asObj(item);
@@ -112,20 +112,18 @@ export function budgetAlerts(rows: BudgetRow[], fmt: (n: number) => string): Das
         .filter((r) => r.limit > 0)
         .map((r) => ({ r, pct: (r.spent / r.limit) * 100 }))
         .filter(({ pct }) => pct >= BUDGET_WARN_PCT)
-        .map(
-            ({ r, pct }): DashboardAlert => ({
-                id: `budget-${r.id}`,
-                type: 'budget',
-                severity: pct >= BUDGET_EXCEEDED_PCT ? 'critical' : 'warning',
-                title:
-                    pct >= BUDGET_EXCEEDED_PCT
-                        ? `${r.name} budget exceeded`
-                        : `${r.name} budget nearly used`,
-                description: `${fmt(r.spent)} spent of ${fmt(r.limit)} (${Math.round(pct)}%)`,
-                href: '/dashboard/budgets',
-                amount: r.spent,
-            }),
-        );
+        .map(({ r, pct }): DashboardAlert => ({
+            id: `budget-${r.id}`,
+            type: 'budget',
+            severity: pct >= BUDGET_EXCEEDED_PCT ? 'critical' : 'warning',
+            title:
+                pct >= BUDGET_EXCEEDED_PCT
+                    ? `${r.name} budget exceeded`
+                    : `${r.name} budget nearly used`,
+            description: `${fmt(r.spent)} spent of ${fmt(r.limit)} (${Math.round(pct)}%)`,
+            href: '/dashboard/budgets',
+            amount: r.spent,
+        }));
 }
 
 // ---------- recurring ----------
