@@ -2,11 +2,12 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
+import { ArrowLeft, KeyRound, Mail, MailCheck } from 'lucide-react';
 import { AuthShell } from '@/components/auth/AuthShell';
+import { AuthAlert, AuthField, RecoveryPanel, SplitAuthLayout } from '@/components/auth/AuthUI';
 import { PrimaryButton } from '@/components/ui/Button';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { usePublicSettings } from '@/features/settings/hooks/use-settings';
-import { authInputCls } from '@/components/ui/inputs';
 
 export default function ForgotPasswordPage() {
     const { data: settings } = usePublicSettings();
@@ -42,68 +43,76 @@ export default function ForgotPasswordPage() {
 
     return (
         <AuthShell>
-            <div className="bg-base-100 border-base-300 w-full max-w-md rounded-xl border p-8 shadow-2xl">
-                <h2 className="mb-2 text-2xl font-bold tracking-tight">Forgot password?</h2>
-
+            <SplitAuthLayout panel={<RecoveryPanel step={sent ? 1 : 0} />} panelSide="right">
                 {sent ? (
-                    <div className="space-y-4">
-                        <p className="text-base-content/70 text-sm">
+                    <>
+                        <div className="bg-success/10 text-success mb-4 flex h-11 w-11 items-center justify-center rounded-xl">
+                            <MailCheck className="h-5 w-5" />
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight">Check your inbox</h2>
+                        <p className="text-base-content/70 mt-2 text-sm">
                             If an account exists for{' '}
                             <span className="text-base-content font-medium">{email}</span>, a reset
                             link has been sent. The link expires in{' '}
                             {settings?.['auth.passwordResetExpiryMinutes'] ?? 30} minutes.
                         </p>
+                        <button
+                            type="button"
+                            onClick={() => setSent(false)}
+                            className="text-primary mt-6 text-sm font-medium hover:underline"
+                        >
+                            Use a different email
+                        </button>
                         <Link
                             href="/login"
-                            className="text-primary block text-center text-sm hover:underline"
+                            className="text-base-content/60 hover:text-base-content mt-4 inline-flex w-full items-center gap-1.5 text-sm"
                         >
+                            <ArrowLeft className="h-4 w-4" />
                             Back to log in
                         </Link>
-                    </div>
+                    </>
                 ) : (
                     <>
-                        <p className="text-base-content/60 mb-6 text-sm">
+                        <div className="bg-primary/10 text-primary mb-4 flex h-11 w-11 items-center justify-center rounded-xl">
+                            <KeyRound className="h-5 w-5" />
+                        </div>
+                        <h2 className="text-2xl font-bold tracking-tight">Forgot password?</h2>
+                        <p className="text-base-content/60 mt-1 mb-6 text-sm">
                             Enter your email and we&apos;ll send you a link to reset your password.
                         </p>
-                        {error && (
-                            <div
-                                role="alert"
-                                className="bg-error/10 text-error border-error/20 mb-4 rounded border p-3 text-sm"
-                            >
-                                {error}
-                            </div>
-                        )}
+
+                        {error && <AuthAlert>{error}</AuthAlert>}
+
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label
-                                    htmlFor="forgot-email"
-                                    className="text-base-content/70 mb-1 block text-sm font-medium"
-                                >
-                                    Email
-                                </label>
-                                <input
-                                    id="forgot-email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    autoComplete="email"
-                                    className={authInputCls}
-                                />
-                            </div>
+                            <AuthField
+                                id="forgot-email"
+                                label="Email"
+                                uppercaseLabel
+                                icon={Mail}
+                                type="email"
+                                value={email}
+                                onChange={setEmail}
+                                placeholder="you@example.com"
+                                autoComplete="email"
+                                required
+                            />
                             <PrimaryButton type="submit" loading={loading} className="w-full">
                                 Send reset link
                             </PrimaryButton>
                         </form>
-                        <p className="text-base-content/60 mt-4 text-center text-sm">
+
+                        <p className="text-base-content/60 mt-6 text-center text-sm">
                             Remembered it?{' '}
-                            <Link href="/login" className="text-primary hover:underline">
+                            <Link
+                                href="/login"
+                                className="text-primary font-medium hover:underline"
+                            >
                                 Log in
                             </Link>
                         </p>
                     </>
                 )}
-            </div>
+            </SplitAuthLayout>
         </AuthShell>
     );
 }

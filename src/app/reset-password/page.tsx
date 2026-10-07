@@ -3,13 +3,19 @@
 import { Suspense, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Lock, LockKeyhole, LinkIcon, ShieldCheck } from 'lucide-react';
 import { AuthShell } from '@/components/auth/AuthShell';
+import {
+    AuthAlert,
+    AuthField,
+    PasswordChecklistPanel,
+    RecoveryPanel,
+    SplitAuthLayout,
+} from '@/components/auth/AuthUI';
 import { PrimaryButton } from '@/components/ui/Button';
-import { PasswordInput } from '@/components/ui/PasswordInput';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { validatePassword } from '@/lib/validations/auth';
 import { usePublicSettings } from '@/features/settings/hooks/use-settings';
-import { authInputCls } from '@/components/ui/inputs';
 
 export default function ResetPasswordPage() {
     const { data: settings } = usePublicSettings();
@@ -65,31 +71,41 @@ function ResetPasswordForm({ minPasswordLength }: { minPasswordLength: number })
     if (!token) {
         return (
             <AuthShell>
-                <div className="bg-base-100 border-base-300 w-full max-w-md space-y-4 rounded-xl border p-8 shadow-2xl">
+                <SplitAuthLayout panel={<RecoveryPanel step={0} showBrand />} panelSide="left">
+                    <div className="bg-error/10 text-error mb-4 flex h-11 w-11 items-center justify-center rounded-xl">
+                        <LinkIcon className="h-5 w-5" />
+                    </div>
                     <h2 className="text-2xl font-bold tracking-tight">Invalid link</h2>
-                    <p className="text-base-content/70 text-sm">
+                    <p className="text-base-content/70 mt-2 text-sm">
                         This reset link is missing or incomplete.
                     </p>
                     <Link
                         href="/forgot-password"
-                        className="text-primary block text-center text-sm hover:underline"
+                        className="text-primary mt-6 inline-block text-sm font-medium hover:underline"
                     >
                         Request a new link
                     </Link>
-                </div>
+                </SplitAuthLayout>
             </AuthShell>
         );
     }
 
     return (
         <AuthShell>
-            <div className="bg-base-100 border-base-300 w-full max-w-md rounded-xl border p-8 shadow-2xl">
-                <h2 className="mb-6 text-2xl font-bold tracking-tight">Set a new password</h2>
+            <SplitAuthLayout
+                panel={<PasswordChecklistPanel password={password} minLength={minPasswordLength} />}
+                panelSide="left"
+            >
+                <div className="bg-primary/10 text-primary mb-4 flex h-11 w-11 items-center justify-center rounded-xl">
+                    <LockKeyhole className="h-5 w-5" />
+                </div>
+                <h2 className="text-2xl font-bold tracking-tight">Set a new password</h2>
+                <p className="text-base-content/60 mt-1 mb-6 text-sm">
+                    Choose a strong password you haven&apos;t used before.
+                </p>
+
                 {error && (
-                    <div
-                        role="alert"
-                        className="bg-error/10 text-error border-error/20 mb-4 rounded border p-3 text-sm"
-                    >
+                    <AuthAlert>
                         {error}
                         {error.includes('invalid or has expired') && (
                             <>
@@ -99,47 +115,44 @@ function ResetPasswordForm({ minPasswordLength }: { minPasswordLength: number })
                                 </Link>
                             </>
                         )}
-                    </div>
+                    </AuthAlert>
                 )}
+
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label
-                            htmlFor="reset-password"
-                            className="text-base-content/70 mb-1 block text-sm font-medium"
-                        >
-                            New password
-                        </label>
-                        <PasswordInput
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            autoComplete="new-password"
-                            required
-                            id="reset-password"
-                            className={authInputCls}
-                        />
-                        <p className="text-base-content/50 mt-1 text-xs">At least 8 characters.</p>
-                    </div>
-                    <div>
-                        <label
-                            htmlFor="reset-confirm-password"
-                            className="text-base-content/70 mb-1 block text-sm font-medium"
-                        >
-                            Confirm password
-                        </label>
-                        <PasswordInput
-                            value={confirm}
-                            onChange={(e) => setConfirm(e.target.value)}
-                            autoComplete="new-password"
-                            required
-                            id="reset-confirm-password"
-                            className={authInputCls}
-                        />
-                    </div>
+                    <AuthField
+                        id="reset-password"
+                        label="New password"
+                        uppercaseLabel
+                        icon={Lock}
+                        type="password"
+                        value={password}
+                        onChange={setPassword}
+                        placeholder="New password"
+                        autoComplete="new-password"
+                        required
+                        hint={
+                            <p className="text-base-content/50 mt-1.5 text-xs">
+                                At least {minPasswordLength} characters.
+                            </p>
+                        }
+                    />
+                    <AuthField
+                        id="reset-confirm-password"
+                        label="Confirm password"
+                        uppercaseLabel
+                        icon={ShieldCheck}
+                        type="password"
+                        value={confirm}
+                        onChange={setConfirm}
+                        placeholder="Repeat new password"
+                        autoComplete="new-password"
+                        required
+                    />
                     <PrimaryButton type="submit" loading={loading} className="w-full">
                         Update password
                     </PrimaryButton>
                 </form>
-            </div>
+            </SplitAuthLayout>
         </AuthShell>
     );
 }
