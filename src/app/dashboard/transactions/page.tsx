@@ -277,12 +277,9 @@ export default function TransactionsPage() {
                     <TransactionFiltersBar
                         filters={filters}
                         categories={categories}
-                        accounts={accounts}
                         categoriesLoading={categoriesLoading}
-                        accountsLoading={accountsLoading}
                         isInvalidDateRange={isInvalidDateRange}
                         onTypeChange={handleTypeChange}
-                        onAccountChange={handleAccountChange}
                         onCategoryChange={handleCategoryChange}
                         onDateFromChange={handleDateFromChange}
                         onDateToChange={handleDateToChange}

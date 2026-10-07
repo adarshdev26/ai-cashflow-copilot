@@ -11,10 +11,10 @@ type Props = {
     categories?: Category[];
     accounts?: FinancialAccount[];
     categoriesLoading: boolean;
-    accountsLoading: boolean;
+    accountsLoading?: boolean;
     isInvalidDateRange: boolean;
     onTypeChange: (value: TransactionType | '') => void;
-    onAccountChange: (value: string) => void;
+    onAccountChange?: (value: string) => void;
     onCategoryChange: (value: string) => void;
     onDateFromChange: (value: string) => void;
     onDateToChange: (value: string) => void;
@@ -25,7 +25,7 @@ export function TransactionFilters({
     categories,
     accounts,
     categoriesLoading,
-    accountsLoading,
+    accountsLoading = false,
     isInvalidDateRange,
     onTypeChange,
     onAccountChange,
@@ -33,6 +33,8 @@ export function TransactionFilters({
     onDateFromChange,
     onDateToChange,
 }: Props) {
+    const showAccountFilter = Boolean(onAccountChange);
+
     return (
         <div className="contents" data-tour="transaction-filters">
             <FilterSelect
@@ -45,20 +47,22 @@ export function TransactionFilters({
                 <option value="DEBIT">Debit</option>
                 <option value="TRANSFER">Transfer</option>
             </FilterSelect>
-            <FilterSelect
-                aria-label="Filter by account"
-                value={filters.accountId ?? ''}
-                onChange={(event) => onAccountChange(event.target.value)}
-                disabled={accountsLoading}
-            >
-                <option value="">All accounts</option>
-                {accounts?.map((account) => (
-                    <option key={account.id} value={account.id}>
-                        {account.name}
-                        {account.isActive ? '' : ' (inactive)'}
-                    </option>
-                ))}
-            </FilterSelect>
+            {showAccountFilter && (
+                <FilterSelect
+                    aria-label="Filter by account"
+                    value={filters.accountId ?? ''}
+                    onChange={(event) => onAccountChange?.(event.target.value)}
+                    disabled={accountsLoading}
+                >
+                    <option value="">All accounts</option>
+                    {accounts?.map((account) => (
+                        <option key={account.id} value={account.id}>
+                            {account.name}
+                            {account.isActive ? '' : ' (inactive)'}
+                        </option>
+                    ))}
+                </FilterSelect>
+            )}
             <FilterSelect
                 aria-label="Filter by category"
                 value={filters.categoryId ?? ''}

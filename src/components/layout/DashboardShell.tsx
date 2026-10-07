@@ -77,6 +77,12 @@ const mobileMoreItems: MobileTabItem[] = [
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
+const ACTIVE_ACCOUNT_SWITCHER_ROUTES: readonly string[] = ['/dashboard', '/dashboard/transactions'];
+
+function showsActiveAccountSwitcher(pathname: string): boolean {
+    return ACTIVE_ACCOUNT_SWITCHER_ROUTES.includes(pathname);
+}
+
 function CreateWorkspaceModal({
     isOpen,
     onClose,
@@ -323,6 +329,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     const displayName = user?.name || user?.email?.split('@')[0] || 'User';
     const initial = displayName.charAt(0).toUpperCase();
 
+    const showActiveAccountSwitcher = showsActiveAccountSwitcher(pathname);
+
     const handleSignOut = useCallback(async () => {
         if (isSigningOut) return;
         const isImpersonating = Boolean(user?.impersonating);
@@ -504,15 +512,19 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
                             <WorkspaceSelector />
 
-                            <div
-                                className="bg-base-300 hidden h-5 w-px md:block"
-                                aria-hidden="true"
-                            />
+                            {showActiveAccountSwitcher && (
+                                <>
+                                    <div
+                                        className="bg-base-300 hidden h-5 w-px md:block"
+                                        aria-hidden="true"
+                                    />
 
-                            {/* Mobile: own row under the workspace. Desktop: inline, as before. */}
-                            <div className="w-full min-w-0 md:w-auto">
-                                <ActiveAccountSwitcher />
-                            </div>
+                                    {/* Mobile: own row under the workspace. Desktop: inline, as before. */}
+                                    <div className="w-full min-w-0 md:w-auto">
+                                        <ActiveAccountSwitcher />
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         <div className="flex shrink-0 items-center gap-2">
