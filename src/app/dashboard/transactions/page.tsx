@@ -1,7 +1,6 @@
 'use client';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useActiveAccountId } from '@/features/accounts';
-import { OnChangeFn, PaginationState, SortingState } from '@tanstack/react-table';
 import {
     useTransactions,
     useCreateTransaction,
@@ -15,7 +14,7 @@ import {
     templateToInitialValues,
     type TransactionTemplateDTO,
 } from '@/features/transaction-templates';
-import { useListQueryState } from '@/hooks/list/useListQueryState';
+import { useDataTableState } from '@/hooks/list/useDataTableState';
 import { useCategories } from '@/resources/hooks/use-categories';
 import {
     CreateTransactionInput,
@@ -59,20 +58,19 @@ export default function TransactionsPage() {
     );
     const {
         params,
-        page,
-        pageSize,
         setPage,
         setPageSize,
-        sortBy,
-        sortDir,
-        setSort,
         filters,
         setFilter,
-    } = useListQueryState<TransactionFilters, TransactionSortField>({
+        dataTableProps,
+        activeFilterCount,
+        clearFilters,
+    } = useDataTableState<TransactionFilters, TransactionSortField>({
         defaultFilters: defaultTransactionFilters,
         defaultSortDir: 'desc',
         defaultPageSize: preferredPageSize,
         maxPageSize,
+        filterKeys: ['type', 'accountId', 'categoryId', 'dateFrom', 'dateTo'],
     });
     useEffect(() => {
         if (!preferencesLoading) setPageSize(preferredPageSize);
@@ -187,39 +185,6 @@ export default function TransactionsPage() {
     const openDeleteTarget = useCallback((tx: Transaction) => setDeleteTarget(tx), []);
     const closeDeleteTarget = useCallback(() => setDeleteTarget(null), []);
 
-    const pagination: PaginationState = useMemo(
-        () => ({ pageIndex: page - 1, pageSize }),
-        [page, pageSize],
-    );
-    const sorting: SortingState = useMemo(
-        () => (sortBy ? [{ id: sortBy, desc: sortDir === 'desc' }] : []),
-        [sortBy, sortDir],
-    );
-    const globalFilter = filters.search ?? '';
-
-    const handleSortingChange: OnChangeFn<SortingState> = useCallback(
-        (updater) => {
-            const currentSorting: SortingState = sortBy
-                ? [{ id: sortBy, desc: sortDir === 'desc' }]
-                : [];
-            const nextSorting = typeof updater === 'function' ? updater(currentSorting) : updater;
-            const nextSort = nextSorting[0];
-            setSort(
-                nextSort?.id as TransactionSortField | undefined,
-                nextSort?.desc ? 'desc' : 'asc',
-            );
-        },
-        [setSort, sortBy, sortDir],
-    );
-
-    const handleGlobalFilterChange: OnChangeFn<string> = useCallback(
-        (updater) => {
-            const nextSearch = typeof updater === 'function' ? updater(globalFilter) : updater;
-            setFilter('search', nextSearch || undefined);
-        },
-        [globalFilter, setFilter],
-    );
-
     const handleTypeChange = useCallback(
         (value: TransactionType | '') => {
             setFilter('type', value || undefined);
@@ -255,20 +220,6 @@ export default function TransactionsPage() {
         [setFilter],
     );
 
-    const handlePaginationChange: OnChangeFn<PaginationState> = useCallback(
-        (updater) => {
-            const currentPagination: PaginationState = { pageIndex: page - 1, pageSize };
-            const nextPagination =
-                typeof updater === 'function' ? updater(currentPagination) : updater;
-            if (nextPagination.pageSize !== pageSize) {
-                setPageSize(nextPagination.pageSize);
-            } else {
-                setPage(nextPagination.pageIndex + 1);
-            }
-        },
-        [page, pageSize, setPage, setPageSize],
-    );
-
     // if (isLoading) return <div className="text-sm text-base-content/60 animate-pulse p-8">Loading finance ledger...</div>;
     if (error) return <div className="text-error p-8 text-sm">Failed to load transactions.</div>;
 
@@ -287,14 +238,9 @@ export default function TransactionsPage() {
             <TransactionTable
                 transactions={transactionResponse?.data}
                 density={tableDensity}
-                pagination={pagination}
-                sorting={sorting}
-                globalFilter={globalFilter}
+                {...dataTableProps}
                 pageCount={transactionResponse?.pagination.totalPages ?? 1}
                 totalCount={transactionResponse?.pagination.totalCount ?? 0}
-                onPaginationChange={handlePaginationChange}
-                onSortingChange={handleSortingChange}
-                onGlobalFilterChange={handleGlobalFilterChange}
                 onEdit={openEditModal}
                 onDelete={openDeleteTarget}
                 isLoading={isLoading}
@@ -314,23 +260,8 @@ export default function TransactionsPage() {
                         onDateToChange={handleDateToChange}
                     />
                 }
-                activeFilterCount={
-                    [
-                        filters.type,
-                        filters.accountId,
-                        filters.categoryId,
-                        filters.dateFrom,
-                        filters.dateTo,
-                    ].filter(Boolean).length
-                }
-                onClearFilters={() => {
-                    setFilter('type', undefined);
-                    setFilter('accountId', undefined);
-                    setFilter('categoryId', undefined);
-                    setFilter('dateFrom', undefined);
-                    setFilter('dateTo', undefined);
-                    setPage(1);
-                }}
+                activeFilterCount={activeFilterCount}
+                onClearFilters={clearFilters}
             />
 
             <TransactionDialogs

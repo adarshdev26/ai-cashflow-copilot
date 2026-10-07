@@ -227,6 +227,7 @@ There is no `.env.example` and no `NEXT_PUBLIC_` variable. Do not put secrets in
 
 ## DataTable conventions
 
+- Controlled server-paginated lists use `useDataTableState` (or `useAdminTableState`, which wraps it), spread `dataTableProps` into the table, and use `activeFilterCount` / `clearFilters`. Clear filters preserves search and sort. Full-array client lists (budgets, recurring, templates) keep DataTable's local state.
 - Put table filters in the `DataTable` `filters` slot and provide `activeFilterCount` and `onClearFilters` when filters are available.
 - Use `FilterSelect` and `FilterDateRange` for compact controls; filter controls must not stretch to full width.
 - Every server sortable column needs an allow-listed key in its API route and a stable `{ id: 'asc' }` tie-breaker. Client-side tables keep local sorting.

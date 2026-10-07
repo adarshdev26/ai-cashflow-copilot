@@ -81,22 +81,8 @@ export function AdminAuditLogsPage() {
                             }
                         />
                     }
-                    activeFilterCount={
-                        [
-                            table.list.filters.action,
-                            table.list.filters.resourceType,
-                            table.list.filters.dateFrom,
-                            table.list.filters.dateTo,
-                        ].filter(Boolean).length
-                    }
-                    onClearFilters={() =>
-                        table.list.setFilters({
-                            action: undefined,
-                            resourceType: undefined,
-                            dateFrom: undefined,
-                            dateTo: undefined,
-                        })
-                    }
+                    activeFilterCount={table.activeFilterCount}
+                    onClearFilters={table.clearFilters}
                 />
             )}
 

@@ -138,8 +138,8 @@ export function SupportPage() {
                             onChange={(status) => table.list.setFilter('status', status)}
                         />
                     }
-                    activeFilterCount={statusFilter ? 1 : 0}
-                    onClearFilters={() => table.list.setFilter('status', undefined)}
+                    activeFilterCount={table.activeFilterCount}
+                    onClearFilters={table.clearFilters}
                 />
             )}
 

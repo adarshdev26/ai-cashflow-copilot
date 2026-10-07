@@ -163,8 +163,8 @@ export function AdminUsersPage() {
                             <option value="false">Inactive</option>
                         </FilterSelect>
                     }
-                    activeFilterCount={table.list.filters.isActive ? 1 : 0}
-                    onClearFilters={() => table.list.setFilter('isActive', undefined)}
+                    activeFilterCount={table.activeFilterCount}
+                    onClearFilters={table.clearFilters}
                 />
             )}
 

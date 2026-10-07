@@ -173,12 +173,8 @@ export function AdminCategoriesPage() {
                             </FilterSelect>
                         </>
                     }
-                    activeFilterCount={
-                        [table.list.filters.isActive, table.list.filters.type].filter(Boolean).length
-                    }
-                    onClearFilters={() =>
-                        table.list.setFilters({ isActive: undefined, type: undefined })
-                    }
+                    activeFilterCount={table.activeFilterCount}
+                    onClearFilters={table.clearFilters}
                 />
             )}
 
