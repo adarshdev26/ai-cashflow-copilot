@@ -133,7 +133,7 @@ export function WorkspaceMembersModal({
                         onClick={close}
                         disabled={!!pendingKey}
                     >
-                        Close
+                        <p className="text-error">Close</p>
                     </Button>
                 }
             >

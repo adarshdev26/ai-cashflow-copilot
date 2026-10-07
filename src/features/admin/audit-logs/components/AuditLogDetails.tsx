@@ -205,7 +205,7 @@ export function AuditLogDetails({
 
                     <div className="flex justify-end">
                         <Button variant="secondary" onClick={onClose}>
-                            Close
+                            <p className="text-error">Close</p>
                         </Button>
                     </div>
                 </div>

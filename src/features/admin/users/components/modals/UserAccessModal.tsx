@@ -93,7 +93,7 @@ export function UserAccessModal({ userId, onClose }: { userId: string; onClose: 
                         onClick={close}
                         disabled={!!pendingKey}
                     >
-                        Close
+                        <p className="text-error">Close</p>
                     </Button>
                 }
             >

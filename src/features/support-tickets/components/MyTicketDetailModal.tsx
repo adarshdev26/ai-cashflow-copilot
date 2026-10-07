@@ -24,7 +24,7 @@ export function MyTicketDetailModal({
             title={ticket.subject}
             footer={
                 <Button variant="secondary" onClick={onClose}>
-                    Close
+                    <p className="text-error">Close</p>
                 </Button>
             }
         >

@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Info } from 'lucide-react';
 import { useCategorySummary } from '../hooks/use-categories';
 import { useActiveWorkspaceId } from '@/features/workspaces';
 import { CategorySummary, DateRange } from '../types';
 import { formatINR } from '@/features/budgets/utils';
 import { useUserLocale } from '@/features/settings/hooks/use-settings';
+
+// Small grace period so the pointer can travel from the icon to the panel without it closing.
+const HOVER_CLOSE_DELAY_MS = 200;
 
 function netColor(net: number) {
     if (net > 0) return 'text-success';
@@ -77,29 +80,24 @@ function CategoryTable({ range }: { range?: DateRange }) {
         return <div className="text-base-content/60 text-sm">No categorized transactions yet.</div>;
     }
 
+    // No inner overflow wrapper: the panel itself scrolls (both axes), so the sticky header works.
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full min-w-[420px] text-left">
-                <thead>
-                    <tr className="border-base-300 text-base-content/50 border-b text-xs font-medium">
-                        <th className="py-2 pr-3">Category</th>
-                        <th className="py-2 pr-3 text-right">Count</th>
-                        <th className="py-2 pr-3 text-right">In</th>
-                        <th className="py-2 pr-3 text-right">Out</th>
-                        <th className="py-2 text-right">Net</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.map((category) => (
-                        <CategoryRow
-                            key={category.categoryId}
-                            category={category}
-                            locale={locale}
-                        />
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <table className="w-full min-w-[420px] text-left">
+            <thead>
+                <tr className="border-base-300 text-base-content/50 border-b text-xs font-medium">
+                    <th className="bg-base-100 sticky top-0 py-2 pr-3">Category</th>
+                    <th className="bg-base-100 sticky top-0 py-2 pr-3 text-right">Count</th>
+                    <th className="bg-base-100 sticky top-0 py-2 pr-3 text-right">In</th>
+                    <th className="bg-base-100 sticky top-0 py-2 pr-3 text-right">Out</th>
+                    <th className="bg-base-100 sticky top-0 py-2 text-right">Net</th>
+                </tr>
+            </thead>
+            <tbody>
+                {data.map((category) => (
+                    <CategoryRow key={category.categoryId} category={category} locale={locale} />
+                ))}
+            </tbody>
+        </table>
     );
 }
 
@@ -112,6 +110,22 @@ export function CategoryStatsTooltip({
 }) {
     const [open, setOpen] = useState(false);
     const tooltipRef = useRef<HTMLDivElement>(null);
+    const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastPointerType = useRef<string>('mouse');
+
+    const cancelClose = useCallback(() => {
+        if (closeTimer.current) {
+            clearTimeout(closeTimer.current);
+            closeTimer.current = null;
+        }
+    }, []);
+
+    const scheduleClose = useCallback(() => {
+        cancelClose();
+        closeTimer.current = setTimeout(() => setOpen(false), HOVER_CLOSE_DELAY_MS);
+    }, [cancelClose]);
+
+    useEffect(() => cancelClose, [cancelClose]);
 
     useEffect(() => {
         if (!open) return;
@@ -138,32 +152,50 @@ export function CategoryStatsTooltip({
             ref={tooltipRef}
             className="border-base-300 bg-base-100 relative flex w-full items-center justify-between rounded-xl border px-4 py-3 shadow-sm"
         >
-            <span className="text-base-content/70 text-sm font-medium">{label}</span>
+            <span className="text-base-content text-sm font-semibold">{label}</span>
 
             <button
                 type="button"
                 aria-label="Show category breakdown"
                 aria-expanded={open}
                 aria-haspopup="true"
-                onClick={() => setOpen((isOpen) => !isOpen)}
+                onPointerDown={(event) => {
+                    lastPointerType.current = event.pointerType;
+                }}
+                onClick={() => {
+                    // With a mouse, hover already opened it: a click keeps it open
+                    // (close via outside click or Escape). Touch/pen toggles.
+                    if (lastPointerType.current === 'mouse') {
+                        cancelClose();
+                        setOpen(true);
+                    } else {
+                        setOpen((isOpen) => !isOpen);
+                    }
+                }}
                 onPointerEnter={(event) => {
-                    if (event.pointerType === 'mouse') setOpen(true);
+                    if (event.pointerType === 'mouse') {
+                        cancelClose();
+                        setOpen(true);
+                    }
                 }}
                 onPointerLeave={(event) => {
-                    if (event.pointerType === 'mouse') setOpen(false);
+                    if (event.pointerType === 'mouse') scheduleClose();
                 }}
-                className="text-base-content/60 hover:bg-base-200 hover:text-base-content/80 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors"
+                className="text-primary hover:bg-primary/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors"
             >
-                <Info
-                    className="text-primary hover:bg-primary/10 h-4 w-4 rounded-full transition-all hover:h-8 hover:w-8 hover:p-1"
-                    strokeWidth={3}
-                />
+                <Info className="h-4 w-4" strokeWidth={2.5} />
             </button>
 
             {open && (
                 <div
-                    className="bg-base-100 fixed inset-x-4 top-1/2 z-20 max-h-[min(70dvh,32rem)] -translate-y-1/2 overflow-y-auto rounded-xl border border-slate-400 p-4 shadow-2xl sm:absolute sm:inset-x-auto sm:top-full sm:right-12 sm:mt-2 sm:max-h-[min(70dvh,32rem)] sm:w-[480px] sm:max-w-[90vw] sm:-translate-y-1/2"
                     role="tooltip"
+                    onPointerEnter={(event) => {
+                        if (event.pointerType === 'mouse') cancelClose();
+                    }}
+                    onPointerLeave={(event) => {
+                        if (event.pointerType === 'mouse') scheduleClose();
+                    }}
+                    className="border-base-300 bg-base-100 fixed inset-x-4 top-1/2 z-30 max-h-[min(70dvh,32rem)] -translate-y-1/2 overflow-auto rounded-xl border p-4 shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-1 sm:w-[480px] sm:max-w-[90vw] sm:translate-y-0"
                 >
                     <CategoryTable range={range} />
                 </div>
