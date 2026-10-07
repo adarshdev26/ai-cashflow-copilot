@@ -24,6 +24,8 @@ import {
     KeyRound,
     LockKeyhole,
 } from 'lucide-react';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
+import { SITE } from '@/content/marketing/site';
 
 /* -------------------------------------------------------------------------- */
 /*                                Small pieces                                */
@@ -31,6 +33,12 @@ import {
 
 export const iconFieldCls =
     'bg-base-200/50 border-base-300 placeholder:text-base-content/40 focus:border-primary focus:ring-primary/20 h-11 w-full rounded-lg border pr-3 pl-10 text-sm transition outline-none focus:ring-2';
+
+/** Brand name from system settings (branding.name), falling back to the static site name. */
+export function useSiteName() {
+    const { data: settings } = usePublicSettings();
+    return String(settings?.['branding.name'] ?? SITE.name);
+}
 
 export function AuthBrand({
     className = '',
@@ -42,6 +50,7 @@ export function AuthBrand({
     variant?: 'default' | 'light';
 }) {
     const light = variant === 'light';
+    const siteName = useSiteName();
     return (
         <div
             className={`flex items-center gap-2 ${
@@ -56,7 +65,7 @@ export function AuthBrand({
                 <TrendingUp className="h-4 w-4" />
             </span>
             <span className={`text-lg font-bold tracking-tight ${light ? '' : 'text-primary'}`}>
-                AICashflow
+                {siteName}
             </span>
         </div>
     );
