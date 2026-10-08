@@ -14,6 +14,7 @@ import {
     UpdateTransactionInput,
 } from '../types';
 import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
+import { NOTIFICATIONS_ROOT_KEY } from '@/features/notifications/hooks/use-notifications';
 
 export const financeKeys = {
     list: (workspaceId: string, params: TransactionListParams) =>
@@ -41,6 +42,7 @@ export function useCreateTransaction(workspaceId: string) {
     return useMutation({
         mutationFn: (newTx: CreateTransactionInput) => createTransaction(workspaceId, newTx),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_ROOT_KEY });
             queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
@@ -58,6 +60,7 @@ export function useUpdateTransaction(workspaceId: string) {
         mutationFn: ({ id, data }: { id: string; data: UpdateTransactionInput }) =>
             updateTransaction(workspaceId, id, data),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_ROOT_KEY });
             queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
@@ -73,6 +76,7 @@ export function useCreateTransfer(workspaceId: string) {
     return useMutation({
         mutationFn: (input: TransferInput) => createTransfer(workspaceId, input),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_ROOT_KEY });
             queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
@@ -89,6 +93,7 @@ export function useUpdateTransfer(workspaceId: string) {
         mutationFn: ({ id, data }: { id: string; data: TransferInput }) =>
             updateTransfer(workspaceId, id, data),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_ROOT_KEY });
             queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });
@@ -104,6 +109,7 @@ export function useDeleteTransaction(workspaceId: string) {
     return useMutation({
         mutationFn: (id: string) => deleteTransaction(workspaceId, id),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_ROOT_KEY });
             queryClient.invalidateQueries({ queryKey: financeKeys.all(workspaceId) });
             queryClient.invalidateQueries({ queryKey: ['dashboard-metrics', workspaceId] });
             queryClient.invalidateQueries({ queryKey: ['accounts', workspaceId] });

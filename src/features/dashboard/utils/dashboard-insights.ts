@@ -86,10 +86,10 @@ export function toBudgetRows(raw: unknown): BudgetRow[] {
     const list: unknown[] = Array.isArray(raw)
         ? raw
         : Array.isArray(root.items)
-          ? root.items
-          : Array.isArray(root.budgets)
-            ? root.budgets
-            : [];
+            ? root.items
+            : Array.isArray(root.budgets)
+                ? root.budgets
+                : [];
 
     return list.map((item, i) => {
         const r = asObj(item);
@@ -137,24 +137,32 @@ export type RecurringLike = {
     nextRunAt?: string | Date | null;
 };
 
-/** Active expense (DEBIT) items that will be recorded today or tomorrow. */
+/**
+ * Active recurring items of the given types that will be recorded today or tomorrow.
+ * Defaults to DEBIT-only so existing callers (AttentionRequired.tsx) are unaffected.
+ * Pass ['DEBIT', 'CREDIT'] to also surface expected income.
+ */
 export function dueSoonAlerts(
     recurring: RecurringLike[],
     fmt: (n: number) => string,
     now: Date = new Date(),
+    types: ('DEBIT' | 'CREDIT')[] = ['DEBIT'],
 ): DashboardAlert[] {
     const alerts: DashboardAlert[] = [];
     for (const r of recurring) {
-        if (!r.isActive || r.type !== 'DEBIT' || !r.nextRunAt) continue;
+        if (!r.isActive || !types.includes(r.type as 'DEBIT' | 'CREDIT') || !r.nextRunAt) continue;
         const d = daysUntil(new Date(r.nextRunAt), now);
         if (d < 0 || d > 1) continue;
-        const name = r.description || 'A payment';
+        const income = r.type === 'CREDIT';
+        const name = r.description || (income ? 'Income' : 'A payment');
         alerts.push({
             id: `due-${r.id}`,
             type: 'payment',
-            severity: 'warning',
-            title: `${name} due ${d === 0 ? 'today' : 'tomorrow'}`,
-            description: `${fmt(Number(r.amount))} will be recorded automatically`,
+            severity: income ? 'info' : 'warning',
+            title: `${name} ${income ? 'expected' : 'due'} ${d === 0 ? 'today' : 'tomorrow'}`,
+            description: income
+                ? `${fmt(Number(r.amount))} will be credited automatically`
+                : `${fmt(Number(r.amount))} will be recorded automatically`,
             href: '/dashboard/recurring',
             amount: Number(r.amount),
         });

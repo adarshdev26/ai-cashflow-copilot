@@ -464,6 +464,15 @@ export const SETTINGS: readonly SettingDef[] = [
         true,
         true,
     ),
+    bool(
+        'features.notificationsEnabled',
+        'system',
+        'features',
+        'Notification center',
+        'Show the notifications bell and page.',
+        true,
+        true,
+    ),
 
     // ---------------- SYSTEM: defaults & UI ----------------
     num(

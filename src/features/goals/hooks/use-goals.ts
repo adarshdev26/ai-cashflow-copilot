@@ -3,6 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActiveWorkspaceId } from '@/features/workspaces/WorkspaceProvider';
 import { goalsApi } from '../api/goals-api';
+import { NOTIFICATIONS_ROOT_KEY } from '@/features/notifications/hooks/use-notifications';
 import type { CreateGoalInput, GoalContributionInput, UpdateGoalInput } from '../types';
 
 export const goalKeys = {
@@ -26,6 +27,7 @@ function useInvalidateGoals() {
     const workspaceId = useActiveWorkspaceId();
     return () => {
         queryClient.invalidateQueries({ queryKey: goalKeys.all(workspaceId) });
+        queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_ROOT_KEY });
         queryClient.invalidateQueries({ queryKey: ['calendar'] });
     };
 }
