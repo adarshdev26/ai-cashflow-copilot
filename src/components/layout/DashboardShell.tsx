@@ -23,6 +23,7 @@ import {
     Target,
     Scale,
     CalendarDays,
+    Bell,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -41,6 +42,7 @@ import { useTheme } from 'next-themes';
 import { usePublicSettings, useUserPreferences } from '@/features/settings/hooks/use-settings';
 import { PlanBadge, PlanUpgradeListener, useLimit, usePlan } from '@/features/plans';
 import { requestUpgrade } from '@/lib/plans/upgrade-event';
+import { useUnreadCount } from '@/features/notifications';
 
 const navigation = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -83,6 +85,27 @@ function showsActiveAccountSwitcher(pathname: string): boolean {
     return ACTIVE_ACCOUNT_SWITCHER_ROUTES.includes(pathname);
 }
 
+function NotificationBell() {
+    const { data: unread } = useUnreadCount();
+    const count = unread ?? 0;
+    const display = count > 99 ? '99+' : String(count);
+
+    return (
+        <Link
+            href="/dashboard/notifications"
+            aria-label={count > 0 ? `Notifications, ${count} unread` : 'Notifications'}
+            className="text-base-content/60 hover:bg-base-200 hover:text-base-content relative inline-flex rounded-md p-2 transition-colors"
+        >
+            <Bell className="h-5 w-5" />
+            {count > 0 && (
+                <span className="bg-error text-error-content absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] leading-none font-semibold">
+                    {display}
+                </span>
+            )}
+        </Link>
+    );
+}
+
 function CreateWorkspaceModal({
     isOpen,
     onClose,
@@ -99,8 +122,8 @@ function CreateWorkspaceModal({
     if (!isOpen) return null;
 
     const trimmed = name.trim();
-    const minNameLength = Number(publicSettings?.['limits.workspaceNameMinLength'] ?? 2);
-    const maxNameLength = Number(publicSettings?.['limits.workspaceNameMaxLength'] ?? 60);
+    const minNameLength = Number(publicSettings?.['limits.workspaceNameMinLength']);
+    const maxNameLength = Number(publicSettings?.['limits.workspaceNameMaxLength']);
     const isValid = trimmed.length >= minNameLength && trimmed.length <= maxNameLength;
 
     const handleClose = () => {
@@ -528,6 +551,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                         </div>
 
                         <div className="flex shrink-0 items-center gap-2">
+                            <NotificationBell />
                             <ThemeMenu persistPreference />
                             {publicSettings?.['features.tourEnabled'] !== false && (
                                 <button

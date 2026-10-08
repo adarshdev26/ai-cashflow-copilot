@@ -14,6 +14,7 @@ import {
     ChevronsRight,
     Headset,
     FileText,
+    Activity,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -31,6 +32,7 @@ const navigation = [
     { name: 'Settings', href: '/admin/settings', icon: Settings },
     { name: 'Audit Logs', href: '/admin/audit-logs', icon: FileText },
     { name: 'Support Tickets', href: '/admin/support-tickets', icon: Headset },
+    { name: 'System Health', href: '/admin/system-health', icon: Activity },
 ];
 
 const mobileTabs: MobileTabItem[] = [
@@ -43,6 +45,7 @@ const mobileTabs: MobileTabItem[] = [
 const mobileMoreItems: MobileTabItem[] = [
     { name: 'Categories', href: '/admin/categories', icon: Tags },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
+    { name: 'System Health', href: '/admin/system-health', icon: Activity },
 ];
 
 const COLLAPSED_KEY = 'admin-sidebar-collapsed';

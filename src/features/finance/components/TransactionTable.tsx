@@ -11,8 +11,9 @@ import {
     Trash2,
     Repeat,
     LayoutTemplate,
+    Paperclip,
 } from 'lucide-react';
-import { Transaction } from '../types';
+import { Transaction, ReceiptMetadata } from '../types';
 import { DataTable } from '@/components/ui/DataTable';
 import { CategoryBadge } from '@/resources/components/CategoryBadge';
 import { Button } from '@/components/ui/Button';
@@ -42,6 +43,8 @@ interface TransactionTableProps {
     activeFilterCount?: number;
     onClearFilters?: () => void;
     activeAccountId?: string | null;
+    receiptByTxId?: Record<string, ReceiptMetadata>;
+    onOpenReceipt?: (tx: Transaction) => void;
 }
 
 export const TransactionTable = memo(function TransactionTable({
@@ -63,10 +66,15 @@ export const TransactionTable = memo(function TransactionTable({
     activeFilterCount,
     onClearFilters,
     activeAccountId,
+    receiptByTxId,
+    onOpenReceipt,
 }: TransactionTableProps) {
     const canEdit = usePermission('transaction.update');
     const canDelete = usePermission('transaction.delete');
     const canManageTemplates = usePermission('templates.manage');
+    const canViewReceipt = usePermission('receipt.view');
+    const canUploadReceipt = usePermission('receipt.upload');
+    const showReceiptAction = Boolean(onOpenReceipt) && (canViewReceipt || canUploadReceipt);
     const locale = useUserLocale();
     const { mutate: createTemplate, isPending: isCreatingTemplate } = useCreateTemplate();
 
@@ -130,6 +138,12 @@ export const TransactionTable = memo(function TransactionTable({
                                 <Repeat
                                     className="text-base-content/50 h-3.5 w-3.5 shrink-0"
                                     aria-label="Recurring"
+                                />
+                            )}
+                            {receiptByTxId?.[tx.id] && (
+                                <Paperclip
+                                    className="text-info h-3.5 w-3.5 shrink-0"
+                                    aria-label="Has receipt"
                                 />
                             )}
                         </div>
@@ -225,7 +239,7 @@ export const TransactionTable = memo(function TransactionTable({
             },
         ];
 
-        if (!canEdit && !canDelete && !canManageTemplates) return base;
+        if (!canEdit && !canDelete && !canManageTemplates && !showReceiptAction) return base;
 
         return [
             ...base,
@@ -234,8 +248,26 @@ export const TransactionTable = memo(function TransactionTable({
                 enableSorting: false,
                 cell: ({ row }) => {
                     const tx = row.original;
+                    const hasReceipt = Boolean(receiptByTxId?.[tx.id]);
                     return (
                         <div className="flex items-center justify-end gap-1">
+                            {showReceiptAction &&
+                                (hasReceipt ? canViewReceipt : canUploadReceipt) && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        aria-label={hasReceipt ? 'View receipt' : 'Attach receipt'}
+                                        onClick={() => onOpenReceipt?.(tx)}
+                                    >
+                                        <Paperclip
+                                            className={
+                                                hasReceipt
+                                                    ? 'text-info h-4 w-4'
+                                                    : 'text-base-content/50 h-4 w-4'
+                                            }
+                                        />
+                                    </Button>
+                                )}
                             {canManageTemplates && tx.type !== 'TRANSFER' && (
                                 <Button
                                     variant="ghost"
@@ -282,6 +314,11 @@ export const TransactionTable = memo(function TransactionTable({
         isCreatingTemplate,
         locale,
         activeAccountId,
+        receiptByTxId,
+        onOpenReceipt,
+        showReceiptAction,
+        canViewReceipt,
+        canUploadReceipt,
     ]);
 
     return (

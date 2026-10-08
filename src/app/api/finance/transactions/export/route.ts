@@ -4,7 +4,7 @@ import { buildTransactionWhere, parseDateParam } from '@/lib/transaction-filters
 import { NextResponse } from 'next/server';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { prisma } from '@/lib/db/prisma';
-import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
+import { getSystemNumber } from '@/lib/settings/server';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 import { enforceWorkspaceFeature } from '@/lib/plans/server';
@@ -17,15 +17,9 @@ export async function GET(req: Request) {
         const access = await requireWorkspaceAccess(req, 'VIEWER');
         if (!access.ok) return access.response;
 
-        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'export');
+        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'export', access.userId);
         if (blocked) return blocked;
 
-        if (!(await getSystemBool('features.csvExportEnabled'))) {
-            return NextResponse.json(
-                { error: 'CSV export is currently disabled' },
-                { status: 403 },
-            );
-        }
         const maxExportRows = await getSystemNumber('limits.csvExportMaxRows');
         const { workspaceId } = access;
 

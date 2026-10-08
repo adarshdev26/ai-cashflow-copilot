@@ -92,8 +92,8 @@ export async function GET(req: Request) {
             sortBy === 'account'
                 ? { account: { name: sortDir } }
                 : sortBy === 'category'
-                  ? { category: { name: sortDir } }
-                  : { [sortBy]: sortDir },
+                    ? { category: { name: sortDir } }
+                    : { [sortBy]: sortDir },
             { id: 'asc' },
         ];
         const [transactions, totalCount] = await Promise.all([
@@ -184,6 +184,8 @@ export async function POST(req: Request) {
                 },
                 include: TRANSACTION_INCLUDE,
             });
+
+            await prisma.aiInsightsCache.deleteMany({ where: { workspaceId } });
 
             await logAudit({
                 actor: await userActor(access.userId),

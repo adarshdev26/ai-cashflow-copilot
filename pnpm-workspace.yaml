@@ -1,5 +1,9 @@
 allowBuilds:
-    '@prisma/engines': true
-    esbuild: true
-    prisma: true
-    unrs-resolver: true
+    '@google/genai': set this to true or false
+    '@prisma/engines': set this to true or false
+    esbuild: set this to true or false
+    prisma: set this to true or false
+    protobufjs: set this to true or false
+    unrs-resolver: set this to true or false
+minimumReleaseAgeExclude:
+  - '@google/genai@2.28.0'

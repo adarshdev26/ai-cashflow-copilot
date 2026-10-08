@@ -3,9 +3,11 @@
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ExportTransactionsModal } from './ExportTransactionsModal';
 import { ImportTransactionsModal } from './ImportTransactionsModal';
+import { ReceiptModal } from './ReceiptModal';
 import { TransactionModal, type TransactionInitialValues } from './TransactionModal';
 import type {
     CreateTransactionInput,
+    ReceiptMetadata,
     Transaction,
     TransactionFilters,
     UpdateTransactionInput,
@@ -19,6 +21,8 @@ export type TransactionFormState =
 type Props = {
     formState: TransactionFormState;
     deleteTarget: Transaction | null;
+    receiptTarget: Transaction | null;
+    receipt?: ReceiptMetadata;
     exportOpen: boolean;
     importOpen: boolean;
     workspaceId: string | null;
@@ -31,10 +35,11 @@ type Props = {
     isSubmitting: boolean;
     isDeleting: boolean;
     onCloseForm: () => void;
-    onCreate: (data: CreateTransactionInput) => void;
+    onCreate: (data: CreateTransactionInput, receiptFile?: File | null) => void;
     onUpdate: (data: UpdateTransactionInput) => void;
     onDelete: () => void;
     onCloseDelete: () => void;
+    onCloseReceipt: () => void;
     onCloseExport: () => void;
     onCloseImport: () => void;
 };
@@ -42,6 +47,8 @@ type Props = {
 export function TransactionDialogs({
     formState,
     deleteTarget,
+    receiptTarget,
+    receipt,
     exportOpen,
     importOpen,
     workspaceId,
@@ -58,6 +65,7 @@ export function TransactionDialogs({
     onUpdate,
     onDelete,
     onCloseDelete,
+    onCloseReceipt,
     onCloseExport,
     onCloseImport,
 }: Props) {
@@ -72,9 +80,9 @@ export function TransactionDialogs({
                     }
                     open={true}
                     onClose={onCloseForm}
-                    onSubmit={(values) => {
+                    onSubmit={(values, receiptFile) => {
                         if (!formState) return;
-                        if (formState.mode === 'create') onCreate(values);
+                        if (formState.mode === 'create') onCreate(values, receiptFile);
                         else onUpdate(values);
                     }}
                     isSubmitting={isSubmitting}
@@ -95,6 +103,17 @@ export function TransactionDialogs({
                     onConfirm={onDelete}
                     onClose={onCloseDelete}
                     loading={isDeleting}
+                />
+            )}
+
+            {receiptTarget && workspaceId && (
+                <ReceiptModal
+                    // Remount after an upload/replace so the note field re-seeds from the saved value.
+                    key={`${receiptTarget.id}-${receipt?.updatedAt ?? 'none'}`}
+                    workspaceId={workspaceId}
+                    transaction={receiptTarget}
+                    receipt={receipt}
+                    onClose={onCloseReceipt}
                 />
             )}
 

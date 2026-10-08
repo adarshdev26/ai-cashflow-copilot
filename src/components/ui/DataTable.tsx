@@ -157,11 +157,11 @@ export function DataTable<TData, TValue>({
 
     return (
         <div
-            className="border-base-300 bg-base-100 overflow-hidden rounded-xl border shadow-sm"
+            className={`border-base-300 bg-base-100 rounded-xl border shadow-sm ${filters ? '' : 'overflow-hidden'}`}
             data-tour={actionsTourId}
         >
             {(searchKey || filters) && (
-                <div className="border-base-200 bg-base-200/50 flex flex-wrap items-center gap-2 border-b p-4">
+                <div className="border-base-200 bg-base-200/50 flex flex-wrap items-center gap-2 rounded-t-xl border-b p-4">
                     {searchKey && (
                         <div className="relative w-full sm:w-64">
                             <Search className="text-base-content/50 absolute top-2.5 left-3 h-4 w-4" />
@@ -324,7 +324,7 @@ export function DataTable<TData, TValue>({
             {/* Pagination Bar */}
             {total > 0 && (
                 <div
-                    className="border-base-200 bg-base-200/50 flex flex-wrap items-center justify-between gap-3 border-t p-4"
+                    className="border-base-200 bg-base-200/50 flex flex-wrap items-center justify-between gap-3 rounded-b-xl border-t p-4"
                     data-tour={paginationTourId}
                 >
                     <div className="text-base-content/60 flex items-center gap-4 text-xs">

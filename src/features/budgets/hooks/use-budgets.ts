@@ -5,6 +5,7 @@ import { useActiveWorkspaceId } from '@/features/workspaces/WorkspaceProvider';
 import { budgetsApi } from '../api/budgets-api';
 import type { CreateBudgetInput, UpdateBudgetInput } from '../types';
 import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
+import { NOTIFICATIONS_ROOT_KEY } from '@/features/notifications/hooks/use-notifications';
 
 export const budgetKeys = {
     all: (workspaceId: string | null | undefined) => ['budgets', workspaceId] as const,
@@ -27,6 +28,7 @@ function useInvalidateBudgets(invalidatePlan = false) {
     const workspaceId = useActiveWorkspaceId();
     return () => {
         queryClient.invalidateQueries({ queryKey: budgetKeys.all(workspaceId) });
+        queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_ROOT_KEY });
         queryClient.invalidateQueries({ queryKey: ['calendar'] });
         invalidateReports(queryClient);
         if (invalidatePlan) {

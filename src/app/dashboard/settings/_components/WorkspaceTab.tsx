@@ -20,6 +20,7 @@ import {
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { WorkspaceFinanceSettings } from './WorkspaceFinanceSettings';
+import { useCapability } from '@/features/plans';
 import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 // The key remounts the content when the active workspace changes,
@@ -31,7 +32,6 @@ export function WorkspaceTab() {
 
 function WorkspaceContent() {
     const { active: workspace, workspaces } = useWorkspace();
-    const { data: publicSettings } = usePublicSettings();
     const [name, setName] = useState(workspace.name);
     const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -44,9 +44,7 @@ function WorkspaceContent() {
     const canChangeRoles = usePermission('members.changeRole');
     const canRemoveMembers = usePermission('members.remove');
     const canDeleteWorkspace = usePermission('workspace.delete');
-    const minNameLength = Number(publicSettings?.['limits.workspaceNameMinLength'] ?? 2);
-    const maxNameLength = Number(publicSettings?.['limits.workspaceNameMaxLength'] ?? 60);
-    const invitationsEnabled = publicSettings?.['features.invitationsEnabled'] !== false;
+    const { allowed: canInviteFeature } = useCapability('invitations');
 
     const { data: members, isLoading: loadingMembers } = useWorkspaceAccess(workspace.workspaceId, {
         enabled: canViewMembers,
@@ -85,6 +83,11 @@ function WorkspaceContent() {
             onError: (error) => notify.error(getErrorMessage(error, 'Failed to delete workspace')),
         });
     };
+
+    const { data: publicSettings } = usePublicSettings();
+
+    const minNameLength = Number(publicSettings?.['limits.workspaceNameMinLength']);
+    const maxNameLength = Number(publicSettings?.['limits.workspaceNameMaxLength']);
 
     return (
         <div className="space-y-8">
@@ -137,7 +140,7 @@ function WorkspaceContent() {
                 >
                     <h2 className="text-base-content text-lg font-semibold">Members</h2>
 
-                    {canInvite && invitationsEnabled && (
+                    {canInvite && canInviteFeature && (
                         <InviteMemberForm
                             workspaceId={workspace.workspaceId}
                             onCreated={setIssuedLink}
@@ -264,7 +267,7 @@ function WorkspaceContent() {
                     </div>
                     <PendingInvitationsList
                         workspaceId={workspace.workspaceId}
-                        allowResend={invitationsEnabled}
+                        allowResend={canInviteFeature}
                         onLinkReady={setIssuedLink}
                         onCancelled={(email) =>
                             setIssuedLink((current) => (current?.email === email ? null : current))

@@ -70,6 +70,12 @@ export const AUDIT_ACTIONS = {
     TRANSFER_CREATED: 'transfer.created',
     TRANSFER_UPDATED: 'transfer.updated',
     TRANSFER_DELETED: 'transfer.deleted',
+    RECEIPT_UPLOADED: 'receipt.uploaded',
+    RECEIPT_UPDATED: 'receipt.updated',
+    RECEIPT_DELETED: 'receipt.deleted',
+    NOTIFICATION_MARKED_READ: 'notification.marked_read',
+    NOTIFICATION_MARK_ALL_READ: 'notification.mark_all_read',
+    NOTIFICATION_DISMISSED: 'notification.dismissed',
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
@@ -146,6 +152,12 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     'transfer.created': 'Transfer created',
     'transfer.updated': 'Transfer updated',
     'transfer.deleted': 'Transfer deleted',
+    'receipt.uploaded': 'Attached receipt',
+    'receipt.updated': 'Updated receipt note',
+    'receipt.deleted': 'Deleted receipt',
+    'notification.marked_read': 'Marked notification as read',
+    'notification.mark_all_read': 'Marked all notifications as read',
+    'notification.dismissed': 'Dismissed notification',
 };
 
 export const AUDIT_RESOURCE_TYPES = {
@@ -162,6 +174,8 @@ export const AUDIT_RESOURCE_TYPES = {
     INVITATION: 'invitation',
     SUPPORT_TICKET: 'support_ticket',
     SETTING: 'setting',
+    RECEIPT: 'receipt',
+    NOTIFICATION: 'notification',
 } as const;
 
 export type AuditResourceType = (typeof AUDIT_RESOURCE_TYPES)[keyof typeof AUDIT_RESOURCE_TYPES];
@@ -180,6 +194,8 @@ export const AUDIT_RESOURCE_LABELS: Record<AuditResourceType, string> = {
     invitation: 'Invitation',
     support_ticket: 'Support ticket',
     setting: 'Setting',
+    receipt: 'Receipt',
+    notification: 'Notification',
 };
 
 /** Label for any stored action string; falls back to the raw value for unknown/future actions. */
