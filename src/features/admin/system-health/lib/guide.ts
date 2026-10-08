@@ -130,7 +130,8 @@ export const HEALTH_GUIDE: HealthGuide = {
     errorCodes: [
         {
             code: '5xx (500, 502...)',
-            meaning: 'The server failed while handling a request. Usually a bug or a broken service.',
+            meaning:
+                'The server failed while handling a request. Usually a bug or a broken service.',
         },
         {
             code: '429',

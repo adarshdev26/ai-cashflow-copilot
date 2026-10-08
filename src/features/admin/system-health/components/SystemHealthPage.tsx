@@ -90,8 +90,8 @@ export function SystemHealthPage() {
                 <div>
                     <h2 className="text-base-content text-lg font-semibold">Recent errors</h2>
                     <p className="text-base-content/60 text-sm">
-                        Newest first. Open "How to read this page" above to see what each code
-                        means.
+                        Newest first. Open &quot;How to read this page&quot; above to see what each
+                        code means.
                     </p>
                 </div>
                 {errors.isError && !errors.data ? (

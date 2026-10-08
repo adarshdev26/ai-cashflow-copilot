@@ -8,7 +8,7 @@ import {
 } from '@/features/reports/lib/report-filters';
 import { validateScopedIds } from '@/features/reports/lib/report-queries';
 import { prisma } from '@/lib/db/prisma';
-import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
+import { getSystemNumber } from '@/lib/settings/server';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
 import { enforceWorkspaceFeature } from '@/lib/plans/server';

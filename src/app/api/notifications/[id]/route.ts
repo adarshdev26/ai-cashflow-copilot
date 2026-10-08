@@ -21,7 +21,7 @@ async function apply(request: Request, { params }: Ctx, action: NotificationStat
         let key = id;
         try {
             key = decodeURIComponent(id);
-        } catch { }
+        } catch {}
         if (key.length > 200 || !isNotificationType(typeFromKey(key))) {
             return NextResponse.json({ error: 'Not found' }, { status: 404 });
         }

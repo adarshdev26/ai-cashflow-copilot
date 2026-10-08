@@ -2,14 +2,10 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAction } from '@/lib/auth/workspaces';
 import { enforceWorkspaceFeature } from '@/lib/plans/server';
-import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
+import { getSystemNumber } from '@/lib/settings/server';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS, AUDIT_RESOURCE_TYPES } from '@/lib/admin/audit-events';
-import {
-    deleteReceiptAsset,
-    uploadReceiptAsset,
-    type ReceiptResourceType,
-} from '@/lib/cloudinary';
+import { deleteReceiptAsset, uploadReceiptAsset, type ReceiptResourceType } from '@/lib/cloudinary';
 import {
     RECEIPT_METADATA_SELECT,
     isAllowedReceiptMime,
@@ -128,7 +124,10 @@ export async function POST(req: Request, { params }: Ctx) {
 
         // 3) on replace, remove the old file
         if (existing) {
-            await deleteReceiptAsset(existing.publicId, existing.resourceType as ReceiptResourceType);
+            await deleteReceiptAsset(
+                existing.publicId,
+                existing.resourceType as ReceiptResourceType,
+            );
         }
 
         await logAudit({

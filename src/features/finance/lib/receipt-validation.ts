@@ -37,7 +37,10 @@ export function normalizeReceiptNote(
 }
 
 export function sanitizeFileName(name: string): string {
-    const cleaned = name.replace(/[\\/\r\n"]/g, '_').trim().slice(0, RECEIPT_FILENAME_MAX);
+    const cleaned = name
+        .replace(/[\\/\r\n"]/g, '_')
+        .trim()
+        .slice(0, RECEIPT_FILENAME_MAX);
     return cleaned || 'receipt';
 }
 
@@ -52,7 +55,10 @@ export function matchesMagicBytes(mime: ReceiptMime, b: Uint8Array): boolean {
         case 'image/png':
             return startsWith(b, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
         case 'image/webp':
-            return startsWith(b, [0x52, 0x49, 0x46, 0x46]) && startsWith(b, [0x57, 0x45, 0x42, 0x50], 8);
+            return (
+                startsWith(b, [0x52, 0x49, 0x46, 0x46]) &&
+                startsWith(b, [0x57, 0x45, 0x42, 0x50], 8)
+            );
         case 'application/pdf':
             return startsWith(b, [0x25, 0x50, 0x44, 0x46]);
     }

@@ -14,7 +14,11 @@ const TABS: readonly TabItem<GroupId>[] = [
     { id: 'general', label: SETTING_GROUPS.general, icon: <Settings className="h-4 w-4" /> },
     { id: 'auth', label: SETTING_GROUPS.auth, icon: <ShieldCheck className="h-4 w-4" /> },
     { id: 'limits', label: SETTING_GROUPS.limits, icon: <Gauge className="h-4 w-4" /> },
-    { id: 'defaults', label: SETTING_GROUPS.defaults, icon: <SlidersHorizontal className="h-4 w-4" /> },
+    {
+        id: 'defaults',
+        label: SETTING_GROUPS.defaults,
+        icon: <SlidersHorizontal className="h-4 w-4" />,
+    },
     { id: 'plans', label: SETTING_GROUPS.plans, icon: <Crown className="h-4 w-4" /> },
 ];
 
@@ -66,17 +70,26 @@ export default function AdminSettingsPage() {
                     </div>
                 ) : active === 'plans' ? (
                     <>
-                        <Tabs tabs={PLAN_SUB_TABS} active={planTab} onChange={setPlanTab} className="mb-4" />
+                        <div className="mb-4">
+                            <Tabs tabs={PLAN_SUB_TABS} active={planTab} onChange={setPlanTab} />
+                        </div>
                         <SettingsForm
                             key={`${active}:${planTab}:${JSON.stringify(data)}`}
-                            defs={SETTINGS.filter((d) => d.scope === 'system' && d.group === 'plans' && d.key.startsWith(`plans.${planTab}.`))}
+                            defs={SETTINGS.filter(
+                                (d) =>
+                                    d.scope === 'system' &&
+                                    d.group === 'plans' &&
+                                    d.key.startsWith(`plans.${planTab}.`),
+                            )}
                             values={data}
                             saving={isPending}
                             onSave={(patch) =>
                                 mutate(patch, {
                                     onSuccess: () => notify.success('Settings saved'),
                                     onError: (err) =>
-                                        notify.error(getErrorMessage(err, 'Failed to save settings')),
+                                        notify.error(
+                                            getErrorMessage(err, 'Failed to save settings'),
+                                        ),
                                 })
                             }
                         />

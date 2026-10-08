@@ -54,28 +54,28 @@ export async function GET(req: Request) {
             status === '5xx'
                 ? { status: { gte: 500, lt: 600 } }
                 : status === '4xx'
-                    ? { status: { gte: 400, lt: 500 } }
-                    : status === '429'
-                        ? { status: 429 }
-                        : {};
+                  ? { status: { gte: 400, lt: 500 } }
+                  : status === '429'
+                    ? { status: 429 }
+                    : {};
 
         const where: Prisma.ErrorLogWhereInput = {
             ...statusWhere,
             ...(dateFrom || dateTo
                 ? {
-                    createdAt: {
-                        ...(dateFrom ? { gte: dateFrom } : {}),
-                        ...(dateTo ? { lte: dateTo } : {}),
-                    },
-                }
+                      createdAt: {
+                          ...(dateFrom ? { gte: dateFrom } : {}),
+                          ...(dateTo ? { lte: dateTo } : {}),
+                      },
+                  }
                 : {}),
             ...(p.search
                 ? {
-                    OR: [
-                        { path: { contains: p.search, mode: 'insensitive' } },
-                        { message: { contains: p.search, mode: 'insensitive' } },
-                    ],
-                }
+                      OR: [
+                          { path: { contains: p.search, mode: 'insensitive' } },
+                          { message: { contains: p.search, mode: 'insensitive' } },
+                      ],
+                  }
                 : {}),
         };
 

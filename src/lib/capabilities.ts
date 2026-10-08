@@ -1,7 +1,4 @@
-import {
-    PLAN_FEATURES,
-    type PlanFeatureKey,
-} from '@/lib/plans/constants';
+import { PLAN_FEATURES, type PlanFeatureKey } from '@/lib/plans/constants';
 import type { SettingValue } from '@/lib/settings/registry';
 
 export type CapabilityKey = PlanFeatureKey;
@@ -69,20 +66,17 @@ export function getEffectiveCapability(
     key: CapabilityKey,
     planFeatures: Record<PlanFeatureKey, boolean>,
     adminSettings: Record<string, SettingValue>,
-    userPrefs?: Record<string, SettingValue>
+    userPrefs?: Record<string, SettingValue>,
 ): EffectiveCapability {
     const def = CAPABILITIES[key];
     if (!def) {
         return { allowed: true, blockedBy: 'none', planAllows: true, adminAllows: true };
     }
 
-    const planAllows = def.planFeatureKey ? planFeatures[def.planFeatureKey] ?? false : true;
-    const adminAllows = def.adminSettingKey
-        ? adminSettings[def.adminSettingKey] !== false
-        : true;
-    const userAllows = def.userPreferenceKey && userPrefs
-        ? userPrefs[def.userPreferenceKey] !== false
-        : true;
+    const planAllows = def.planFeatureKey ? (planFeatures[def.planFeatureKey] ?? false) : true;
+    const adminAllows = def.adminSettingKey ? adminSettings[def.adminSettingKey] !== false : true;
+    const userAllows =
+        def.userPreferenceKey && userPrefs ? userPrefs[def.userPreferenceKey] !== false : true;
 
     if (!planAllows) {
         return { allowed: false, blockedBy: 'plan', planAllows: false, adminAllows };

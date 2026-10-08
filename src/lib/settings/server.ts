@@ -11,7 +11,7 @@ import {
 import { isValid, validatePatch } from './validate';
 import { getWorkspaceOwnerPlan } from '@/lib/plans/server';
 import { getPlanConfig } from '@/lib/plans/server';
-import { CAPABILITIES, type CapabilityKey } from '@/lib/capabilities';
+import { CAPABILITIES } from '@/lib/capabilities';
 
 export type SettingsMap = Record<string, SettingValue>;
 const json = (v: unknown) => v as Prisma.InputJsonValue;
@@ -71,7 +71,7 @@ export const getWorkspaceSettings = cache(async (workspaceId: string): Promise<S
 /** Check if a user preference key corresponds to a capability that's disabled by plan/admin. */
 async function validateUserPreferenceAgainstPlan(
     userId: string,
-    prefs: SettingsMap
+    prefs: SettingsMap,
 ): Promise<Record<string, string> | null> {
     // Get the user's workspace to check plan
     const workspace = await prisma.workspace.findFirst({ where: { ownerId: userId } });
@@ -88,8 +88,12 @@ async function validateUserPreferenceAgainstPlan(
         const def = Object.values(CAPABILITIES).find((c) => c.userPreferenceKey === key);
         if (!def) continue; // Not a capability-gated preference
 
-        const planAllows = def.planFeatureKey ? planConfig.features[def.planFeatureKey] ?? false : true;
-        const adminAllows = def.adminSettingKey ? systemSettings[def.adminSettingKey] !== false : true;
+        const planAllows = def.planFeatureKey
+            ? (planConfig.features[def.planFeatureKey] ?? false)
+            : true;
+        const adminAllows = def.adminSettingKey
+            ? systemSettings[def.adminSettingKey] !== false
+            : true;
 
         // If the preference is being set to true/enabled but plan or admin disallows it
         if (value === true || value === 'true' || value === 'on' || value === 1) {

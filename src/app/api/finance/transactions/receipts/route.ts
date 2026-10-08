@@ -10,7 +10,14 @@ export async function GET(req: Request) {
         const { workspaceId } = access;
 
         const raw = new URL(req.url).searchParams.get('ids') ?? '';
-        const ids = [...new Set(raw.split(',').map((s) => s.trim()).filter(Boolean))];
+        const ids = [
+            ...new Set(
+                raw
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+            ),
+        ];
         if (ids.length === 0) return NextResponse.json({});
         if (ids.length > 200) {
             return NextResponse.json({ error: 'Too many ids (max 200)' }, { status: 400 });

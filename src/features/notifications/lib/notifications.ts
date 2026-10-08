@@ -74,7 +74,10 @@ export function goalProximityAlerts(
 }
 
 /** Returns the improvement in savings rate (percentage points) or null. */
-export function savingsImprovement(thisRate: number | null, lastRate: number | null): number | null {
+export function savingsImprovement(
+    thisRate: number | null,
+    lastRate: number | null,
+): number | null {
     if (thisRate == null || lastRate == null || thisRate <= 0) return null;
     const diff = thisRate - lastRate;
     return diff >= SAVINGS_ALERT_PCT ? diff : null;

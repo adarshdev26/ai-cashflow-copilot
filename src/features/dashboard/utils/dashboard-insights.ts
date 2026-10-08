@@ -86,10 +86,10 @@ export function toBudgetRows(raw: unknown): BudgetRow[] {
     const list: unknown[] = Array.isArray(raw)
         ? raw
         : Array.isArray(root.items)
-            ? root.items
-            : Array.isArray(root.budgets)
-                ? root.budgets
-                : [];
+          ? root.items
+          : Array.isArray(root.budgets)
+            ? root.budgets
+            : [];
 
     return list.map((item, i) => {
         const r = asObj(item);

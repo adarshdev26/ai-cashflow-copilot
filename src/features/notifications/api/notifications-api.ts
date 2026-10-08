@@ -1,9 +1,5 @@
 import { apiFetch, withWorkspace } from '@/lib/api-client';
-import type {
-    NotificationCount,
-    NotificationListParams,
-    NotificationListResponse,
-} from '../types';
+import type { NotificationCount, NotificationListParams, NotificationListResponse } from '../types';
 
 function toQuery(params: Record<string, unknown>): string {
     const sp = new URLSearchParams();
@@ -16,7 +12,10 @@ function toQuery(params: Record<string, unknown>): string {
 
 export const notificationsApi = {
     list: (ws: string, params: NotificationListParams) =>
-        apiFetch<NotificationListResponse>(`/api/notifications${toQuery(params)}`, withWorkspace(ws)),
+        apiFetch<NotificationListResponse>(
+            `/api/notifications${toQuery(params)}`,
+            withWorkspace(ws),
+        ),
     count: (ws: string) =>
         apiFetch<NotificationCount>('/api/notifications/count', withWorkspace(ws)),
     markRead: (ws: string, id: string) =>

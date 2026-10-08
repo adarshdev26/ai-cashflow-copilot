@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAction } from '@/lib/auth/workspaces';
-import { getSystemBool } from '@/lib/settings/server';
 import {
     generateInvitationToken,
     getExpiryDate,
@@ -24,7 +23,11 @@ export async function GET(req: Request, { params }: Ctx) {
         const access = await requireWorkspaceAction(req, 'members.invite', workspaceId);
         if (!access.ok) return access.response;
 
-        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'invitations', access.userId);
+        const blocked = await enforceWorkspaceFeature(
+            access.workspaceId,
+            'invitations',
+            access.userId,
+        );
         if (blocked) return blocked;
 
         const invitations = await prisma.workspaceInvitation.findMany({
@@ -47,7 +50,11 @@ export async function POST(req: Request, { params }: Ctx) {
         const access = await requireWorkspaceAction(req, 'members.invite', workspaceId);
         if (!access.ok) return access.response;
 
-        const featureBlocked = await enforceWorkspaceFeature(access.workspaceId, 'invitations', access.userId);
+        const featureBlocked = await enforceWorkspaceFeature(
+            access.workspaceId,
+            'invitations',
+            access.userId,
+        );
         if (featureBlocked) return featureBlocked;
 
         let body: { email?: unknown; role?: unknown };

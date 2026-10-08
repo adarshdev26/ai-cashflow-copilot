@@ -15,7 +15,11 @@ export async function POST(req: Request, { params }: Ctx) {
         const access = await requireWorkspaceAction(req, 'members.invite', workspaceId);
         if (!access.ok) return access.response;
 
-        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'invitations', access.userId);
+        const blocked = await enforceWorkspaceFeature(
+            access.workspaceId,
+            'invitations',
+            access.userId,
+        );
         if (blocked) return blocked;
 
         const existing = await prisma.workspaceInvitation.findFirst({

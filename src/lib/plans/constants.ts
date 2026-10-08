@@ -46,7 +46,13 @@ export const PLAN_DEFAULTS: Record<PlanId, PlanConfig> = {
             maxRecurring: 3,
             maxTemplates: 3,
         },
-        features: { reports: false, import: false, export: false, invitations: true, receipts: true },
+        features: {
+            reports: false,
+            import: false,
+            export: false,
+            invitations: true,
+            receipts: true,
+        },
     },
     PREMIUM: {
         limits: {

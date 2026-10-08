@@ -23,7 +23,7 @@ type HealthCheck = {
     run: () => Promise<CheckResult>;
 };
 
-class CheckTimeoutError extends Error { }
+class CheckTimeoutError extends Error {}
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     let timer: ReturnType<typeof setTimeout> | undefined;

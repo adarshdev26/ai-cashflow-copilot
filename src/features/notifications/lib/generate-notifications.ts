@@ -58,12 +58,26 @@ export async function loadCandidates(
         getBudgetUsage(workspaceId, thisStart, nextStart),
         prisma.recurringTransaction.findMany({
             where: { workspaceId, isActive: true },
-            select: { id: true, isActive: true, type: true, amount: true, description: true, nextRunAt: true },
+            select: {
+                id: true,
+                isActive: true,
+                type: true,
+                amount: true,
+                description: true,
+                nextRunAt: true,
+            },
             take: MAX_NOTIFICATION_CANDIDATES,
         }),
         prisma.goal.findMany({
             where: { workspaceId, status: 'ACTIVE' },
-            select: { id: true, name: true, targetAmount: true, currentAmount: true, targetDate: true, status: true },
+            select: {
+                id: true,
+                name: true,
+                targetAmount: true,
+                currentAmount: true,
+                targetDate: true,
+                status: true,
+            },
             take: MAX_NOTIFICATION_CANDIDATES,
         }),
         monthTotals(workspaceId, thisStart, nextStart),
@@ -87,7 +101,10 @@ export async function loadCandidates(
 
     // Recurring due soon: DEBIT and CREDIT
     const nextRun = new Map(recurring.map((r) => [r.id, r.nextRunAt]));
-    const pushDue = (types: ('DEBIT' | 'CREDIT')[], type: 'PAYMENT_DUE_SOON' | 'INCOME_EXPECTED') => {
+    const pushDue = (
+        types: ('DEBIT' | 'CREDIT')[],
+        type: 'PAYMENT_DUE_SOON' | 'INCOME_EXPECTED',
+    ) => {
         for (const a of dueSoonAlerts(recurring, fmt, now, types)) {
             const rid = a.id.replace(/^due-/, '');
             out.push({
@@ -179,7 +196,9 @@ export async function setNotificationState(
     if (!current) return false;
     const now = new Date();
     const patch =
-        action === 'read' ? { isRead: true, readAt: now } : { isRead: true, readAt: now, dismissedAt: now };
+        action === 'read'
+            ? { isRead: true, readAt: now }
+            : { isRead: true, readAt: now, dismissedAt: now };
     await prisma.notification.upsert({
         where: { workspaceId_userId_dedupeKey: { workspaceId, userId, dedupeKey: key } },
         create: {

@@ -11,7 +11,9 @@ function client() {
         const api_key = process.env.CLOUDINARY_API_KEY;
         const api_secret = process.env.CLOUDINARY_API_SECRET;
         if (!cloud_name || !api_key || !api_secret) {
-            throw new Error('Cloudinary env vars are missing (CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET)');
+            throw new Error(
+                'Cloudinary env vars are missing (CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET)',
+            );
         }
         cloudinary.config({ cloud_name, api_key, api_secret, secure: true });
         configured = true;

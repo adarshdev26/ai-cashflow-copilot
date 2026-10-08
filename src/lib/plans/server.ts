@@ -207,7 +207,7 @@ export async function enforceWorkspaceLimit(workspaceId: string, key: PlanLimitK
 export async function enforceWorkspaceFeature(
     workspaceId: string,
     key: PlanFeatureKey,
-    userId?: string
+    userId?: string,
 ) {
     const userPrefs = userId ? await getUserPreferences(userId) : undefined;
     return enforceFeature({ key, plan: await getWorkspaceOwnerPlan(workspaceId), userPrefs });

@@ -75,7 +75,7 @@ export const AUDIT_ACTIONS = {
     RECEIPT_DELETED: 'receipt.deleted',
     NOTIFICATION_MARKED_READ: 'notification.marked_read',
     NOTIFICATION_MARK_ALL_READ: 'notification.mark_all_read',
-    NOTIFICATION_DISMISSED: 'notification.dismissed'
+    NOTIFICATION_DISMISSED: 'notification.dismissed',
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
