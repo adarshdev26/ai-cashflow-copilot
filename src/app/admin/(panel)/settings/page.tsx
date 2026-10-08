@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, ShieldCheck, Gauge, ToggleRight, SlidersHorizontal, Crown } from 'lucide-react';
+import { Settings, ShieldCheck, Gauge, SlidersHorizontal, Crown } from 'lucide-react';
 import { Tabs, type TabItem } from '@/components/ui/Tabs';
 import { SettingsForm } from '@/components/settings/SettingsForm';
 import { SETTINGS, SETTING_GROUPS } from '@/lib/settings/registry';
@@ -14,21 +14,23 @@ const TABS: readonly TabItem<GroupId>[] = [
     { id: 'general', label: SETTING_GROUPS.general, icon: <Settings className="h-4 w-4" /> },
     { id: 'auth', label: SETTING_GROUPS.auth, icon: <ShieldCheck className="h-4 w-4" /> },
     { id: 'limits', label: SETTING_GROUPS.limits, icon: <Gauge className="h-4 w-4" /> },
-    { id: 'features', label: SETTING_GROUPS.features, icon: <ToggleRight className="h-4 w-4" /> },
-    {
-        id: 'defaults',
-        label: SETTING_GROUPS.defaults,
-        icon: <SlidersHorizontal className="h-4 w-4" />,
-    },
+    { id: 'defaults', label: SETTING_GROUPS.defaults, icon: <SlidersHorizontal className="h-4 w-4" /> },
     { id: 'plans', label: SETTING_GROUPS.plans, icon: <Crown className="h-4 w-4" /> },
+];
+
+const PLAN_SUB_TABS: readonly TabItem<'FREEMIUM' | 'PREMIUM'>[] = [
+    { id: 'FREEMIUM', label: 'Free' },
+    { id: 'PREMIUM', label: 'Premium' },
 ];
 
 const card = 'bg-base-100 rounded-xl shadow-sm border border-base-300 p-4 sm:p-6 space-y-4';
 
 export default function AdminSettingsPage() {
     const [active, setActive] = useState<GroupId>('general');
+    const [planTab, setPlanTab] = useState<'FREEMIUM' | 'PREMIUM'>('FREEMIUM');
     const { data, isLoading, isError, refetch } = useAdminSettings();
     const { mutate, isPending } = useUpdateAdminSettings();
+
     const defs = SETTINGS.filter((d) => d.scope === 'system' && d.group === active);
 
     return (
@@ -62,6 +64,23 @@ export default function AdminSettingsPage() {
                             Try again
                         </button>
                     </div>
+                ) : active === 'plans' ? (
+                    <>
+                        <Tabs tabs={PLAN_SUB_TABS} active={planTab} onChange={setPlanTab} className="mb-4" />
+                        <SettingsForm
+                            key={`${active}:${planTab}:${JSON.stringify(data)}`}
+                            defs={SETTINGS.filter((d) => d.scope === 'system' && d.group === 'plans' && d.key.startsWith(`plans.${planTab}.`))}
+                            values={data}
+                            saving={isPending}
+                            onSave={(patch) =>
+                                mutate(patch, {
+                                    onSuccess: () => notify.success('Settings saved'),
+                                    onError: (err) =>
+                                        notify.error(getErrorMessage(err, 'Failed to save settings')),
+                                })
+                            }
+                        />
+                    </>
                 ) : (
                     <SettingsForm
                         key={`${active}:${JSON.stringify(data)}`}

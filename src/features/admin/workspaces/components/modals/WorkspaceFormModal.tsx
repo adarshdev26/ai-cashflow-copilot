@@ -26,8 +26,8 @@ export function WorkspaceFormModal({
 
     const markTouched = (key: string) => setTouched((t) => (t[key] ? t : { ...t, [key]: true }));
 
-    const minNameLength = Number(publicSettings?.['limits.workspaceNameMinLength'] ?? 2);
-    const maxNameLength = Number(publicSettings?.['limits.workspaceNameMaxLength'] ?? 60);
+    const minNameLength = Number(publicSettings?.['limits.workspaceNameMinLength']);
+    const maxNameLength = Number(publicSettings?.['limits.workspaceNameMaxLength']);
     const nameError =
         name.trim().length < minNameLength || name.trim().length > maxNameLength
             ? `Name must be ${minNameLength}-${maxNameLength} characters.`

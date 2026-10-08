@@ -31,14 +31,8 @@ export async function POST(req: Request, { params }: Ctx) {
         const { workspaceId } = access;
         const { id } = await params;
 
-        const blocked = await enforceWorkspaceFeature(workspaceId, 'receipts');
+        const blocked = await enforceWorkspaceFeature(workspaceId, 'receipts', access.userId);
         if (blocked) return blocked;
-        if (!(await getSystemBool('features.receiptsEnabled'))) {
-            return NextResponse.json(
-                { error: 'Receipt attachments are currently disabled' },
-                { status: 403 },
-            );
-        }
 
         const tx = await prisma.transaction.findFirst({
             where: { id, workspaceId },

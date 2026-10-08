@@ -7,12 +7,13 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Button } from '@/components/ui/Button';
 import { usePermission } from '@/features/workspaces';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
-import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 import { SETTINGS_BY_KEY } from '@/lib/settings/registry';
 import type { ReceiptMetadata, Transaction } from '../types';
 import { fetchReceiptFile, readFileAsBase64 } from '../api/receipt-api';
 import { useDeleteReceipt, useUpdateReceiptNote, useUploadReceipt } from '../hooks/use-receipts';
 import { RECEIPT_NOTE_MAX, isAllowedReceiptMime } from '../lib/receipt-validation';
+import { LockedButton, useCapability } from '@/features/plans';
+import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 type Props = {
     onClose: () => void;
@@ -31,12 +32,12 @@ function formatBytes(n: number) {
 export function ReceiptModal({ onClose, workspaceId, transaction, receipt }: Props) {
     const canUpload = usePermission('receipt.upload');
     const canDelete = usePermission('receipt.delete');
+    const { allowed: receiptsEnabled } = useCapability('receipts');
     const { data: publicSettings } = usePublicSettings();
     const maxBytes = Number(
         publicSettings?.['limits.receiptMaxBytes'] ??
             SETTINGS_BY_KEY['limits.receiptMaxBytes'].default,
     );
-    const uploadsEnabled = publicSettings?.['features.receiptsEnabled'] !== false;
 
     const upload = useUploadReceipt(workspaceId);
     const saveNote = useUpdateReceiptNote(workspaceId);
@@ -200,8 +201,8 @@ export function ReceiptModal({ onClose, workspaceId, transaction, receipt }: Pro
                         </p>
                     </div>
 
-                    {canUpload && uploadsEnabled && (
-                        <div>
+                    {canUpload && (
+                        <>
                             <input
                                 ref={fileRef}
                                 type="file"
@@ -209,19 +210,18 @@ export function ReceiptModal({ onClose, workspaceId, transaction, receipt }: Pro
                                 className="hidden"
                                 onChange={onPickFile}
                             />
-                            <Button
+                            <LockedButton
                                 variant="ghost"
                                 size="sm"
+                                locked={!receiptsEnabled}
+                                lockedMessage="Receipt attachments aren't available on your plan."
                                 onClick={() => fileRef.current?.click()}
                                 disabled={busy}
                             >
                                 <Upload className="mr-1 h-4 w-4" />
                                 {receipt ? 'Replace file' : 'Attach file'}
-                            </Button>
-                            <span className="text-base-content/50 ml-2 text-xs">
-                                JPEG, PNG, WebP or PDF, up to {formatBytes(maxBytes)}
-                            </span>
-                        </div>
+                            </LockedButton>
+                        </>
                     )}
 
                     <div className="flex flex-wrap items-center justify-between gap-2 pt-2">

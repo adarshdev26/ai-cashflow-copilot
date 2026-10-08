@@ -13,15 +13,9 @@ export async function POST(req: Request) {
         const access = await requireWorkspaceAccess(req, 'MEMBER'); // same level as creating a transaction
         if (!access.ok) return access.response;
 
-        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'import');
+        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'import', access.userId);
         if (blocked) return blocked;
 
-        if (!(await getSystemBool('features.csvImportEnabled'))) {
-            return NextResponse.json(
-                { error: 'CSV import is currently disabled' },
-                { status: 403 },
-            );
-        }
         const [maxBytes, maxRows] = await Promise.all([
             getSystemNumber('limits.csvImportMaxBytes'),
             getSystemNumber('limits.csvImportMaxRows'),

@@ -23,12 +23,9 @@ export async function GET(req: Request, { params }: Ctx) {
         const { workspaceId } = await params;
         const access = await requireWorkspaceAction(req, 'members.invite', workspaceId);
         if (!access.ok) return access.response;
-        if (!(await getSystemBool('features.invitationsEnabled'))) {
-            return NextResponse.json(
-                { error: 'Invitations are currently disabled' },
-                { status: 403 },
-            );
-        }
+
+        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'invitations', access.userId);
+        if (blocked) return blocked;
 
         const invitations = await prisma.workspaceInvitation.findMany({
             where: { workspaceId: access.workspaceId, status: 'PENDING' },
@@ -50,7 +47,7 @@ export async function POST(req: Request, { params }: Ctx) {
         const access = await requireWorkspaceAction(req, 'members.invite', workspaceId);
         if (!access.ok) return access.response;
 
-        const featureBlocked = await enforceWorkspaceFeature(access.workspaceId, 'invitations');
+        const featureBlocked = await enforceWorkspaceFeature(access.workspaceId, 'invitations', access.userId);
         if (featureBlocked) return featureBlocked;
 
         let body: { email?: unknown; role?: unknown };

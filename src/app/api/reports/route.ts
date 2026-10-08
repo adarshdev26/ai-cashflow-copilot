@@ -17,7 +17,7 @@ export async function GET(req: Request) {
         const access = await requireWorkspaceAction(req, 'workspace.read');
         if (!access.ok) return access.response;
 
-        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'reports');
+        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'reports', access.userId);
         if (blocked) return blocked;
 
         const parsed = parseReportParams(

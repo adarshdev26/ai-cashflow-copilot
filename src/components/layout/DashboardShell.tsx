@@ -122,8 +122,8 @@ function CreateWorkspaceModal({
     if (!isOpen) return null;
 
     const trimmed = name.trim();
-    const minNameLength = Number(publicSettings?.['limits.workspaceNameMinLength'] ?? 2);
-    const maxNameLength = Number(publicSettings?.['limits.workspaceNameMaxLength'] ?? 60);
+    const minNameLength = Number(publicSettings?.['limits.workspaceNameMinLength']);
+    const maxNameLength = Number(publicSettings?.['limits.workspaceNameMaxLength']);
     const isValid = trimmed.length >= minNameLength && trimmed.length <= maxNameLength;
 
     const handleClose = () => {

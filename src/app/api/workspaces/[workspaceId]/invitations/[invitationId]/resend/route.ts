@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireWorkspaceAction } from '@/lib/auth/workspaces';
-import { getSystemBool } from '@/lib/settings/server';
 import { generateInvitationToken, getExpiryDate, invitationSelect } from '@/lib/users/invitations';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { enforceWorkspaceFeature } from '@/lib/plans/server';
 
 type Ctx = { params: Promise<{ workspaceId: string; invitationId: string }> };
 
@@ -14,12 +14,9 @@ export async function POST(req: Request, { params }: Ctx) {
         const { workspaceId, invitationId } = await params;
         const access = await requireWorkspaceAction(req, 'members.invite', workspaceId);
         if (!access.ok) return access.response;
-        if (!(await getSystemBool('features.invitationsEnabled'))) {
-            return NextResponse.json(
-                { error: 'Invitations are currently disabled' },
-                { status: 403 },
-            );
-        }
+
+        const blocked = await enforceWorkspaceFeature(access.workspaceId, 'invitations', access.userId);
+        if (blocked) return blocked;
 
         const existing = await prisma.workspaceInvitation.findFirst({
             where: { id: invitationId, workspaceId: access.workspaceId, status: 'PENDING' },
