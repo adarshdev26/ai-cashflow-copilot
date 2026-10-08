@@ -1,53 +1,13 @@
 import { NextResponse } from 'next/server';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { prisma } from '@/lib/db/prisma';
-import { FINANCIAL_TYPES } from '@/lib/transaction-filters';
-
-type Totals = { income: number; expense: number; net: number; count: number };
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
+import { getPeriodTotals } from '@/lib/finance/totals';
 
 // undefined = not provided, null = provided but invalid
 function parseDate(value: string | null): Date | undefined | null {
     if (!value) return undefined;
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
-}
-
-async function totalsFor(
-    workspaceId: string,
-    accountId: string | null,
-    range?: { gte: Date; lt: Date },
-): Promise<Totals> {
-    const rows = await prisma.transaction.groupBy({
-        by: ['type'],
-        where: {
-            workspaceId,
-            type: { in: FINANCIAL_TYPES },
-            ...(accountId ? { accountId } : {}),
-            ...(range ? { createdAt: range } : {}),
-        },
-        _sum: { amount: true },
-        _count: { _all: true },
-    });
-
-    let income = 0;
-    let expense = 0;
-    let count = 0;
-
-    for (const row of rows) {
-        const sum = row._sum.amount ?? 0;
-        count += row._count._all;
-        if (row.type === 'CREDIT') income += sum;
-        else expense += sum;
-    }
-
-    return {
-        income: round2(income),
-        expense: round2(expense),
-        net: round2(income - expense),
-        count,
-    };
 }
 
 export async function GET(req: Request) {
@@ -101,9 +61,9 @@ export async function GET(req: Request) {
         }
 
         const [allTime, thisMonth, lastMonth] = await Promise.all([
-            totalsFor(workspaceId, accountId),
-            totalsFor(workspaceId, accountId, { gte: thisMonthStart, lt: nextMonthStart }),
-            totalsFor(workspaceId, accountId, { gte: lastMonthStart, lt: thisMonthStart }),
+            getPeriodTotals(workspaceId, accountId),
+            getPeriodTotals(workspaceId, accountId, { gte: thisMonthStart, lt: nextMonthStart }),
+            getPeriodTotals(workspaceId, accountId, { gte: lastMonthStart, lt: thisMonthStart }),
         ]);
 
         return NextResponse.json({ allTime, thisMonth, lastMonth }, { status: 200 });
