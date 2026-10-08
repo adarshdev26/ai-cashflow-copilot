@@ -415,6 +415,33 @@ model AuditLog {
   @@index([workspaceId, createdAt(sort: Desc)])
 }
 
+model ErrorLog {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  method    String   @db.VarChar(16)
+  path      String   @db.VarChar(512)
+  status    Int
+  message   String   @db.Text
+  workspaceId String?
+  userId    String?
+  errorName String?  @db.VarChar(100)
+  latencyMs Int?
+
+  @@index([createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([path, createdAt(sort: Desc)])
+}
+
+model CronHeartbeat {
+  job        String   @id
+  lastRunAt  DateTime
+  status     String   @db.VarChar(16) // "ok" | "partial"
+  durationMs Int
+  processed  Int      @default(0)
+  generated  Int      @default(0)
+  failed     Int      @default(0)
+}
+
 model Goal {
   id            String     @id @default(uuid())
   workspaceId   String
