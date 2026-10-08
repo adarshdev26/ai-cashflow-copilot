@@ -6,6 +6,7 @@ import {
     useCreateTransaction,
     useUpdateTransaction,
     useDeleteTransaction,
+    useReceiptMap,
     FinanceHeader,
     TransactionTable,
     FinanceStats,
@@ -116,8 +117,16 @@ export default function TransactionsPage() {
     const { mutate: updateTransfer, isPending: isUpdatingTransfer } =
         useUpdateTransfer(workspaceId);
 
+    // One batched request for every receipt on the current page.
+    const receiptIds = useMemo(
+        () => transactionResponse?.data.map((t) => t.id) ?? [],
+        [transactionResponse],
+    );
+    const { data: receiptByTxId } = useReceiptMap(workspaceId, receiptIds);
+
     const [formState, setFormState] = useState<TransactionFormState>(null);
     const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
+    const [receiptTarget, setReceiptTarget] = useState<Transaction | null>(null);
     const [exportOpen, setExportOpen] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
@@ -207,6 +216,8 @@ export default function TransactionsPage() {
     );
     const openDeleteTarget = useCallback((tx: Transaction) => setDeleteTarget(tx), []);
     const closeDeleteTarget = useCallback(() => setDeleteTarget(null), []);
+    const openReceipt = useCallback((tx: Transaction) => setReceiptTarget(tx), []);
+    const closeReceipt = useCallback(() => setReceiptTarget(null), []);
 
     const handleTypeChange = useCallback(
         (value: TransactionType | '') => {
@@ -266,6 +277,8 @@ export default function TransactionsPage() {
                 isLoading={isLoading}
                 isFetching={isFetching}
                 activeAccountId={activeAccountId ?? null}
+                receiptByTxId={receiptByTxId}
+                onOpenReceipt={openReceipt}
                 filters={
                     <TransactionFiltersBar
                         filters={filters}
@@ -300,6 +313,8 @@ export default function TransactionsPage() {
             <TransactionDialogs
                 formState={formState}
                 deleteTarget={deleteTarget}
+                receiptTarget={receiptTarget}
+                receipt={receiptTarget ? receiptByTxId?.[receiptTarget.id] : undefined}
                 exportOpen={exportOpen}
                 importOpen={importOpen}
                 workspaceId={workspaceId}
@@ -316,6 +331,7 @@ export default function TransactionsPage() {
                 onUpdate={handleUpdateTransaction}
                 onDelete={handleDeleteTransaction}
                 onCloseDelete={closeDeleteTarget}
+                onCloseReceipt={closeReceipt}
                 onCloseExport={() => setExportOpen(false)}
                 onCloseImport={() => setImportOpen(false)}
             />

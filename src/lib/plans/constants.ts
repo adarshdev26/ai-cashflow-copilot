@@ -24,6 +24,7 @@ export const PLAN_FEATURES = {
     import: 'CSV import',
     export: 'CSV export',
     invitations: 'Workspace invitations',
+    receipts: 'Receipt attachments',
 } as const;
 
 export type PlanLimitKey = keyof typeof PLAN_LIMITS;
@@ -45,7 +46,7 @@ export const PLAN_DEFAULTS: Record<PlanId, PlanConfig> = {
             maxRecurring: 3,
             maxTemplates: 3,
         },
-        features: { reports: false, import: false, export: false, invitations: true },
+        features: { reports: false, import: false, export: false, invitations: true, receipts: true },
     },
     PREMIUM: {
         limits: {
@@ -57,7 +58,7 @@ export const PLAN_DEFAULTS: Record<PlanId, PlanConfig> = {
             maxRecurring: UNLIMITED,
             maxTemplates: UNLIMITED,
         },
-        features: { reports: true, import: true, export: true, invitations: true },
+        features: { reports: true, import: true, export: true, invitations: true, receipts: true },
     },
 };
 

@@ -93,3 +93,23 @@ export interface CreateTransactionInput {
 }
 
 export type UpdateTransactionInput = Partial<CreateTransactionInput>;
+
+export interface ReceiptMetadata {
+    id: string;
+    transactionId: string;
+    fileName: string;
+    mimeType: string;
+    size: number;
+    note: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ReceiptInput {
+    fileName: string;
+    mimeType: string;
+    size: number;
+    note?: string | null;
+    /** base64, no data: prefix */
+    data: string;
+}

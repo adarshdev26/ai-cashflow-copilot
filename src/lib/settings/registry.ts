@@ -34,12 +34,12 @@ export type SettingDef = Base &
         | { type: 'number'; default: number; min: number; max: number; unit?: string }
         | { type: 'boolean'; default: boolean }
         | {
-              type: 'string';
-              default: string;
-              minLength?: number;
-              maxLength: number;
-              format?: 'email';
-          }
+            type: 'string';
+            default: string;
+            minLength?: number;
+            maxLength: number;
+            format?: 'email';
+        }
         | { type: 'enum'; default: string | number; options: readonly EnumOption[] }
     );
 
@@ -315,6 +315,18 @@ export const SETTINGS: readonly SettingDef[] = [
         true,
     ),
     num(
+        'limits.receiptMaxBytes',
+        'system',
+        'limits',
+        'Receipt: max size',
+        'File size in bytes (3145728 = 3 MB). Keep under your host request-body limit after ~33% base64 overhead.',
+        3145728,
+        65536,
+        20971520,
+        'bytes',
+        true,
+    ),
+    num(
         'limits.csvExportMaxRows',
         'system',
         'limits',
@@ -431,6 +443,15 @@ export const SETTINGS: readonly SettingDef[] = [
         'features',
         'CSV export',
         'When off, the export API is blocked.',
+        true,
+        true,
+    ),
+    bool(
+        'features.receiptsEnabled',
+        'system',
+        'features',
+        'Receipt attachments',
+        'When off, uploading receipts is blocked (existing receipts stay viewable).',
         true,
         true,
     ),

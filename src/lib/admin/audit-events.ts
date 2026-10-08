@@ -70,6 +70,9 @@ export const AUDIT_ACTIONS = {
     TRANSFER_CREATED: 'transfer.created',
     TRANSFER_UPDATED: 'transfer.updated',
     TRANSFER_DELETED: 'transfer.deleted',
+    RECEIPT_UPLOADED: 'receipt.uploaded',
+    RECEIPT_UPDATED: 'receipt.updated',
+    RECEIPT_DELETED: 'receipt.deleted',
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
@@ -146,6 +149,9 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     'transfer.created': 'Transfer created',
     'transfer.updated': 'Transfer updated',
     'transfer.deleted': 'Transfer deleted',
+    'receipt.uploaded': 'Attached receipt',
+    'receipt.updated': 'Updated receipt note',
+    'receipt.deleted': 'Deleted receipt',
 };
 
 export const AUDIT_RESOURCE_TYPES = {
@@ -162,6 +168,7 @@ export const AUDIT_RESOURCE_TYPES = {
     INVITATION: 'invitation',
     SUPPORT_TICKET: 'support_ticket',
     SETTING: 'setting',
+    RECEIPT: 'receipt',
 } as const;
 
 export type AuditResourceType = (typeof AUDIT_RESOURCE_TYPES)[keyof typeof AUDIT_RESOURCE_TYPES];
@@ -180,6 +187,7 @@ export const AUDIT_RESOURCE_LABELS: Record<AuditResourceType, string> = {
     invitation: 'Invitation',
     support_ticket: 'Support ticket',
     setting: 'Setting',
+    receipt: 'Receipt',
 };
 
 /** Label for any stored action string; falls back to the raw value for unknown/future actions. */
