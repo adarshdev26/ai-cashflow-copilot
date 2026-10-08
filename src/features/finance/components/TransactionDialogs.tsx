@@ -35,7 +35,7 @@ type Props = {
     isSubmitting: boolean;
     isDeleting: boolean;
     onCloseForm: () => void;
-    onCreate: (data: CreateTransactionInput) => void;
+    onCreate: (data: CreateTransactionInput, receiptFile?: File | null) => void;
     onUpdate: (data: UpdateTransactionInput) => void;
     onDelete: () => void;
     onCloseDelete: () => void;
@@ -80,9 +80,9 @@ export function TransactionDialogs({
                     }
                     open={true}
                     onClose={onCloseForm}
-                    onSubmit={(values) => {
+                    onSubmit={(values, receiptFile) => {
                         if (!formState) return;
-                        if (formState.mode === 'create') onCreate(values);
+                        if (formState.mode === 'create') onCreate(values, receiptFile);
                         else onUpdate(values);
                     }}
                     isSubmitting={isSubmitting}

@@ -182,13 +182,13 @@ export function ReceiptModal({ onClose, workspaceId, transaction, receipt }: Pro
                         </div>
                     )}
 
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                         <label className="text-sm font-medium" htmlFor="receipt-note">
                             Note
                         </label>
                         <textarea
                             id="receipt-note"
-                            className="textarea textarea-bordered w-full"
+                            className="textarea textarea-bordered focus:border-primary w-full outline-none"
                             rows={3}
                             maxLength={RECEIPT_NOTE_MAX}
                             value={note}

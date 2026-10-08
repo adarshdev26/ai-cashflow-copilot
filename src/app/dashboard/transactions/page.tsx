@@ -7,11 +7,13 @@ import {
     useUpdateTransaction,
     useDeleteTransaction,
     useReceiptMap,
+    useUploadReceipt,
     FinanceHeader,
     TransactionTable,
     FinanceStats,
 } from '@/features/finance';
 import { useCreateTransfer, useUpdateTransfer } from '@/features/finance/hooks/use-finance';
+import { readFileAsBase64 } from '@/features/finance/api/receipt-api';
 import { TransferModal } from '@/features/finance/components/TransferModal';
 import {
     templateToInitialValues,
@@ -116,6 +118,7 @@ export default function TransactionsPage() {
     const { mutate: addTransfer, isPending: isAddingTransfer } = useCreateTransfer(workspaceId);
     const { mutate: updateTransfer, isPending: isUpdatingTransfer } =
         useUpdateTransfer(workspaceId);
+    const { mutateAsync: uploadReceipt } = useUploadReceipt(workspaceId);
 
     // One batched request for every receipt on the current page.
     const receiptIds = useMemo(
@@ -135,11 +138,35 @@ export default function TransactionsPage() {
     const isSubmitting = isAdding || isUpdating;
 
     const handleCreateTransaction = useCallback(
-        (data: CreateTransactionInput) => {
+        (data: CreateTransactionInput, receiptFile?: File | null) => {
             addTx(data, {
-                onSuccess: () => {
+                onSuccess: async (created) => {
                     setFormState(null);
                     notify.success('Transaction created');
+                    if (!receiptFile) return;
+                    // The transaction is already saved; a failed receipt never rolls it back.
+                    try {
+                        const fileData = await readFileAsBase64(receiptFile);
+                        await uploadReceipt({
+                            txId: created.id,
+                            input: {
+                                fileName: receiptFile.name,
+                                mimeType: receiptFile.type,
+                                size: receiptFile.size,
+                                note: null,
+                                data: fileData,
+                            },
+                        });
+                        notify.success('Receipt attached');
+                    } catch (err) {
+                        console.error('Receipt upload failed:', err);
+                        notify.error(
+                            getErrorMessage(
+                                err,
+                                'Transaction saved, but the receipt upload failed. Attach it from the table.',
+                            ),
+                        );
+                    }
                 },
                 onError: (error) => {
                     console.error('Failed to create transaction:', error);
@@ -147,7 +174,7 @@ export default function TransactionsPage() {
                 },
             });
         },
-        [addTx],
+        [addTx, uploadReceipt],
     );
 
     const handleUpdateTransaction = useCallback(

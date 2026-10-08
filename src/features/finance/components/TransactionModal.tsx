@@ -10,7 +10,9 @@ import { useCategoryMap } from '@/resources/hooks/use-categories';
 import { Transaction, CreateTransactionInput } from '../types';
 import { AccountSelect, useAccounts, useActiveAccountId } from '@/features/accounts';
 import { useActiveWorkspaceId, usePermission } from '@/features/workspaces';
+import { useCapability } from '@/features/plans';
 import { CategoryFormModal } from '@/features/categories/components/CategoryFormModal';
+import { ReceiptPicker } from './ReceiptPicker';
 
 /** Prefill for a NEW transaction (e.g. from a template). Ignored when editing. */
 export interface TransactionInitialValues {
@@ -33,7 +35,7 @@ function toLocalDateISO(d: Date): string {
 interface TransactionModalProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (values: CreateTransactionInput) => void;
+    onSubmit: (values: CreateTransactionInput, receiptFile?: File | null) => void;
     isSubmitting: boolean;
     error?: string;
     transaction?: Transaction | null;
@@ -84,6 +86,12 @@ export function TransactionModal({
     );
     const [date, setDate] = useState(initialDate);
 
+    // Receipt picked while creating. Held in memory only; the parent uploads it after
+    // the transaction has been saved. Closing the modal discards it.
+    const [receiptFile, setReceiptFile] = useState<File | null>(null);
+    const canUploadReceipt = usePermission('receipt.upload');
+    const { allowed: receiptsEnabled } = useCapability('receipts');
+
     const workspaceId = useActiveWorkspaceId();
     const canCreateCategory = usePermission('category.create');
     const [addCategoryOpen, setAddCategoryOpen] = useState(false);
@@ -112,16 +120,30 @@ export function TransactionModal({
             // edit), so ordinary entries keep their exact creation time and ordering.
             const baseline = isEdit ? initialDate : toLocalDateISO(new Date());
 
-            onSubmit({
-                amount: Number(amount),
-                type,
-                description: description || undefined,
-                categoryId,
-                accountId,
-                ...(date && date !== baseline && { date }),
-            });
+            onSubmit(
+                {
+                    amount: Number(amount),
+                    type,
+                    description: description || undefined,
+                    categoryId,
+                    accountId,
+                    ...(date && date !== baseline && { date }),
+                },
+                isEdit ? null : receiptFile,
+            );
         },
-        [amount, type, description, categoryId, accountId, date, initialDate, isEdit, onSubmit],
+        [
+            amount,
+            type,
+            description,
+            categoryId,
+            accountId,
+            date,
+            initialDate,
+            isEdit,
+            onSubmit,
+            receiptFile,
+        ],
     );
 
     const handleDescriptionChange = useCallback(
@@ -242,6 +264,14 @@ export function TransactionModal({
                     </label>
                     <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                 </div>
+
+                {!isEdit && canUploadReceipt && receiptsEnabled && (
+                    <ReceiptPicker
+                        file={receiptFile}
+                        onChange={setReceiptFile}
+                        disabled={isSubmitting}
+                    />
+                )}
             </form>
 
             {addCategoryOpen && workspaceId && (
