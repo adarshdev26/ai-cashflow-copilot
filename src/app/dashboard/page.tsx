@@ -5,6 +5,7 @@ import { ChartCard } from '@/features/dashboard';
 import { UpcomingRecurring } from '@/features/dashboard/components/UpcomingRecurring';
 import { FinancialHealth } from '@/features/dashboard/components/FinancialHealth';
 import { AttentionRequired } from '@/features/dashboard/components/AttentionRequired';
+import { AiInsightsSection } from '@/features/insights/components/AiInsightsSection';
 import { InsightsCard } from '@/features/dashboard/components/InsightsCard';
 
 const CashflowChart = dynamic(
@@ -45,6 +46,7 @@ export default function DashboardOverviewPage() {
             </div>
 
             <FinancialHealth />
+            <AiInsightsSection />
             <AttentionRequired />
 
             <div className="grid items-start gap-5 lg:grid-cols-2">
