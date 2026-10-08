@@ -6,3 +6,5 @@ export * from './components/TransactionModal';
 export * from './components/FinanceStats';
 export { ExportTransactionsModal } from './components/ExportTransactionsModal';
 export { ImportTransactionsModal } from './components/ImportTransactionsModal';
+export * from './hooks/use-receipts';
+export { ReceiptModal } from './components/ReceiptModal';

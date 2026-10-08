@@ -7,6 +7,7 @@ import { getAccountError } from '@/features/accounts/lib/check-account';
 import { getCategoryError } from '@/lib/categories';
 import { logAudit, userActor } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { deleteReceiptAsset, type ReceiptResourceType } from '@/lib/cloudinary';
 
 const TRANSACTION_INCLUDE = {
     category: { select: { id: true, name: true, color: true } },
@@ -229,7 +230,16 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
             return NextResponse.json({ error: 'Not found' }, { status: 404 });
         }
 
+        const receipt = await prisma.receipt.findUnique({
+            where: { transactionId: id },
+            select: { publicId: true, resourceType: true },
+        });
+
         await prisma.transaction.delete({ where: { id } });
+
+        if (receipt) {
+            await deleteReceiptAsset(receipt.publicId, receipt.resourceType as ReceiptResourceType);
+        }
 
         const action =
             existing.type === 'TRANSFER'

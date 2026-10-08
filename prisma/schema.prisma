@@ -73,6 +73,7 @@ model User {
   isActive              Boolean               @default(true)
   preference            UserPreference?
   supportTickets        SupportTicket[]
+  notifications         Notification[]
 }
 
 model Admin {
@@ -118,6 +119,7 @@ model Workspace {
   isActive              Boolean                @default(true)
   setting               WorkspaceSetting?
   goals                 Goal[]
+  notifications         Notification[]
 
   @@index([ownerId])
 }
@@ -224,6 +226,7 @@ model Transaction {
   updatedAt              DateTime              @updatedAt
   toAccountId            String?
   toAccount              FinancialAccount?     @relation("TransactionToAccount", fields: [toAccountId], references: [id], onDelete: Restrict)
+  receipt                Receipt?
 
   // DB-level idempotency: one transaction per schedule + occurrence.
   // Manual transactions (NULLs) are never affected.
@@ -234,6 +237,24 @@ model Transaction {
   @@index([workspaceId, categoryId, createdAt])
   @@index([recurringTransactionId])
   @@index([workspaceId, toAccountId])
+}
+
+// One receipt per transaction. The file lives in Cloudinary; we store only its reference.
+model Receipt {
+  id            String      @id @default(uuid())
+  transactionId String      @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  workspaceId   String
+  fileName      String
+  mimeType      String
+  size          Int
+  publicId      String      // Cloudinary public_id
+  resourceType  String      // 'image' | 'raw' (PDFs)
+  note          String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([workspaceId, createdAt])
 }
 
 enum TransactionType {
@@ -415,6 +436,33 @@ model AuditLog {
   @@index([workspaceId, createdAt(sort: Desc)])
 }
 
+model ErrorLog {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  method    String   @db.VarChar(16)
+  path      String   @db.VarChar(512)
+  status    Int
+  message   String   @db.Text
+  workspaceId String?
+  userId    String?
+  errorName String?  @db.VarChar(100)
+  latencyMs Int?
+
+  @@index([createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([path, createdAt(sort: Desc)])
+}
+
+model CronHeartbeat {
+  job        String   @id
+  lastRunAt  DateTime
+  status     String   @db.VarChar(16) // "ok" | "partial"
+  durationMs Int
+  processed  Int      @default(0)
+  generated  Int      @default(0)
+  failed     Int      @default(0)
+}
+
 model Goal {
   id            String     @id @default(uuid())
   workspaceId   String
@@ -454,4 +502,46 @@ enum GoalContributionKind {
 enum GoalStatus {
   ACTIVE
   ARCHIVED
+}
+
+enum NotificationType {
+  BUDGET_WARN
+  BUDGET_EXCEEDED
+  PAYMENT_DUE_SOON
+  INCOME_EXPECTED
+  GOAL_PROXIMITY
+  SAVINGS_TREND
+  SPENDING_UP
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  type        NotificationType
+  dedupeKey   String           @db.VarChar(200)
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+  dismissedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([workspaceId, userId, dedupeKey])
+  @@index([workspaceId, userId, createdAt])
+}
+
+model AiInsightsCache {
+    id          String   @id @default(cuid())
+    workspaceId String
+    rangeKey    String   // `${gte.toISOString()}|${lt.toISOString()}`
+    payload     Json
+    cached      Boolean  @default(false)
+    generatedAt DateTime @default(now())
+    expiresAt   DateTime
+
+    @@unique([workspaceId, rangeKey])
+    @@index([workspaceId])
+    @@index([expiresAt])
 }

@@ -4,6 +4,8 @@ import { processSchedule } from '@/lib/recurring/create-recurring-occurrence';
 import { cleanupResetTokens } from '@/lib/auth/cleanup';
 import { logAudit } from '@/lib/admin/audit';
 import { AUDIT_ACTIONS } from '@/lib/admin/audit-events';
+import { pruneErrorLogs } from '@/lib/admin/errors';
+import { CRON_JOBS, recordCronRun } from '@/lib/admin/cron-heartbeat';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -15,6 +17,7 @@ async function handle(request: Request) {
     }
 
     const now = new Date();
+    const startedAt = Date.now();
     const due = await prisma.recurringTransaction.findMany({
         where: { isActive: true, nextRunAt: { lte: now } },
         orderBy: { nextRunAt: 'asc' },
@@ -49,6 +52,13 @@ async function handle(request: Request) {
         console.error('cron cleanup failed', e);
     }
 
+    let errorLogsPruned = 0;
+    try {
+        errorLogsPruned = await pruneErrorLogs();
+    } catch (e) {
+        console.error('cron error-log prune failed', e);
+    }
+
     if (due.length > 0) {
         await logAudit({
             actor: { type: 'SYSTEM' },
@@ -63,12 +73,21 @@ async function handle(request: Request) {
         });
     }
 
+    await recordCronRun(CRON_JOBS.recurring, {
+        status: failed > 0 ? 'partial' : 'ok',
+        durationMs: Date.now() - startedAt,
+        processed: due.length,
+        generated,
+        failed,
+    });
+
     return NextResponse.json({
         processed: due.length,
         generated,
         skipped,
         failed,
         resetTokensDeleted,
+        errorLogsPruned,
     });
 }
 

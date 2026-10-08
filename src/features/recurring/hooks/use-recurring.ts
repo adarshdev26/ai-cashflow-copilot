@@ -3,6 +3,7 @@ import { useWorkspaces } from '@/features/workspaces/hooks/use-workspaces';
 import { recurringApi } from '../api/recurring-api';
 import type { RecurringInput, RecurringPatch } from '../types';
 import { invalidateReports } from '@/features/reports/hooks/report-invalidation';
+import { NOTIFICATIONS_ROOT_KEY } from '@/features/notifications/hooks/use-notifications';
 
 export function useRecurring() {
     // Get the data array and rename it to workspaces to avoid conflicts
@@ -21,6 +22,7 @@ function useInvalidate(includePlan = false) {
     const qc = useQueryClient();
     return () => {
         qc.invalidateQueries({ queryKey: ['recurring'] });
+        qc.invalidateQueries({ queryKey: NOTIFICATIONS_ROOT_KEY });
         qc.invalidateQueries({ queryKey: ['transactions'] });
         qc.invalidateQueries({ queryKey: ['dashboard-metrics'] });
         qc.invalidateQueries({ queryKey: ['accounts'] });

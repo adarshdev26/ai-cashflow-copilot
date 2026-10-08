@@ -1,7 +1,7 @@
 import 'server-only';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { getSystemBool, getSystemNumber } from '@/lib/settings/server';
+import { getSystemBool, getSystemNumber, getUserPreferences } from '@/lib/settings/server';
 import {
     PLAN_FEATURES,
     PLAN_IDS,
@@ -13,6 +13,7 @@ import {
     type PlanId,
     type PlanLimitKey,
 } from './constants';
+import { CAPABILITIES, type CapabilityKey } from '@/lib/capabilities';
 
 /** Anything that is not exactly PREMIUM is treated as FREEMIUM. */
 export const normalizePlan = (value: unknown): PlanId =>
@@ -133,18 +134,57 @@ export async function enforceLimit(opts: {
 export async function enforceFeature(opts: {
     key: PlanFeatureKey;
     plan: PlanId;
+    userPrefs?: Record<string, unknown>;
 }): Promise<NextResponse | null> {
-    const enabled = (await getPlanConfig(opts.plan)).features[opts.key];
-    if (enabled) return null;
-    return NextResponse.json(
-        {
-            error: `${PLAN_FEATURES[opts.key]} is not included in your plan. Upgrade to unlock it.`,
-            code: 'PLAN_FEATURE',
-            key: opts.key,
-            plan: opts.plan,
-        },
-        { status: 403 },
-    );
+    const { key, plan, userPrefs } = opts;
+    const enabled = (await getPlanConfig(plan)).features[key];
+    if (!enabled) {
+        return NextResponse.json(
+            {
+                error: `${PLAN_FEATURES[key]} is not included in your plan. Upgrade to unlock it.`,
+                code: 'PLAN_FEATURE',
+                key,
+                plan,
+            },
+            { status: 403 },
+        );
+    }
+
+    // Check admin setting
+    const capKey = key as CapabilityKey;
+    const def = CAPABILITIES[capKey];
+    if (def?.adminSettingKey) {
+        const adminSettings = await getSystemBool(def.adminSettingKey);
+        if (!adminSettings) {
+            return NextResponse.json(
+                {
+                    error: `${PLAN_FEATURES[key]} is disabled by your administrator.`,
+                    code: 'ADMIN_FEATURE',
+                    key,
+                    plan,
+                },
+                { status: 403 },
+            );
+        }
+    }
+
+    // Check user preference (narrowing only)
+    if (def?.userPreferenceKey && userPrefs) {
+        const userAllows = userPrefs[def.userPreferenceKey] !== false;
+        if (!userAllows) {
+            return NextResponse.json(
+                {
+                    error: `${PLAN_FEATURES[key]} is disabled in your preferences.`,
+                    code: 'USER_FEATURE',
+                    key,
+                    plan,
+                },
+                { status: 403 },
+            );
+        }
+    }
+
+    return null;
 }
 
 // ---------- one-liners used by routes ----------
@@ -164,6 +204,11 @@ export async function enforceWorkspaceLimit(workspaceId: string, key: PlanLimitK
     });
 }
 
-export async function enforceWorkspaceFeature(workspaceId: string, key: PlanFeatureKey) {
-    return enforceFeature({ key, plan: await getWorkspaceOwnerPlan(workspaceId) });
+export async function enforceWorkspaceFeature(
+    workspaceId: string,
+    key: PlanFeatureKey,
+    userId?: string,
+) {
+    const userPrefs = userId ? await getUserPreferences(userId) : undefined;
+    return enforceFeature({ key, plan: await getWorkspaceOwnerPlan(workspaceId), userPrefs });
 }

@@ -6,11 +6,14 @@ import {
     useCreateTransaction,
     useUpdateTransaction,
     useDeleteTransaction,
+    useReceiptMap,
+    useUploadReceipt,
     FinanceHeader,
     TransactionTable,
     FinanceStats,
 } from '@/features/finance';
 import { useCreateTransfer, useUpdateTransfer } from '@/features/finance/hooks/use-finance';
+import { readFileAsBase64 } from '@/features/finance/api/receipt-api';
 import { TransferModal } from '@/features/finance/components/TransferModal';
 import {
     templateToInitialValues,
@@ -115,9 +118,18 @@ export default function TransactionsPage() {
     const { mutate: addTransfer, isPending: isAddingTransfer } = useCreateTransfer(workspaceId);
     const { mutate: updateTransfer, isPending: isUpdatingTransfer } =
         useUpdateTransfer(workspaceId);
+    const { mutateAsync: uploadReceipt } = useUploadReceipt(workspaceId);
+
+    // One batched request for every receipt on the current page.
+    const receiptIds = useMemo(
+        () => transactionResponse?.data.map((t) => t.id) ?? [],
+        [transactionResponse],
+    );
+    const { data: receiptByTxId } = useReceiptMap(workspaceId, receiptIds);
 
     const [formState, setFormState] = useState<TransactionFormState>(null);
     const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
+    const [receiptTarget, setReceiptTarget] = useState<Transaction | null>(null);
     const [exportOpen, setExportOpen] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
@@ -126,11 +138,35 @@ export default function TransactionsPage() {
     const isSubmitting = isAdding || isUpdating;
 
     const handleCreateTransaction = useCallback(
-        (data: CreateTransactionInput) => {
+        (data: CreateTransactionInput, receiptFile?: File | null) => {
             addTx(data, {
-                onSuccess: () => {
+                onSuccess: async (created) => {
                     setFormState(null);
                     notify.success('Transaction created');
+                    if (!receiptFile) return;
+                    // The transaction is already saved; a failed receipt never rolls it back.
+                    try {
+                        const fileData = await readFileAsBase64(receiptFile);
+                        await uploadReceipt({
+                            txId: created.id,
+                            input: {
+                                fileName: receiptFile.name,
+                                mimeType: receiptFile.type,
+                                size: receiptFile.size,
+                                note: null,
+                                data: fileData,
+                            },
+                        });
+                        notify.success('Receipt attached');
+                    } catch (err) {
+                        console.error('Receipt upload failed:', err);
+                        notify.error(
+                            getErrorMessage(
+                                err,
+                                'Transaction saved, but the receipt upload failed. Attach it from the table.',
+                            ),
+                        );
+                    }
                 },
                 onError: (error) => {
                     console.error('Failed to create transaction:', error);
@@ -138,7 +174,7 @@ export default function TransactionsPage() {
                 },
             });
         },
-        [addTx],
+        [addTx, uploadReceipt],
     );
 
     const handleUpdateTransaction = useCallback(
@@ -207,6 +243,8 @@ export default function TransactionsPage() {
     );
     const openDeleteTarget = useCallback((tx: Transaction) => setDeleteTarget(tx), []);
     const closeDeleteTarget = useCallback(() => setDeleteTarget(null), []);
+    const openReceipt = useCallback((tx: Transaction) => setReceiptTarget(tx), []);
+    const closeReceipt = useCallback(() => setReceiptTarget(null), []);
 
     const handleTypeChange = useCallback(
         (value: TransactionType | '') => {
@@ -266,6 +304,8 @@ export default function TransactionsPage() {
                 isLoading={isLoading}
                 isFetching={isFetching}
                 activeAccountId={activeAccountId ?? null}
+                receiptByTxId={receiptByTxId}
+                onOpenReceipt={openReceipt}
                 filters={
                     <TransactionFiltersBar
                         filters={filters}
@@ -300,6 +340,8 @@ export default function TransactionsPage() {
             <TransactionDialogs
                 formState={formState}
                 deleteTarget={deleteTarget}
+                receiptTarget={receiptTarget}
+                receipt={receiptTarget ? receiptByTxId?.[receiptTarget.id] : undefined}
                 exportOpen={exportOpen}
                 importOpen={importOpen}
                 workspaceId={workspaceId}
@@ -316,6 +358,7 @@ export default function TransactionsPage() {
                 onUpdate={handleUpdateTransaction}
                 onDelete={handleDeleteTransaction}
                 onCloseDelete={closeDeleteTarget}
+                onCloseReceipt={closeReceipt}
                 onCloseExport={() => setExportOpen(false)}
                 onCloseImport={() => setImportOpen(false)}
             />
