@@ -56,6 +56,7 @@ const navigation = [
     { name: 'Net Worth', href: '/dashboard/net-worth', icon: Scale },
     { name: 'Categories', href: '/dashboard/categories', icon: Tags },
     { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+    { name: 'Assistant', href: '/dashboard/chat', icon: Sparkles },
     { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -75,6 +76,7 @@ const mobileMoreItems: MobileTabItem[] = [
     { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
     { name: 'Net Worth', href: '/dashboard/net-worth', icon: Scale },
     { name: 'Categories', href: '/dashboard/categories', icon: Tags },
+    { name: 'Assistant', href: '/dashboard/chat', icon: Sparkles },
     { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];

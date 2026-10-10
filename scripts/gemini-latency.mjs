@@ -5,7 +5,7 @@
 import 'dotenv/config';
 import { GoogleGenAI } from '@google/genai';
 
-const MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.8-flash';
+const MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.5-flash-lite';
 const API_KEY = process.env.GEMINI_API_KEY;
 
 if (!API_KEY) {

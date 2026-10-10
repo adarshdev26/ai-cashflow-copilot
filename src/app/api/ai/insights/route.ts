@@ -2,11 +2,9 @@ import { NextResponse } from 'next/server';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { captureRouteError } from '@/lib/admin/errors';
 import { GeminiConfigError } from '@/lib/gemini';
-import { getFinancialAnalytics } from '@/features/insights/lib/financial-analytics';
-import { buildCandidates } from '@/features/insights/lib/candidates';
-import { generateInsights } from '@/features/insights/lib/generate-insights';
 import { readInsights, writeInsights, rangeKey } from '@/features/insights/lib/cache';
-import type { InsightsResponse } from '@/features/insights/types';
+import { computeInsights } from '@/features/insights/lib/compute-insights';
+import { readRedisInsights, writeRedisInsights } from '@/features/insights/lib/redis-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +28,7 @@ export async function GET(req: Request) {
 
         const url = new URL(req.url);
         const sp = url.searchParams;
-        const force = sp.get('force') === '1';
+        const force = sp.get('force') === '1' || sp.get('force') === 'true';
 
         const gte = parseDate(sp.get('gte'));
         const lt = parseDate(sp.get('lt'));
@@ -55,35 +53,25 @@ export async function GET(req: Request) {
 
         const key = rangeKey(gte, lt);
 
-        // 1) Cache hit
+        // 1) Redis, then the database cache. Skip both when the client forces a refresh.
         if (!force) {
+            const redisHit = await readRedisInsights(workspaceId, key);
+            if (redisHit) return NextResponse.json(redisHit);
+
             const hit = await readInsights(workspaceId, key);
             if (hit) return NextResponse.json(hit);
         }
 
         // 2) Cache miss / forced refresh
-        const analytics = await getFinancialAnalytics(workspaceId, {
+        const body = await computeInsights(workspaceId, {
             from: gte,
             to: lt,
             prevFrom,
             prevTo,
         });
 
-        const candidates =
-            analytics.current.count === 0 ? [] : buildCandidates(analytics);
-
-        const body: InsightsResponse = {
-            insights: [],
-            generatedAt: new Date().toISOString(),
-            period: { from: gte.toISOString(), to: lt.toISOString() },
-            cached: false,
-        };
-
-        if (candidates.length > 0) {
-            body.insights = await generateInsights(candidates, analytics.currency);
-        }
-
         // 3) Store (best-effort)
+        await writeRedisInsights(workspaceId, key, body);
         await writeInsights(workspaceId, key, body, body.insights.length);
 
         return NextResponse.json(body);

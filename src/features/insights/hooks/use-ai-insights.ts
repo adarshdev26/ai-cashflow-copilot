@@ -1,21 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAiInsights } from '../api/get-insights';
-import type { InsightsRange, InsightsResponse } from '../types';
+import { getInsightsRange } from '../lib/range';
+import type { InsightsResponse } from '../types';
 
-/** Month-to-date vs the same number of days last month. Stable for a whole day (no key churn). */
-export function getInsightsRange(now = new Date()): InsightsRange {
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const span = tomorrow.getTime() - monthStart.getTime();
-    const prevEnd = new Date(Math.min(lastMonthStart.getTime() + span, monthStart.getTime()));
-    return {
-        gte: monthStart.toISOString(),
-        lt: tomorrow.toISOString(),
-        prevGte: lastMonthStart.toISOString(),
-        prevLt: prevEnd.toISOString(),
-    };
-}
+export { getInsightsRange };
 
 // Key deliberately does NOT start with 'transactions' or 'dashboard-metrics', so
 // transaction mutations don't trigger a new Gemini call. Fresh data comes from

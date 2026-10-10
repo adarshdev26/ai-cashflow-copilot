@@ -1,7 +1,7 @@
 import 'server-only';
 import { prisma } from '@/lib/db/prisma';
 
-export const CRON_JOBS = { recurring: 'recurring' } as const;
+export const CRON_JOBS = { recurring: 'recurring', insights: 'insights' } as const;
 
 export type CronRun = {
     status: 'ok' | 'partial';
