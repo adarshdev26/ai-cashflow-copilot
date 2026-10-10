@@ -8,7 +8,15 @@ import { PrimaryButton } from '@/components/ui/Button';
 import { notify, getErrorMessage } from '@/lib/ui/toast';
 import { getSafeNextPath } from '@/lib/auth/safe-redirect';
 import { AuthShell } from '@/components/auth/AuthShell';
-import { AuthAlert, AuthField, ShowcasePanel, SplitAuthLayout } from '@/components/auth/AuthUI';
+import {
+    AuthAlert,
+    AuthDivider,
+    AuthField,
+    GoogleSignInButton,
+    ShowcasePanel,
+    SplitAuthLayout,
+} from '@/components/auth/AuthUI';
+import { useOAuthError } from '@/features/auth/hooks/use-oauth-error';
 
 export default function LoginPage() {
     return (
@@ -27,6 +35,7 @@ function LoginForm() {
     const [remember, setRemember] = useState(true);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    useOAuthError(setError);
 
     const handleLogin = useCallback(
         async (e: React.FormEvent) => {
@@ -71,6 +80,8 @@ function LoginForm() {
                 {error && <AuthAlert>{error}</AuthAlert>}
 
                 <form onSubmit={handleLogin} className="space-y-4">
+                    <GoogleSignInButton onError={setError} />
+                    <AuthDivider />
                     <AuthField
                         id="login-email"
                         label="Email"

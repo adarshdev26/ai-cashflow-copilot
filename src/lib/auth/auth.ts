@@ -127,19 +127,22 @@ export async function setAuthCookie(
         expiresIn?: string;
         impersonatedBy?: string;
         impersonatedAt?: number;
+        /** Lax so the cookie is sent on the redirect that follows a Google OAuth callback. */
+        sameSite?: 'strict' | 'lax';
     },
 ) {
     const cookieStore = await cookies();
     const existingToken = cookieStore.get('token')?.value;
     const sessionSeconds = (await getSystemNumber('auth.userSessionDays')) * 86400;
     const maxAge = options?.expiresInSeconds ?? sessionSeconds;
+    const sameSite = options?.sameSite ?? 'strict';
 
     if (options?.impersonatedBy) {
         if (existingToken && !existingToken.includes('impersonatedBy')) {
             cookieStore.set(TOKEN_BACKUP_COOKIE, existingToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                sameSite,
                 maxAge: sessionSeconds,
                 path: '/',
             });
@@ -156,7 +159,7 @@ export async function setAuthCookie(
         {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite,
             maxAge,
             path: '/',
         },
@@ -165,18 +168,31 @@ export async function setAuthCookie(
 
 export async function clearAuthCookie() {
     const cookieStore = await cookies();
-    cookieStore.set('token', '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 0,
-        path: '/',
-    });
-    cookieStore.set(TOKEN_BACKUP_COOKIE, '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 0,
-        path: '/',
-    });
+    const secure = process.env.NODE_ENV === 'production';
+    const expire = (name: string, sameSite: 'strict' | 'lax') => {
+        cookieStore.set(name, '', {
+            httpOnly: true,
+            secure,
+            sameSite,
+            maxAge: 0,
+            path: '/',
+        });
+    };
+
+    // Password login uses strict; Google login uses lax. Both must be cleared.
+    expire('token', 'strict');
+    expire('token', 'lax');
+    expire(TOKEN_BACKUP_COOKIE, 'strict');
+    expire(TOKEN_BACKUP_COOKIE, 'lax');
+
+    for (const name of [
+        'authjs.session-token',
+        'authjs.callback-url',
+        'authjs.csrf-token',
+        '__Secure-authjs.session-token',
+        '__Secure-authjs.callback-url',
+        '__Host-authjs.csrf-token',
+    ]) {
+        expire(name, 'lax');
+    }
 }

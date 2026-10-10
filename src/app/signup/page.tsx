@@ -10,11 +10,14 @@ import { getSafeNextPath } from '@/lib/auth/safe-redirect';
 import { AuthShell } from '@/components/auth/AuthShell';
 import {
     AuthAlert,
+    AuthDivider,
     AuthField,
     BenefitsPanel,
+    GoogleSignInButton,
     PasswordStrength,
     SplitAuthLayout,
 } from '@/components/auth/AuthUI';
+import { useOAuthError } from '@/features/auth/hooks/use-oauth-error';
 import { usePublicSettings } from '@/features/settings/hooks/use-settings';
 
 export default function SignupPage() {
@@ -36,6 +39,7 @@ function SignupForm() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    useOAuthError(setError);
 
     const signupDisabled = settings?.['auth.signupEnabled'] === false;
 
@@ -94,6 +98,8 @@ function SignupForm() {
                     <>
                         {error && <AuthAlert>{error}</AuthAlert>}
                         <form onSubmit={handleSignup} className="space-y-4">
+                            <GoogleSignInButton onError={setError} />
+                            <AuthDivider />
                             <AuthField
                                 id="signup-name"
                                 label="Full name"

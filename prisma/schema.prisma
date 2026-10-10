@@ -74,6 +74,7 @@ model User {
   preference            UserPreference?
   supportTickets        SupportTicket[]
   notifications         Notification[]
+  oauthAccounts         OauthAccount[]
 }
 
 model Admin {
@@ -97,6 +98,20 @@ model PasswordResetToken {
   createdAt DateTime  @default(now())
 
   @@index([userId, createdAt])
+}
+
+// Google (and future providers) linked to a user. One link per provider per user.
+model OauthAccount {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String
+  providerAccountId String
+  createdAt         DateTime @default(now())
+
+  @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
+  @@index([userId])
 }
 
 model Workspace {
