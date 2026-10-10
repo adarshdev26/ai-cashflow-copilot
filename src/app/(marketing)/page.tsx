@@ -5,7 +5,7 @@ import { FeatureGrid } from '@/components/marketing/sections/FeatureGrid';
 import { FeatureBento } from '@/components/marketing/sections/FeatureBento';
 import { FeatureSplit } from '@/components/marketing/sections/FeatureSplit';
 import { StepsTimeline } from '@/components/marketing/sections/StepsTimeline';
-import { Testimonials } from '@/components/marketing/sections/Testimonials';
+//import { Testimonials } from '@/components/marketing/sections/Testimonials';
 import { PricingTable } from '@/components/marketing/sections/PricingTable';
 import { FAQ } from '@/components/marketing/sections/FAQ';
 import { CTABanner } from '@/components/marketing/sections/CTABanner';
@@ -68,11 +68,11 @@ export default function HomePage() {
                 tone="muted"
             />
 
-            <Testimonials
+            {/* <Testimonials
                 title="Loved by people who share money."
                 subtitle="What families, founders, and small teams say."
                 testimonials={testimonials}
-            />
+            /> */}
 
             <PricingTable
                 title="Simple plans that grow with you"
