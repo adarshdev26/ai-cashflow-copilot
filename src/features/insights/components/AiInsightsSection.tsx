@@ -3,6 +3,7 @@
 import { AlertTriangle, CheckCircle2, CircleAlert, Info, RefreshCw, Sparkles } from 'lucide-react';
 import { formatINR } from '@/features/budgets/utils';
 import { useUserLocale } from '@/features/settings/hooks/use-settings';
+import { useAiAssistantEnabled } from '@/features/settings/hooks/use-ai-assistant';
 import { useActiveWorkspaceId } from '@/features/workspaces';
 import { useAiInsights, useRefreshAiInsights } from '../hooks/use-ai-insights';
 import type { EvidenceItem, InsightSeverity } from '../types';
@@ -20,12 +21,15 @@ function formatEvidence(item: EvidenceItem, locale: string) {
 }
 
 export function AiInsightsSection() {
+    const aiEnabled = useAiAssistantEnabled();
     const workspaceId = useActiveWorkspaceId();
     const locale = useUserLocale();
     const { data, isLoading, isError, isFetching } = useAiInsights(workspaceId);
     const refresh = useRefreshAiInsights(workspaceId);
 
     const isRefreshing = isFetching || refresh.isPending;
+
+    if (!aiEnabled) return null;
 
     return (
         <section

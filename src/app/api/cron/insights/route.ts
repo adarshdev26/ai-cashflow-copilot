@@ -7,6 +7,7 @@ import { rangeKey } from '@/features/insights/lib/cache';
 import { computeInsights } from '@/features/insights/lib/compute-insights';
 import { getInsightsRange } from '@/features/insights/lib/range';
 import { writeRedisInsights } from '@/features/insights/lib/redis-cache';
+import { isAiAssistantEnabled } from '@/lib/settings/ai-assistant';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -44,6 +45,10 @@ async function handle(req: Request) {
 
         for (const workspace of workspaces) {
             try {
+                if (!(await isAiAssistantEnabled(workspace.id))) {
+                    skipped++;
+                    continue;
+                }
                 const body = await computeInsights(workspace.id, { from, to, prevFrom, prevTo });
                 const stored = await writeRedisInsights(workspace.id, key, body);
                 if (!stored) {

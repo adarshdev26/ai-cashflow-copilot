@@ -39,6 +39,7 @@ import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner';
 import { MobileTabBar, type MobileTabItem } from '@/components/layout/MobileTabBar';
 import { PageTransitionOverlay } from '@/components/ui/PageTransitionOverlay';
 import { useTheme } from 'next-themes';
+import { useAiAssistantEnabled } from '@/features/settings/hooks/use-ai-assistant';
 import { usePublicSettings, useUserPreferences } from '@/features/settings/hooks/use-settings';
 import { PlanBadge, PlanUpgradeListener, useLimit, usePlan } from '@/features/plans';
 import { requestUpgrade } from '@/lib/plans/upgrade-event';
@@ -318,6 +319,7 @@ function setCollapsedStored(next: boolean) {
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
     const { setTheme } = useTheme();
+    const aiEnabled = useAiAssistantEnabled();
     const { data: publicSettings } = usePublicSettings();
     const { data: preferences, isPlaceholderData: preferencesLoading } = useUserPreferences();
     const pathname = usePathname();
@@ -422,7 +424,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                     </div>
 
                     <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-                        {navigation.map((item) => {
+                        {navigation
+                            .filter((item) => aiEnabled || item.href !== '/dashboard/chat')
+                            .map((item) => {
                             const isActive = pathname === item.href;
                             const Icon = item.icon;
                             return (
@@ -576,7 +580,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
                     <MobileTabBar
                         items={mobileTabs}
-                        moreItems={mobileMoreItems}
+                        moreItems={mobileMoreItems.filter(
+                            (item) => aiEnabled || item.href !== '/dashboard/chat',
+                        )}
                         user={{ name: displayName, email: user?.email }}
                         onSignOut={openSignOutDialog}
                     />

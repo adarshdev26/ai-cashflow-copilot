@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { Sparkles } from 'lucide-react';
+import { useAiAssistantEnabled } from '@/features/settings/hooks/use-ai-assistant';
 import { useActiveWorkspaceId } from '@/features/workspaces';
 import { useFinancialChat } from '../hooks/use-financial-chat';
 import type { ChatTurn } from '../types';
@@ -9,6 +10,7 @@ import type { ChatTurn } from '../types';
 const MAX_MESSAGE = 1000;
 
 export function FinancialChat() {
+    const aiEnabled = useAiAssistantEnabled();
     const workspaceId = useActiveWorkspaceId();
     const chat = useFinancialChat(workspaceId);
     const [draft, setDraft] = useState('');
@@ -16,6 +18,8 @@ export function FinancialChat() {
 
     const pending = chat.isPending;
     const trimmed = draft.trim();
+
+    if (!aiEnabled) return null;
 
     const onSubmit = (event: FormEvent) => {
         event.preventDefault();

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireWorkspaceAccess } from '@/lib/auth/workspaces';
 import { captureRouteError } from '@/lib/admin/errors';
 import { GeminiConfigError } from '@/lib/gemini';
+import { aiAssistantDisabledResponse } from '@/lib/settings/ai-assistant';
 import { generateChatReply } from '@/features/chat/lib/generate-reply';
 import { parseChatRequest } from '@/features/chat/lib/parse-chat';
 import { getChatContext } from '@/features/chat/lib/workspace-context';
@@ -17,6 +18,9 @@ export async function POST(req: Request) {
         const access = await requireWorkspaceAccess(req, 'VIEWER');
         if (!access.ok) return access.response;
         ({ workspaceId, userId } = access);
+
+        const disabled = await aiAssistantDisabledResponse(workspaceId);
+        if (disabled) return disabled;
 
         const body = await req.json().catch(() => null);
         const parsed = parseChatRequest(body);

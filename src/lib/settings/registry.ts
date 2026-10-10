@@ -138,6 +138,7 @@ export const SETTING_GROUPS = {
     general: 'General',
     auth: 'Auth & security',
     limits: 'Limits',
+    features: 'Features',
     defaults: 'Defaults & UI',
     plans: 'Plans',
 } as const;
@@ -436,6 +437,15 @@ export const SETTINGS: readonly SettingDef[] = [
         true,
     ),
     bool(
+        'features.aiAssistantEnabled',
+        'system',
+        'features',
+        'AI Assistant',
+        'When off, AI insights and the financial assistant are blocked.',
+        true,
+        true,
+    ),
+    bool(
         'features.csvExportEnabled',
         'system',
         'features',
@@ -593,6 +603,14 @@ export const SETTINGS: readonly SettingDef[] = [
         100,
         200,
         '%',
+    ),
+    bool(
+        'enableAiAssistant',
+        'workspace',
+        'features',
+        'AI Assistant',
+        'When off, AI insights and the financial assistant are hidden for this workspace.',
+        true,
     ),
 
     // ---------------- USER ----------------
