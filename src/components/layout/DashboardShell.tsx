@@ -24,6 +24,7 @@ import {
     Scale,
     CalendarDays,
     Bell,
+    StickyNote,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -56,6 +57,7 @@ const navigation = [
     { name: 'Net Worth', href: '/dashboard/net-worth', icon: Scale },
     { name: 'Categories', href: '/dashboard/categories', icon: Tags },
     { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+    { name: 'Financial Notes', href: '/notes', icon: StickyNote },
     { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
@@ -75,6 +77,7 @@ const mobileMoreItems: MobileTabItem[] = [
     { name: 'Accounts', href: '/dashboard/accounts', icon: Landmark },
     { name: 'Net Worth', href: '/dashboard/net-worth', icon: Scale },
     { name: 'Categories', href: '/dashboard/categories', icon: Tags },
+    { name: 'Financial Notes', href: '/notes', icon: StickyNote },
     { name: 'Support', href: '/dashboard/support', icon: LifeBuoy },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];

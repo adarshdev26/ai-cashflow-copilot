@@ -74,6 +74,7 @@ model User {
   preference            UserPreference?
   supportTickets        SupportTicket[]
   notifications         Notification[]
+  notes                 Note[]
 }
 
 model Admin {
@@ -120,6 +121,7 @@ model Workspace {
   setting               WorkspaceSetting?
   goals                 Goal[]
   notifications         Notification[]
+  notes                 Note[]
 
   @@index([ownerId])
 }
@@ -544,4 +546,42 @@ model AiInsightsCache {
     @@unique([workspaceId, rangeKey])
     @@index([workspaceId])
     @@index([expiresAt])
+}
+
+enum NoteCategory {
+  GENERAL
+  BUDGET
+  INVESTMENT
+  TAX
+  EXPENSE
+}
+
+enum NotePriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Note {
+  id          String       @id @default(uuid())
+  workspaceId String
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  content     String       @db.Text
+  category    NoteCategory @default(GENERAL)
+  priority    NotePriority @default(MEDIUM)
+  amount      Float?
+  isCompleted Boolean      @default(false)
+  isPinned    Boolean      @default(false)
+  deletedAt   DateTime?    // null = active, set = soft-deleted
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([workspaceId, createdAt(sort: Desc)])
+  @@index([workspaceId, isCompleted])
+  @@index([workspaceId, deletedAt])
+  @@index([workspaceId, isPinned])
+  @@index([userId])
 }

@@ -18,9 +18,10 @@ export function middleware(request: NextRequest) {
     const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
     const isDashboardPage = pathname.startsWith('/dashboard');
     const isOnboardingPage = pathname.startsWith('/onboarding');
+    const isNotesPage = pathname.startsWith('/notes');
 
     // 1. Protected pages without a token -> /login
-    if ((isDashboardPage || isOnboardingPage) && !token) {
+    if ((isDashboardPage || isOnboardingPage || isNotesPage) && !token) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
@@ -35,5 +36,13 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/dashboard/:path*', '/onboarding/:path*', '/login', '/signup', '/admin/:path*'],
+    matcher: [
+        '/dashboard/:path*',
+        '/onboarding/:path*',
+        '/notes/:path*',
+        '/notes',
+        '/login',
+        '/signup',
+        '/admin/:path*',
+    ],
 };
